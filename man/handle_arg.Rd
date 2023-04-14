@@ -16,6 +16,9 @@ handle_arg(tag, value, format = "\%s", sep = " ")
 \item{sep}{A character string used to separate "tag" and "value", usually " "
 or "=".}
 }
+\value{
+A string or NULL which can be used directly by \link{run_command}.
+}
 \description{
 Deliver arguments of command
 }

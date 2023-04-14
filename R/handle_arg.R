@@ -4,6 +4,7 @@
 #' @param format The format of the value, details see [sprintf].
 #' @param sep A character string used to separate "tag" and "value", usually " "
 #'  or "=".
+#' @return A string or NULL which can be used directly by [run_command].
 #' @export
 handle_arg <- function(tag, value, format = "%s", sep = " ") {
     assert_class(tag, is_scalar_character, "scalar character")
