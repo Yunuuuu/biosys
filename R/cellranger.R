@@ -12,12 +12,13 @@
 #' @inheritParams run_cellranger
 #' @export
 run_cellranger_count <- function(id, fastqs, transcriptome = NULL, sample = NULL, cores = NULL, other_args = c("--nosecondary"), cellranger_cmd = NULL, sys_args = list()) {
+    sep <- "="
     args <- c(
-        handle_arg(id, "--id", sep = "="),
-        handle_arg(fastqs, "--fastqs", sep = "="),
-        handle_arg(transcriptome, "--transcriptome", sep = "="),
-        handle_arg(sample, "--sample", sep = "="),
-        handle_arg(cores, "--localcores", sep = "="),
+        handle_sys_arg("--id", id, sep = sep),
+        handle_sys_arg("--fastqs", fastqs, sep = sep),
+        handle_sys_arg("--transcriptome", transcriptome, sep = sep),
+        handle_sys_arg("--sample", sample, sep = sep),
+        handle_sys_arg("--localcores", cores, sep = sep),
         other_args
     )
     run_cellranger(
