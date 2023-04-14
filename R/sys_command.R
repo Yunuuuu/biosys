@@ -1,8 +1,25 @@
+#' Invoke a System Command
+#' @param cmd Command to be invoked, as a character string.
+#' @param ... Arguments passed to command.
+#' @param sys_args A list of arguments passed to [system2].
+#' @param verbose A logical value indicates output running command message.
+#' @return See [system2] for details
+#' @export 
+run_command <- function(cmd, ..., sys_args = list(), verbose = TRUE) {
+    run_sys_command(
+        cmd = cmd, args = c(...),
+        sys_args = sys_args, verbose = verbose,
+        cmd_null = FALSE
+    )
+}
+
 #' @keywords internal
-#' @noRd
-run_command <- function(args = character(), cmd = NULL, name = NULL, sys_args = list(), verbose = TRUE) {
-    assert_length(cmd, 1L, null_ok = TRUE)
-    assert_length(name, 1L, null_ok = TRUE)
+#' @noRd 
+run_sys_command <- function(args = character(), cmd = NULL, name = NULL, sys_args = list(), verbose = TRUE, cmd_null = TRUE) {
+    assert_class(cmd, is_scalar_character, "scalar character",
+        null_ok = cmd_null
+    )
+    assert_class(verbose, is_scalar_logical, "scalar logical")
     if (!is.null(cmd)) {
         if (!file.exists(cmd)) {
             command <- Sys.which(cmd)

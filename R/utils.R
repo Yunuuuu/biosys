@@ -87,3 +87,7 @@ is_scalar_numeric <- function(x) {
 is_scalar_character <- function(x) {
     is_scalar(x) && is.character(x)
 }
+
+is_scalar_logical <- function(x) {
+    is_scalar(x) && is.logical(x)
+}
