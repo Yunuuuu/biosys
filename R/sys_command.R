@@ -1,5 +1,5 @@
 #' @keywords internal
-#' @noRd 
+#' @noRd
 run_command <- function(args = character(), cmd = NULL, name = NULL, sys_args = list(), verbose = TRUE) {
     assert_length(cmd, 1L, null_ok = TRUE)
     assert_length(name, 1L, null_ok = TRUE)
@@ -29,16 +29,4 @@ run_command <- function(args = character(), cmd = NULL, name = NULL, sys_args = 
         cli::cli_alert("Running command {.field {command} {cli_args}}")
     }
     do.call(system2, sys_args)
-}
-
-#' @keywords internal
-#' @noRd 
-handle_arg <- function(arg, tag, format = "%s", sep = " ") {
-    if (is.null(arg) || isFALSE(arg)) {
-        return(NULL)
-    } else if (isTRUE(arg)) {
-        return(tag)
-    } else {
-        return(sprintf(paste(tag, format, sep = sep), arg))
-    }
 }
