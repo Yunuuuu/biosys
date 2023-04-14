@@ -8,7 +8,8 @@ run_cellranger(
   subcmd,
   args = character(),
   cellranger_cmd = NULL,
-  sys_args = list()
+  sys_args = list(),
+  verbose = TRUE
 )
 }
 \arguments{
@@ -18,7 +19,9 @@ run_cellranger(
 
 \item{cellranger_cmd}{Path to cellranger command.}
 
-\item{sys_args}{Other arguments passed to \link{system2}.}
+\item{sys_args}{A list of arguments passed to \link{system2}.}
+
+\item{verbose}{A logical value indicates output running command message.}
 }
 \description{
 Run cellranger

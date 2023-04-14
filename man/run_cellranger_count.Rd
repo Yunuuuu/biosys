@@ -12,7 +12,8 @@ run_cellranger_count(
   cores = NULL,
   other_args = c("--nosecondary"),
   cellranger_cmd = NULL,
-  sys_args = list()
+  sys_args = list(),
+  verbose = TRUE
 )
 }
 \arguments{
@@ -32,7 +33,9 @@ to local jobs.}
 
 \item{cellranger_cmd}{Path to cellranger command.}
 
-\item{sys_args}{Other arguments passed to \link{system2}.}
+\item{sys_args}{A list of arguments passed to \link{system2}.}
+
+\item{verbose}{A logical value indicates output running command message.}
 }
 \description{
 Count gene expression (targeted or whole-transcriptome) and/or
