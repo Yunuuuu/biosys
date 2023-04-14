@@ -7,17 +7,18 @@
 #' @export 
 run_command <- function(cmd, ..., sys_args = list(), verbose = TRUE) {
     run_sys_command(
-        cmd = cmd, args = c(...),
-        sys_args = sys_args, verbose = verbose,
-        cmd_null = FALSE
+        cmd = cmd, args = c(...), name = NULL,
+        sys_args = sys_args, verbose = verbose
     )
 }
 
+#' Don't provide default value for name, in this way, must provide name manually
+#' for every internal function.
 #' @keywords internal
 #' @noRd 
-run_sys_command <- function(args = character(), cmd = NULL, name = NULL, sys_args = list(), verbose = TRUE, cmd_null = TRUE) {
+run_sys_command <- function(cmd = NULL, name, args = character(), sys_args = list(), verbose = TRUE, cmd_null = TRUE) {
     assert_class(cmd, is_scalar_character, "scalar character",
-        null_ok = cmd_null
+        null_ok = !is.null(name)
     )
     assert_class(verbose, is_scalar_logical, "scalar logical")
     if (!is.null(cmd)) {
@@ -34,8 +35,6 @@ run_sys_command <- function(args = character(), cmd = NULL, name = NULL, sys_arg
         if (!nzchar(command)) {
             cli::cli_abort("Cannot find {.field {name}} command")
         }
-    } else {
-        cli::cli_abort("One of {.arg cmd} or {.arg name} must be specified")
     }
     sys_args <- c(list(command = command, args = as.character(args)), sys_args)
     if (verbose) {
