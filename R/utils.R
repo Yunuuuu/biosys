@@ -7,7 +7,7 @@
 #' @keywords internal
 #' @noRd
 assert_class <- function(x, is_class, msg, null_ok = FALSE, arg = substitute(x), call = parent.frame()) {
-    if (is.character(is_class) && length(is_class) == 1L) {
+    if (is_scalar_character(is_class)) {
         class <- is_class
         is_class <- function(x) {
             inherits(x, what = class)
@@ -39,7 +39,6 @@ assert_class <- function(x, is_class, msg, null_ok = FALSE, arg = substitute(x),
 #' @keywords internal
 #' @noRd
 assert_length <- function(x, length, null_ok = FALSE, arg = substitute(x), call = parent.frame()) {
-    length <- as.integer(length)
     if (length == 1L) {
         msg <- "{.field scalar} object"
     } else {
