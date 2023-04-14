@@ -4,7 +4,7 @@
 \alias{handle_arg}
 \title{Deliver arguments of command}
 \usage{
-handle_arg(tag, value, format = "\%s", sep = " ")
+handle_arg(tag, value = TRUE, format = "\%s", sep = " ")
 }
 \arguments{
 \item{tag}{A string specifying argument tag, like "-i", "-o".}

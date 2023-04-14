@@ -6,7 +6,8 @@
 #'  or "=".
 #' @return A string or NULL which can be used directly by [run_command].
 #' @export
-handle_arg <- function(tag, value, format = "%s", sep = " ") {
+handle_arg <- function(tag, value = TRUE, format = "%s", sep = " ") {
+    assert_length(value, 1L, null_ok = TRUE)
     assert_class(tag, is_scalar_character, "scalar character")
     assert_class(format, is_scalar_character, "scalar character")
     assert_class(sep, is_scalar_character, "scalar character")
