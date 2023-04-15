@@ -3,12 +3,13 @@
 #' @param env A named character
 #' @param call Code to execute in the temporary environment
 #' @param action should `env` values "replace", "prefix" or "suffix" existing
-#'  variables with the same name. 
+#'  variables with the same name.
 #' @param sep A string separates the elements in the environment variable.
-#' @export 
+#' @export
 with_envvars <- function(env, call, action = "replace", sep = .Platform$path.sep) {
     assert_class(env, function(x) is.atomic(x) && is_named2(x), "named atomic")
-    old <- set_envvars(env, action = action, sep = sep)
+    action <- match.arg(action, c("replace", "prefix", "suffix"))
+    old <- set_envvars(as_envvars(env), action = action, sep = sep)
     old_set <- !is.na(old)
     if (any(old_set)) {
         on.exit(do.call("Sys.setenv", as.list(old[old_set])))
@@ -20,10 +21,10 @@ with_envvars <- function(env, call, action = "replace", sep = .Platform$path.sep
 }
 
 #' Parse an atomic character for system2 env argument
-#' 
+#'
 #' @param env A named atomic character
 #' @return A string can be used in system2
-#' @export 
+#' @export
 parse_envvars <- function(env) {
     assert_class(env, function(x) is.atomic(x) && is_named2(x), "named atomic")
     # https://stackoverflow.com/questions/39908415/env-argument-does-not-work-in-system2
@@ -37,8 +38,6 @@ parse_envvars <- function(env) {
 #' @param env A named atomic character
 #' @noRd
 set_envvars <- function(env, action = "replace", sep = .Platform$path.sep) {
-    env <- as_envvars(env)
-    action <- match.arg(action, c("replace", "prefix", "suffix"))
     old <- Sys.getenv(names(env), unset = NA, names = TRUE)
     set <- !is.na(env)
     need_action <- set & !is.na(old)
