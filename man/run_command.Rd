@@ -4,25 +4,12 @@
 \alias{run_command}
 \title{Invoke a System Command}
 \usage{
-run_command(
-  cmd,
-  ...,
-  env_path = NULL,
-  env = character(),
-  sys_args = list(),
-  verbose = TRUE
-)
+run_command(cmd, ..., sys_args = list(), verbose = TRUE)
 }
 \arguments{
 \item{cmd}{Command to be invoked, as a character string.}
 
 \item{...}{Arguments passed to command.}
-
-\item{env_path}{An atomic vector define the \code{PATH} to be added into the
-environment variable \code{PATH}.}
-
-\item{env}{A named character define the to environment variables when running
-\code{cmd}.}
 
 \item{sys_args}{A list of arguments passed to \link{system2}.}
 
