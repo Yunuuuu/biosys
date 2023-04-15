@@ -8,6 +8,8 @@ run_cellranger(
   subcmd,
   args = character(),
   cellranger_cmd = NULL,
+  env_path = NULL,
+  env = character(),
   sys_args = list(),
   verbose = TRUE
 )
@@ -18,6 +20,12 @@ run_cellranger(
 \item{args}{Arguments passed to cellranger sub-command.}
 
 \item{cellranger_cmd}{Path to cellranger command.}
+
+\item{env_path}{An atomic vector define the \code{PATH} to be added into the
+environment variable \code{PATH}.}
+
+\item{env}{A named character define the to environment variables when running
+\code{cmd}.}
 
 \item{sys_args}{A list of arguments passed to \link{system2}.}
 

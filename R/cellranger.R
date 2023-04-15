@@ -11,7 +11,7 @@
 #' @param other_args Other arguments passed to cellranger count.
 #' @inheritParams run_cellranger
 #' @export
-run_cellranger_count <- function(id, fastqs, transcriptome = NULL, sample = NULL, cores = NULL, other_args = c("--nosecondary"), cellranger_cmd = NULL, sys_args = list(), verbose = TRUE) {
+run_cellranger_count <- function(id, fastqs, transcriptome = NULL, sample = NULL, cores = NULL, other_args = c("--nosecondary"), cellranger_cmd = NULL, env_path = NULL, env = character(), sys_args = list(), verbose = TRUE) {
     sep <- "="
     args <- c(
         handle_sys_arg("--id", id, sep = sep),
@@ -22,7 +22,7 @@ run_cellranger_count <- function(id, fastqs, transcriptome = NULL, sample = NULL
         other_args
     )
     run_cellranger(
-        subcmd = "count", cellranger_args = args,
+        subcmd = "count", args = args,
         cellranger_cmd = cellranger_cmd, sys_args = sys_args,
         verbose = verbose
     )
@@ -34,7 +34,7 @@ run_cellranger_count <- function(id, fastqs, transcriptome = NULL, sample = NULL
 #' @param cellranger_cmd Path to cellranger command.
 #' @inheritParams run_command
 #' @export
-run_cellranger <- function(subcmd, args = character(), cellranger_cmd = NULL, sys_args = list(), verbose = TRUE) {
+run_cellranger <- function(subcmd, args = character(), cellranger_cmd = NULL, env_path = NULL, env = character(), sys_args = list(), verbose = TRUE) {
     assert_class(subcmd, is_scalar_character, "scalar character")
     run_sys_command(
         cmd = cellranger_cmd,
