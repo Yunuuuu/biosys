@@ -90,3 +90,48 @@ is_scalar_character <- function(x) {
 is_scalar_logical <- function(x) {
     is_scalar(x) && is.logical(x)
 }
+
+#' mimic rlang::is_named
+#' @noRd 
+is_named <- function(x) {
+    nms <- names(x)
+    if (is.null(nms) || any(nms == "" | is.na(nms))) {
+        FALSE
+    } else {
+        TRUE
+    }
+}
+
+#' mimic rlang::is_named2
+#' @noRd 
+is_named2 <- function(x) {
+    nms <- names(x)
+    if (is.null(nms)) {
+        return(!length(x))
+    }
+    if (any(nms == "" | is.na(nms))) {
+        return(FALSE)
+    }
+    TRUE
+}
+
+#' mimic rlang::names2
+#' @noRd 
+names2 <- function(x) {
+    nms <- names(x)
+    if (is.null(nms)) {
+        return(rep_len("", length(x)))
+    }
+    if (anyNA(nms)) {
+        nms[is.na(nms)] <- ""
+    }
+    nms
+}
+
+#' This function returns a logical value that indicates if a data frame or
+#' another named object contains an element with a specific name.  
+#' NA can match NA in names(x)
+#' @noRd 
+has_name <- function(x, name) {
+    name %in% names(x)
+}
