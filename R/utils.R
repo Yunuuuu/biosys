@@ -135,3 +135,10 @@ names2 <- function(x) {
 has_name <- function(x, name) {
     name %in% names(x)
 }
+
+create_dir <- function(dir) {
+    if (!dir.exists(dir)) {
+        cli::cli_alert_info("Create {.path {dir}}")
+        dir.create(dir)
+    }
+}
