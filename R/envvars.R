@@ -20,7 +20,7 @@ parse_envvar <- function(env) {
 #' @param action should `env` values "replace", "prefix" or "suffix" existing
 #'  variables with the same name.
 #' @param sep A string separates the elements in the environment variable.
-#' @noRd 
+#' @noRd
 with_envvar <- function(env, call, action = "replace", sep = .Platform$path.sep) {
     action <- match.arg(action, c("replace", "prefix", "suffix"))
     old <- set_envvar(as_envvars(env), action = action, sep = sep)
