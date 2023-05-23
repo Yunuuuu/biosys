@@ -15,16 +15,39 @@ run_command <- function(cmd, ..., env = NULL, sys_args = list(), verbose = TRUE)
 
 #' Don't provide default value for name, in this way, we must provide name
 #' manually for every internal function.
-#' @noRd
+#' @keywords internal
+#' @noRd 
 run_sys_command <- function(cmd = NULL, name, args = character(), env = NULL, sys_args = list(), verbose = TRUE) {
-    assert_class(cmd, is_scalar_character, "scalar character",
-        null_ok = !is.null(name)
+    assert_class(
+        env, function(x) is.atomic(x) && is_named2(x), "named {atomic}",
+        null_ok = TRUE
     )
     assert_class(verbose, is_scalar_logical, "scalar logical")
-    assert_class(
-        env,
-        function(x) is.atomic(x) && is_named2(x), "named {atomic}",
-        null_ok = TRUE
+    if (!is.null(sys_args$env)) {
+        cli::cli_warn(
+            "!" = "{.arg env} in {.arg sys_args} will not work",
+            "i" = "Please use {.arg env} argument directly."
+        )
+        sys_args$env <- NULL
+    }
+    call <- quote(sys_command(
+        cmd = cmd, name = name, args = args, sys_args = sys_args,
+        verbose = verbose
+    ))
+    if (!is.null(env)) {
+        if (verbose) {
+            cli::cli_alert_info("Setting environment")
+        }
+        with_envvar(env = env, eval(call))
+    } else {
+        eval(call)
+    }
+}
+
+#' @noRd 
+sys_command <- function(cmd = NULL, name, args = character(), sys_args = list(), verbose = TRUE) {
+    assert_class(cmd, is_scalar_character, "scalar character",
+        null_ok = !is.null(name)
     )
     command <- define_command(cmd = cmd, name = name)
     if (verbose) {
@@ -38,19 +61,7 @@ run_sys_command <- function(cmd = NULL, name, args = character(), env = NULL, sy
         list(command = command, args = as.character(args)),
         sys_args
     )
-    if (!is.null(sys_args$env)) {
-        cli::cli_warn(
-            "!" = "{.arg env} in {.arg sys_args} will not work",
-            "i" = "Please use {.arg env} argument directly."
-        )
-        sys_args$env <- NULL
-    }
-    call <- quote(do.call(system2, sys_args))
-    if (!is.null(env)) {
-        with_envvar(env, eval(call))
-    } else {
-        eval(call)
-    }
+    do.call(system2, sys_args)
 }
 
 define_command <- function(cmd = NULL, name) {
