@@ -13,14 +13,6 @@ parse_envvar <- function(env) {
     }
 }
 
-#' @importFrom withr with_envvar
-#' @export 
-withr::with_envvar
-
-#' @importFrom withr with_path
-#' @export 
-withr::with_path
-
 # mimic withr::with_envvar
 #' Temporarily change system environment variables.
 #' @param env A named character
@@ -29,10 +21,7 @@ withr::with_path
 #'  variables with the same name.
 #' @param sep A string separates the elements in the environment variable.
 #' @noRd 
-NULL
-
-with_envvar2 <- function(env, call, action = "replace", sep = .Platform$path.sep) {
-    assert_class(env, function(x) is.atomic(x) && is_named2(x), "named atomic")
+with_envvar <- function(env, call, action = "replace", sep = .Platform$path.sep) {
     action <- match.arg(action, c("replace", "prefix", "suffix"))
     old <- set_envvar(as_envvars(env), action = action, sep = sep)
     old_set <- !is.na(old)
