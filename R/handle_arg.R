@@ -28,6 +28,13 @@ handle_sys_arg <- function(
         )
         format <- "%d"
         value <- as.integer(value)
+    } else if (!is.null(format) && format == "%d") {
+        assert_class(
+            value,
+            is_scalar_numeric,
+            "scalar {.cls numeric}",
+            call = call
+        )
     } else {
         assert_length(value, 1L, null_ok = TRUE, call = call)
         format <- format %||% "%s"
