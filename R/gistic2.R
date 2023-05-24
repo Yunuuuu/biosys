@@ -150,7 +150,7 @@ run_gistic2 <- function(seg, refgene, outdir = getwd(), t_amp = 0.1, t_del = 0.1
             lgl2int = TRUE, sep = sep
         ),
         ...,
-        handle_sys_arg("-v", gistic2_verbose, sep = sep)
+        handle_sys_arg("-v", gistic2_verbose, format = "%d", sep = sep)
     )
     run_sys_command(
         cmd = gistic2_cmd,
