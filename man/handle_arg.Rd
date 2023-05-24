@@ -4,12 +4,15 @@
 \alias{handle_arg}
 \title{Deliver arguments of command}
 \usage{
-handle_arg(tag, value = TRUE, format = "\%s", sep = " ")
+handle_arg(tag, value = TRUE, lgl2int = FALSE, format = "\%s", sep = " ")
 }
 \arguments{
 \item{tag}{A string specifying argument tag, like "-i", "-o".}
 
 \item{value}{Value passed to the argument.}
+
+\item{lgl2int}{A logical value indicates whether transfrom value TRUE to 1 or
+FALSE to 0. If \code{TRUE}, format will always be set to "\%d".}
 
 \item{format}{The format of the value, details see \link{sprintf}.}
 

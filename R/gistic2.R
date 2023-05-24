@@ -15,38 +15,38 @@
 #' arm), focal events, or significant levels of both. The GISTIC module reports
 #' the genomic locations and calculated q-values for the aberrant regions. It
 #' identifies the samples that exhibit each significant amplification or
-#' deletion, and it lists genes found in each "wide peak" region. 
+#' deletion, and it lists genes found in each "wide peak" region.
 #' @param seg A data.frame of segmented data.
 #' @param refgene Path to reference genome data input file (REQUIRED, see below
-#' for file description). 
+#' for file description).
 #' @param outdir The output directory.
 #' @param t_amp Threshold for copy number amplifications. Regions with a copy
 #' number gain above this positive value are considered amplified. Regions with
 #' a copy number gain smaller than this value are considered noise and set to 0.
-#' (DEFAULT=0.1). 
+#' (DEFAULT=0.1).
 #' @param t_del Threshold for copy number deletions. Regions with a copy number
 #' loss below the negative of this positive value are considered deletions.
 #' Regions with a smaller copy number loss are considered noise and set to 0.
-#' (DEFAULT=0.1). 
+#' (DEFAULT=0.1).
 #' @param qv_thresh Significance threshold for q-values. Regions with q-values
-#' below this number are considered significant. (DEFAULT=0.25) 
+#' below this number are considered significant. (DEFAULT=0.25)
 #' @param remove_XY Flag indicating whether to remove data from the sex
-#' chromosomes before analysis. Allowed values= {1,0}. (DEFAULT=1, remove X,Y). 
+#' chromosomes before analysis. Allowed values= {1,0}. (DEFAULT=1, remove X,Y).
 #' @param run_broad_analysis Flag indicating that an additional broad-level
 #' analysis should be performed. Allowed values = {1,0}. (DEFAULT = 0, no broad
-#' analysis). 
+#' analysis).
 #' @param broad_len_cutoff Threshold used to distinguish broad from focal
 #' events, given in units of fraction of chromosome arm. (DEFAULT = 0.98).
 #' @param maxseg Maximum number of segments allowed for a sample in the input
 #' data. Samples with more segments than this threshold are excluded from the
 #' analysis. (DEFAULT=2500).
 #' @param conf_level Confidence level used to calculate the region containing a
-#' driver. (DEFAULT=0.75). 
+#' driver. (DEFAULT=0.75).
 #' @param genegistic Flag indicating that the gene GISTIC algorithm should be
 #' used to calculate the significance of deletions at a gene level instead of a
-#' marker level. Allowed values= {1,0}. (DEFAULT=0, no gene GISTIC). 
+#' marker level. Allowed values= {1,0}. (DEFAULT=0, no gene GISTIC).
 #' @param savegene  Flag indicating that gene tables should be saved. Allowed
-#' values= {1,0}. (DEFAULT=0, don't save gene tables) 
+#' values= {1,0}. (DEFAULT=0, don't save gene tables)
 #' @param arm_peeloff Flag set to enable arm-level peel-off of events during
 #' peak definition. The arm-level peel-off enhancement to the arbitrated
 #' peel-off method assigns all events in the same chromosome arm of the same
@@ -55,12 +55,12 @@
 #' peel-off).
 #' @param gistic2_verbose Integer value indicating the level of verbosity to use
 #' in the program execution log. Suggested values = {0,10,20,30}. 0 sets no
-#' verbosity; 30 sets high level of verbosity. (DEFAULT=0) 
+#' verbosity; 30 sets high level of verbosity. (DEFAULT=0)
 #' @param ... Other arguments passed to gistic2. Details see: <https://broadinstitute.github.io/gistic2/>.
-#' @param gistic2_cmd Path to gistic2 command. 
+#' @param gistic2_cmd Path to gistic2 command.
 #' @seealso <https://broadinstitute.github.io/gistic2/>
 #' @inheritParams run_command
-#' @export 
+#' @export
 run_gistic2 <- function(seg, refgene, outdir = getwd(), t_amp = 0.1, t_del = 0.1, qv_thresh = 0.25, remove_XY = TRUE, run_broad_analysis = FALSE, broad_len_cutoff = 0.98, maxseg = 2500L, conf_level = 0.75, genegistic = FALSE, savegene = FALSE, arm_peeloff = FALSE, ..., gistic2_cmd = NULL, gistic2_verbose = 0L, env = NULL, sys_args = list(), verbose = TRUE) { # nolint
 
     assert_class(seg, "data.frame")
@@ -77,13 +77,21 @@ run_gistic2 <- function(seg, refgene, outdir = getwd(), t_amp = 0.1, t_del = 0.1
         handle_sys_arg("-td", t_del, sep = sep),
         handle_sys_arg("-qvt", qv_thresh, sep = sep),
         handle_sys_arg("-rx", remove_XY, format = "%d", sep = sep),
-        handle_sys_arg("-broad", run_broad_analysis, format = "%d", sep = sep),
+        handle_sys_arg("-broad", run_broad_analysis,
+            lgl2int = TRUE, sep = sep
+        ),
         handle_sys_arg("-brlen", broad_len_cutoff, sep = sep),
         handle_sys_arg("-maxseg", maxseg, format = "%d", sep = sep),
         handle_sys_arg("-conf", conf_level, sep = sep),
-        handle_sys_arg("-genegistic", genegistic, format = "%d", sep = sep),
-        handle_sys_arg("-savegene", savegene, format = "%d", sep = sep),
-        handle_sys_arg("-arm_peeloff", arm_peeloff, format = "%d", sep = sep),
+        handle_sys_arg("-genegistic", genegistic,
+            lgl2int = TRUE, sep = sep
+        ),
+        handle_sys_arg("-savegene", savegene,
+            lgl2int = TRUE, sep = sep
+        ),
+        handle_sys_arg("-arm_peeloff", arm_peeloff,
+            lgl2int = TRUE, sep = sep
+        ),
         ...,
         handle_sys_arg("-v", gistic2_verbose, sep = sep)
     )
