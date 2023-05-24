@@ -10,15 +10,28 @@ run_gistic2(
   outdir = getwd(),
   t_amp = 0.1,
   t_del = 0.1,
+  join_segment_size = 4L,
   qv_thresh = 0.25,
+  fname = NULL,
+  ext = NULL,
   remove_XY = TRUE,
+  cap = 1.5,
   run_broad_analysis = FALSE,
   broad_len_cutoff = 0.98,
+  twoside = FALSE,
   maxseg = 2500L,
+  resolution = 0.05,
   conf_level = 0.75,
   genegistic = FALSE,
-  savegene = FALSE,
+  do_arbitration = TRUE,
+  peak_type = "robust",
   arm_peeloff = FALSE,
+  sample_center = "meidan",
+  savegene = FALSE,
+  saveseg = TRUE,
+  savedata = TRUE,
+  markers = NULL,
+  maxspace = 10000L,
   ...,
   gistic2_cmd = NULL,
   gistic2_verbose = 0L,
@@ -45,11 +58,27 @@ loss below the negative of this positive value are considered deletions.
 Regions with a smaller copy number loss are considered noise and set to 0.
 (DEFAULT=0.1).}
 
+\item{join_segment_size}{Smallest number of markers to allow in segments from
+the segmented data. Segments that contain fewer than this number of markers
+are joined to the neighboring segment that is closest in copy number.
+(DEFAULT=4).}
+
 \item{qv_thresh}{Significance threshold for q-values. Regions with q-values
 below this number are considered significant. (DEFAULT=0.25)}
 
+\item{fname}{Base file name to prepend to all output files. (DEFAULT no
+output basename).}
+
+\item{ext}{Extension to append to all output files. (DEFAULT='', no
+extension).}
+
 \item{remove_XY}{Flag indicating whether to remove data from the sex
 chromosomes before analysis. Allowed values= {1,0}. (DEFAULT=1, remove X,Y).}
+
+\item{cap}{Minimum and maximum cap values on analyzed data. Regions with a
+log2 ratio greater than the cap are set to the cap value; regions with a log2
+ratio less than -cap value are set to -cap. Values must be positive.
+(DEFAULT=1.5).}
 
 \item{run_broad_analysis}{Flag indicating that an additional broad-level
 analysis should be performed. Allowed values = {1,0}. (DEFAULT = 0, no broad
@@ -58,9 +87,17 @@ analysis).}
 \item{broad_len_cutoff}{Threshold used to distinguish broad from focal
 events, given in units of fraction of chromosome arm. (DEFAULT = 0.98).}
 
+\item{twoside}{Flag indicating that a two-dimensional quadrant figure should
+be created as part of a broad analysis. Allowed values = {1,0}.(DEFAULT=0, no
+figure).}
+
 \item{maxseg}{Maximum number of segments allowed for a sample in the input
 data. Samples with more segments than this threshold are excluded from the
 analysis. (DEFAULT=2500).}
+
+\item{resolution}{Resolution used to create the empirical distributions used
+to estimate background probabilities. Lower values generate more accurate
+results at a cost of greater computation time. (DEFAULT=0.05).}
 
 \item{conf_level}{Confidence level used to calculate the region containing a
 driver. (DEFAULT=0.75).}
@@ -69,8 +106,12 @@ driver. (DEFAULT=0.75).}
 used to calculate the significance of deletions at a gene level instead of a
 marker level. Allowed values= {1,0}. (DEFAULT=0, no gene GISTIC).}
 
-\item{savegene}{Flag indicating that gene tables should be saved. Allowed
-values= {1,0}. (DEFAULT=0, don't save gene tables)}
+\item{do_arbitration}{Flag for using the arbitrated peel-off algorithm when
+resolving the significance of overlapping peaks. Allowed values= {1,0}.
+(DEFAULT=1, use arbitrated peel-off).}
+
+\item{peak_type}{Method for evaluating the significance of peaks, either
+robust (DEFAULT) or loo for leave-one-out.}
 
 \item{arm_peeloff}{Flag set to enable arm-level peel-off of events during
 peak definition. The arm-level peel-off enhancement to the arbitrated
@@ -78,6 +119,27 @@ peel-off method assigns all events in the same chromosome arm of the same
 sample to a single peak. It is useful when peaks are split by noise or
 chromothripsis. Allowed values= {1,0}. (DEFAULT=0, use normal arbitrated
 peel-off).}
+
+\item{sample_center}{Method for centering each sample prior to the GISTIC
+analysis. Allowed values are median, mean, or none. (DEFAULT=median).}
+
+\item{savegene}{Flag indicating that gene tables should be saved. Allowed
+values= {1,0}. (DEFAULT=0, don't save gene tables).}
+
+\item{saveseg}{Flag indicating that the preprocessed segmented data used as
+input for the GISTIC analysis should be saved (in matlab format). Allowed
+values= {1,0}. (DEFAULT=1, save segmented input data).}
+
+\item{savedata}{Flag indicating that native MatlabTM output files should be
+saved in addition to text data. Allowed values= {1,0}. (DEFAULT=1, save
+MatlabTM files).}
+
+\item{markers}{Path to markers input file (OPTIONAL, but encouraged).}
+
+\item{maxspace}{Maximum allowed spacing between pseudo-markers, in bases.
+Pseudo-markers are generated when the markers file input is omitted. Segments
+that contain fewer than this number of markers are joined to the neighboring
+segment that is closest in copy number. (DEFAULT=10,000).}
 
 \item{...}{Other arguments passed to gistic2. Details see: \url{https://broadinstitute.github.io/gistic2/}.}
 
