@@ -36,7 +36,7 @@ run_sys_command <- function(cmd = NULL, name, args = character(), env = NULL, sy
     ))
     if (!is.null(env)) {
         if (verbose) {
-            cli::cli_alert_info("Setting environment")
+            cli::cli_inform("Setting environment")
         }
         with_envvar(env = env, eval(call))
     } else {
@@ -55,7 +55,7 @@ sys_command <- function(cmd = NULL, name, args = character(), sys_args = list(),
             args,
             list("vec-sep" = " ", "vec-last" = " ")
         )
-        cli::cli_alert("Running command {.field {command} {cli_args}}")
+        cli::cli_inform("Running command {.field {command} {cli_args}}")
     }
     sys_args <- c(
         list(command = command, args = as.character(args)),
