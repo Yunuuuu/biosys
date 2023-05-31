@@ -12,6 +12,7 @@ run_cellranger_count(
   cores = NULL,
   other_args = c("--nosecondary"),
   cellranger_cmd = NULL,
+  envpath = NULL,
   env = NULL,
   sys_args = list(),
   verbose = TRUE
@@ -33,6 +34,9 @@ to local jobs.}
 \item{other_args}{Other arguments passed to cellranger count.}
 
 \item{cellranger_cmd}{Path to cellranger command.}
+
+\item{envpath}{A character define the environment PATH to add before running
+command.}
 
 \item{env}{A named atomic vector define running environment of the command.}
 

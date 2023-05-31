@@ -1,14 +1,16 @@
 #' Invoke a System Command
 #' @param cmd Command to be invoked, as a character string.
 #' @param ... Arguments passed to command.
+#' @param envpath A character define the environment PATH to add before running
+#'  command. 
 #' @param env A named atomic vector define running environment of the command.
 #' @param sys_args A list of arguments passed to [system2].
 #' @param verbose A logical value indicates output running command message.
 #' @return See [system2] for details
 #' @export
-run_command <- function(cmd, ..., env = NULL, sys_args = list(), verbose = TRUE) {
+run_command <- function(cmd, ..., envpath = NULL, env = NULL, sys_args = list(), verbose = TRUE) {
     run_sys_command(
-        cmd = cmd, args = c(...), env = env, name = NULL,
+        cmd = cmd, args = c(...), envpath = envpath, env = env, name = NULL,
         sys_args = sys_args, verbose = verbose
     )
 }
@@ -16,8 +18,8 @@ run_command <- function(cmd, ..., env = NULL, sys_args = list(), verbose = TRUE)
 #' Don't provide default value for name, in this way, we must provide name
 #' manually for every internal function.
 #' @keywords internal
-#' @noRd 
-run_sys_command <- function(cmd = NULL, name, args = character(), env = NULL, sys_args = list(), verbose = TRUE) {
+#' @noRd
+run_sys_command <- function(cmd = NULL, name, args = character(), envpath = NULL, env = NULL, sys_args = list(), verbose = TRUE) {
     assert_class(
         env, function(x) is.atomic(x) && is_named2(x), "named {atomic}",
         null_ok = TRUE
@@ -34,17 +36,26 @@ run_sys_command <- function(cmd = NULL, name, args = character(), env = NULL, sy
         cmd = cmd, name = name, args = args, sys_args = sys_args,
         verbose = verbose
     ))
+    if (!is.null(envpath)) {
+        # alyways override PATH in env
+        env <- env[names(env) != "PATH"]
+        env <- c(env, PATH = paste(
+            paste0(envpath, collapse = .Platform$path.sep),
+            Sys.getenv("PATH", unset = ""),
+            sep = .Platform$path.sep
+        ))
+    }
     if (!is.null(env)) {
         if (verbose) {
             cli::cli_inform("Setting environment")
         }
-        with_envvar(env = env, eval(call))
+        with_envvar(env = env, eval(call), action = "replace")
     } else {
         eval(call)
     }
 }
 
-#' @noRd 
+#' @noRd
 sys_command <- function(cmd = NULL, name, args = character(), sys_args = list(), verbose = TRUE) {
     assert_class(cmd, is_scalar_character, "scalar character",
         null_ok = !is.null(name)

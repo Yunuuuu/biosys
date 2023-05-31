@@ -35,6 +35,7 @@ run_gistic2(
   ...,
   gistic2_cmd = NULL,
   gistic2_verbose = 0L,
+  envpath = NULL,
   env = NULL,
   sys_args = list(),
   verbose = TRUE
@@ -148,6 +149,9 @@ segment that is closest in copy number. (DEFAULT=10,000).}
 \item{gistic2_verbose}{Integer value indicating the level of verbosity to use
 in the program execution log. Suggested values = {0,10,20,30}. 0 sets no
 verbosity; 30 sets high level of verbosity. (DEFAULT=0)}
+
+\item{envpath}{A character define the environment PATH to add before running
+command.}
 
 \item{env}{A named atomic vector define running environment of the command.}
 
