@@ -306,7 +306,7 @@ findSimpleClustersWithSciClone <- function(phylo.region.list, mut.table, minCCF 
     return(SmallClusters)
 }
 
-RunPyCloneWithSimpleClusters <- function(clusterName, patientID, SmallClusters, patientDirToUse = new.dir, yamlConfigLoc = template.config.yaml, pyclone.burnin = 1000, pyclone.seed = 1024, run.pyclone = TRUE, pyclone.module = "PyClone/0.12.3-foss-2016b-Python-2.7.12-tkinter") {
+RunPyCloneWithSimpleClusters <- function(clusterName, patientID, SmallClusters, patientDirToUse = new.dir, yamlConfigLoc = template.config.yaml, pyclone.burnin = 1000, pyclone.seed = 1024, run.pyclone = TRUE, PyClone = "PyClone/0.12.3-foss-2016b-Python-2.7.12-tkinter") {
   
     ### give a name to the sample
     PyCloneRunName <- paste0(patientID, "_cluster", clusterName)

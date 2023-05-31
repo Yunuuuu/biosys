@@ -8,12 +8,12 @@ cat("\n======== RUNNING PYCLONE SIMPLE CLUSTERING ===========\n")
 #################################################
 cat("\nLoading required packages\n")
 
-suppressPackageStartupMessages(library(compiler))
+# suppressPackageStartupMessages(library(compiler))
 suppressPackageStartupMessages(library(parallel))
 suppressPackageStartupMessages(library(data.table))
 suppressPackageStartupMessages(library(mclust))
 suppressPackageStartupMessages(library(GenomicRanges))
-suppressPackageStartupMessages(library(Rsamtools))
+# suppressPackageStartupMessages(library(Rsamtools))
 suppressPackageStartupMessages(library(gplots))
 suppressPackageStartupMessages(library(gdata))
 suppressPackageStartupMessages(library(optparse))
@@ -43,6 +43,12 @@ option_list <-  list(
   
   make_option(c("--only_truncal_subclonal_copy_correction"), type="logical", default="TRUE", 
               help="should only truncal subclonal copy number correction be used", metavar="character"),  
+
+  make_option("--run_pyclone", type="logical", default=TRUE, 
+              help="A logical, whether run pyclone", metavar="character"),
+
+  make_option("--pyclone", type="character", default=NULL, 
+              help="pyclone path", metavar="character"),
 
   make_option(c("-y", "--pyclone_yaml"), type="character", default="template.config.yaml", 
               help="A template yaml file for pyclone", metavar="character"),
@@ -97,7 +103,7 @@ if (substr(opt$working_dir, nchar(opt$working_dir), nchar(opt$working_dir)) != '
 cat("\nSetting parameters")
 
 # Set parameters used for script
-template.config.yaml <- paste0(opt$script_dir, "/", opt$pyclone_yaml)
+template.config.yaml <- file.path(opt$script_dir, opt$pyclone_yaml)
 driver.cat           <- unlist(strsplit(opt$driver_filter, split = ","))
 min.cluster.size     <- opt$min_cluster_size
 burn_in              <- opt$burn_in
@@ -108,14 +114,14 @@ sample               <- patient
 skip.VAFQC           <- TRUE
 gender               <- 'male' # at the moment gender isn't really used, so hardcoding as male
 min.ccf.present      <- 0.1
-PyClone              <- "PyClone"
-run.pyclone          <- TRUE
+PyClone              <- opt$pyclone
+run.pyclone          <- opt$run_pyclone
 nProcs               <- opt$nProcs
 scriptDir            <- opt$script_dir
 
 
-source(paste0(scriptDir, "TRACERxHelperFunctions.R"))
-require(KernSmooth)
+source(file.path(scriptDir, "TRACERxHelperFunctions.R"))
+# require(KernSmooth)
 
 ###################################### Run script
 #################################################
@@ -707,7 +713,7 @@ library(future)
 no_cores <- nProcs
 print(paste0("Number of cores that are available: ", no_cores))
 
-source(paste0(scriptDir, "functionsForSimpleClustering.v13.R"))
+source(file.path(scriptDir, "functionsForSimpleClustering.v13.R"))
 
 simpleClusterList <- findSimpleClusters(phylo.region.list, mut.table)
 ### always run pyclone
@@ -715,7 +721,7 @@ tmp <- mclapply(simpleClusterList, function(x) {
   if (length(x$MutationsWithCluster) < 5) {
     CreateOutputNoPyCloneRun(clusterName = x$clusterID, patientID = sample, SmallClusters = simpleClusterList, patientDirToUse = new.dir)
   } else {
-    RunPyCloneWithSimpleClusters(clusterName = x$clusterID, patientID = sample, SmallClusters = simpleClusterList, patientDirToUse = new.dir, yamlConfigLoc = template.config.yaml, pyclone.burnin = burn_in, pyclone.seed = pyclone_seed, run.pyclone = TRUE, pyclone.module = "PyClone/0.12.3-foss-2016b-Python-2.7.12-tkinter")
+    RunPyCloneWithSimpleClusters(clusterName = x$clusterID, patientID = sample, SmallClusters = simpleClusterList, patientDirToUse = new.dir, yamlConfigLoc = template.config.yaml, pyclone.burnin = burn_in, pyclone.seed = pyclone_seed, run.pyclone = TRUE, PyClone = PyClone)
   }
 }, mc.cores = no_cores)
 # }
