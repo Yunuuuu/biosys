@@ -119,7 +119,10 @@ run.pyclone          <- opt$run_pyclone
 nProcs               <- opt$nProcs
 scriptDir            <- opt$script_dir
 
-
+if (is.null(PyClone)) {
+  PyClone <- Sys.which("PyClone")
+  if (nzchar(PyClone)) PyClone <- "PyClone"
+}
 source(file.path(scriptDir, "TRACERxHelperFunctions.R"))
 # require(KernSmooth)
 
