@@ -18,7 +18,7 @@ run_cellranger_count <- function(id, fastqs, transcriptome = NULL, sample = NULL
         handle_sys_arg("--fastqs", fastqs, sep = sep),
         handle_sys_arg("--transcriptome", transcriptome, sep = sep),
         handle_sys_arg("--sample", sample, sep = sep),
-        handle_sys_arg("--localcores", cores, sep = sep),
+        handle_sys_arg("--localcores", cores, format = "%d", sep = sep),
         other_args
     )
     run_cellranger(
@@ -36,7 +36,7 @@ run_cellranger_count <- function(id, fastqs, transcriptome = NULL, sample = NULL
 #' @inheritParams run_command
 #' @export
 run_cellranger <- function(subcmd, args = character(), cellranger_cmd = NULL, envpath = NULL, env = NULL, sys_args = list(), verbose = TRUE) {
-    assert_class(subcmd, is_scalar_character, "scalar character")
+    assert_class(subcmd, is_scalar_character, "scalar {.cls character}")
     run_sys_command(
         cmd = cellranger_cmd,
         name = "cellranger",
