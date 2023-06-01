@@ -19,6 +19,9 @@ handle_arg <- function(tag, value = TRUE, indicator = is_scalar_logical(value), 
 handle_sys_arg <- function(
     tag, value, indicator = FALSE, lgl2int = FALSE,
     format = NULL, sep = " ", call = parent.frame()) {
+    if (is.null(value)) {
+        return(NULL)
+    }
     if (indicator || lgl2int) {
         assert_class(value,
             is_scalar_logical,
