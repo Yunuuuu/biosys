@@ -33,7 +33,10 @@ run_allele_counter <- function(
             handle_sys_arg("-d", dense_snp, indicator = TRUE),
             handle_sys_arg("-r", ref_fasta),
             ...
-        )
+        ),
+        envpath = envpath, env = env,
+        sys_args = sys_args,
+        verbose = verbose
     )
     if (status != 0L && file.exists(output_file)) {
         file.remove(output_file)
