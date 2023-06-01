@@ -1,4 +1,5 @@
 #' Run alleleCount
+#' 
 #' The alleleCount package primarily exists to prevent code duplication between
 #' some other projects, specifically AscatNGS and Battenberg.
 #' @param hts_file Path to sample HTS file.

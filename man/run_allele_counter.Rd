@@ -2,9 +2,7 @@
 % Please edit documentation in R/alleleCounter.R
 \name{run_allele_counter}
 \alias{run_allele_counter}
-\title{Run alleleCount
-The alleleCount package primarily exists to prevent code duplication between
-some other projects, specifically AscatNGS and Battenberg.}
+\title{Run alleleCount}
 \usage{
 run_allele_counter(
   hts_file,
@@ -52,7 +50,6 @@ command.}
 \item{verbose}{A logical value indicates output running command message.}
 }
 \description{
-Run alleleCount
 The alleleCount package primarily exists to prevent code duplication between
 some other projects, specifically AscatNGS and Battenberg.
 }
