@@ -47,36 +47,47 @@ run_conipher_cluster <- function(
             system.file("extdata", "CONIPHER", "run_clustering.R",
                 package = "biomisc"
             ),
-            sprintf("--case_id %s", case_id),
-            "--working_dir", output_dir,
-            "--script_dir", system.file("extdata",
+            handle_sys_arg("--case_id", case_id),
+            handle_sys_arg("--working_dir", output_dir),
+            handle_sys_arg("--script_dir", system.file("extdata",
                 "CONIPHER",
                 package = "biomisc"
+            )),
+            handle_sys_arg("--input_tsv", mut_tsv),
+            handle_sys_arg("--input_seg_tsv", seg_tsv),
+            handle_sys_arg(
+                "--subclonal_copy_correction",
+                subclonal_copy_correction
             ),
-            sprintf("--input_tsv %s", mut_tsv),
-            sprintf("--input_seg_tsv %s", seg_tsv),
-            "--subclonal_copy_correction", subclonal_copy_correction,
-            "--only_truncal_subclonal_copy_correction",
-            only_truncal_subclonal_copy_correction,
-            sprintf("--pyclone %s", pyclone_cmd),
-            "--run_pyclone", run_pyclone,
-            sprintf(
-                "--pyclone_yaml %s",
+            handle_sys_arg(
+                "--only_truncal_subclonal_copy_correction",
+                only_truncal_subclonal_copy_correction
+            ),
+            handle_sys_arg("--run_pyclone", run_pyclone),
+            handle_sys_arg("--pyclone", pyclone_cmd),
+            handle_sys_arg(
+                "--pyclone_yaml",
                 pyclone_yaml %||% system.file("extdata",
                     "CONIPHER", "template.config.yaml",
                     package = "biomisc"
                 )
             ),
-            sprintf("--min_cluster_size %d", min_cluster_size),
-            "--multiple_test_correction", multiple_test_correction,
-            "--clean_clusters", clean_clusters,
-            sprintf("--clonal_cutOff %s", clonal_cutOff),
-            sprintf("--propClonal_threshold %s", propClonal_threshold),
-            "--fix_absentCCFs", fix_absentCCFs,
-            sprintf("--driver_filter %s", driver_filter),
-            sprintf("--burn_in %d", burn_in),
-            sprintf("--seed %d", seed),
-            sprintf("--nProcs %d", cores)
+            handle_sys_arg("--min_cluster_size",
+                min_cluster_size,
+                format = "%d"
+            ),
+            handle_sys_arg(
+                "--multiple_test_correction",
+                multiple_test_correction
+            ),
+            handle_sys_arg("--clean_clusters", clean_clusters),
+            handle_sys_arg("--clonal_cutOff", clonal_cutOff),
+            handle_sys_arg("--propClonal_threshold", propClonal_threshold),
+            handle_sys_arg("--fix_absentCCFs", fix_absentCCFs),
+            handle_sys_arg("--driver_filter", driver_filter),
+            handle_sys_arg("--burn_in", burn_in, format = "%d"),
+            handle_sys_arg("--seed", seed, format = "%d"),
+            handle_sys_arg("--nProcs", cores, format = "%d")
         ),
         sys_args = sys_args,
         verbose = FALSE
