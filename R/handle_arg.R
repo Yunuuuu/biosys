@@ -54,7 +54,7 @@ handle_sys_arg <- function(
                 "scalar {.cls character}",
                 null_ok = TRUE
             )
-            if (format == "%d") {
+            if (!is.null(format) && format == "%d") {
                 assert_class(value,
                     is_scalar_numeric,
                     "scalar {.cls numeric}",
