@@ -16,6 +16,8 @@ run_allele_counter(
   allelecounter_cmd = NULL,
   envpath = NULL,
   env = NULL,
+  output = output_file,
+  abort = FALSE,
   sys_args = list(),
   verbose = TRUE
 )
@@ -44,6 +46,12 @@ together.}
 command.}
 
 \item{env}{A named atomic vector define running environment of the command.}
+
+\item{output}{Specifying the output file or directory to be removed if
+command running error.}
+
+\item{abort}{A scalar logical indicates whether to report error if command
+return non-zero status.}
 
 \item{sys_args}{A list of arguments passed to \link{system2}.}
 

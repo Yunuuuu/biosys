@@ -20,7 +20,8 @@ run_allele_counter <- function(
     ref_fasta = NULL, min_base_qual = 20L,
     min_map_qual = 35L, dense_snp = TRUE, ...,
     allelecounter_cmd = NULL, envpath = NULL,
-    env = NULL, sys_args = list(), verbose = TRUE) {
+    env = NULL, output = output_file, abort = FALSE,
+    sys_args = list(), verbose = TRUE) {
     status <- run_sys_command(
         allelecounter_cmd,
         name = "alleleCounter",
@@ -35,11 +36,9 @@ run_allele_counter <- function(
             ...
         ),
         envpath = envpath, env = env,
+        output = output, abort = abort,
         sys_args = sys_args,
         verbose = verbose
     )
-    if (status != 0L && file.exists(output_file)) {
-        file.remove(output_file)
-    }
     status
 }
