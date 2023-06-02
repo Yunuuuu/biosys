@@ -9,6 +9,8 @@ run_command(
   ...,
   envpath = NULL,
   env = NULL,
+  output = NULL,
+  abort = FALSE,
   sys_args = list(),
   verbose = TRUE
 )
@@ -22,6 +24,12 @@ run_command(
 command.}
 
 \item{env}{A named atomic vector define running environment of the command.}
+
+\item{output}{Specifying the output file or directory to be removed if
+command running error.}
+
+\item{abort}{A scalar logical indicates whether to report error if command
+return non-zero status.}
 
 \item{sys_args}{A list of arguments passed to \link{system2}.}
 

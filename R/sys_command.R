@@ -2,15 +2,20 @@
 #' @param cmd Command to be invoked, as a character string.
 #' @param ... Arguments passed to command.
 #' @param envpath A character define the environment PATH to add before running
-#'  command. 
+#'  command.
 #' @param env A named atomic vector define running environment of the command.
+#' @param output Specifying the output file or directory to be removed if
+#'  command running error.
+#' @param abort A scalar logical indicates whether to report error if command
+#'  return non-zero status.
 #' @param sys_args A list of arguments passed to [system2].
 #' @param verbose A logical value indicates output running command message.
 #' @return See [system2] for details
 #' @export
-run_command <- function(cmd, ..., envpath = NULL, env = NULL, sys_args = list(), verbose = TRUE) {
+run_command <- function(cmd, ..., envpath = NULL, env = NULL, output = NULL, abort = FALSE, sys_args = list(), verbose = TRUE) {
     run_sys_command(
         cmd = cmd, args = c(...), envpath = envpath, env = env, name = NULL,
+        output = output, abort = abort,
         sys_args = sys_args, verbose = verbose
     )
 }
@@ -19,12 +24,14 @@ run_command <- function(cmd, ..., envpath = NULL, env = NULL, sys_args = list(),
 #' manually for every internal function.
 #' @keywords internal
 #' @noRd
-run_sys_command <- function(cmd = NULL, name, args = character(), envpath = NULL, env = NULL, sys_args = list(), verbose = TRUE) {
+run_sys_command <- function(cmd = NULL, name, args = character(), envpath = NULL, env = NULL, output = NULL, abort = FALSE, sys_args = list(), verbose = TRUE) {
     assert_class(
         env, function(x) is.atomic(x) && is_named2(x), "named {atomic}",
         null_ok = TRUE
     )
     assert_class(verbose, is_scalar_logical, "scalar logical")
+    assert_class(output, is.character, "character path", null_ok = TRUE)
+    assert_class(abort, is_scalar_logical, "scalar logical")
     if (!is.null(sys_args$env)) {
         cli::cli_warn(
             "!" = "{.arg env} in {.arg sys_args} will not work",
@@ -49,10 +56,11 @@ run_sys_command <- function(cmd = NULL, name, args = character(), envpath = NULL
         if (verbose) {
             cli::cli_inform("Setting environment")
         }
-        with_envvar(env = env, eval(call), action = "replace")
+        status <- with_envvar(env = env, eval(call), action = "replace")
     } else {
-        eval(call)
+        status <- eval(call)
     }
+    return_command(status, name = name, output = output, abort = abort)
 }
 
 #' @noRd
@@ -94,4 +102,41 @@ define_command <- function(cmd = NULL, name) {
         cli::cli_abort("One of {.arg cmd} or {.arg name} must not be {.val NULL}")
     }
     command
+}
+
+return_command <- function(status, name = NULL, output = NULL, abort = FALSE) {
+    if (is.null(name)) {
+        msg <- "command"
+    } else {
+        msg <- "command {.filed {name}}"
+    }
+    if (status == 0L) {
+        msg <- sprintf("Running %s successfully", msg)
+        cli::cli_inform(msg)
+    } else {
+        msg <- sprintf("Something wrong when running %s", msg)
+        delete_output(output)
+        if (abort) {
+            cli::cli_abort(msg)
+        } else {
+            cli::cli_warn(msg)
+        }
+    }
+    status
+}
+
+delete_output <- function(output) {
+    if (!is.null(output)) {
+        # remove trailing backslash or slash 
+        output <- sub("(\\\\+|/+)$", "", output, perl = TRUE)
+        output <- output[file.exists(output)] # can also check dir
+        if (length(output)) {
+            failed_unlink_files <- vapply(output, unlink, integer(1L),
+                recursive = TRUE
+            ) != 0L
+            if (any(failed_unlink_files)) {
+                cli::cli_warn("Cannot remove {.file {output[failed_unlink_files]}}")
+            }
+        }
+    }
 }
