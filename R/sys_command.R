@@ -26,7 +26,7 @@ run_command <- function(cmd, ..., envpath = NULL, env = NULL, output = NULL, abo
 #' @noRd
 run_sys_command <- function(cmd = NULL, name, args = character(), envpath = NULL, env = NULL, output = NULL, abort = FALSE, sys_args = list(), verbose = TRUE) {
     assert_class(
-        env, function(x) is.atomic(x) && is_named2(x), "named {atomic}",
+        env, function(x) is.atomic(x) && is_named2(x), "named {.cls atomic}",
         null_ok = TRUE
     )
     assert_class(verbose, is_scalar_logical, "scalar logical")
