@@ -26,7 +26,7 @@ run_gistic2(
   do_arbitration = TRUE,
   peak_type = "robust",
   arm_peeloff = FALSE,
-  sample_center = "meidan",
+  sample_center = "median",
   savegene = FALSE,
   saveseg = TRUE,
   savedata = TRUE,
