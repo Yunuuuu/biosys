@@ -25,13 +25,14 @@ run_command <- function(cmd, ..., envpath = NULL, env = NULL, output = NULL, abo
 #' @keywords internal
 #' @noRd
 run_sys_command <- function(cmd = NULL, name, args = character(), envpath = NULL, env = NULL, output = NULL, abort = FALSE, sys_args = list(), verbose = TRUE) {
-    assert_class(
-        env, function(x) is.atomic(x) && is_named2(x), "named {.cls atomic}",
+    assert_(
+        env, function(x) is.atomic(x) && rlang::is_named2(x),
+        "named {.cls atomic}",
         null_ok = TRUE
     )
-    assert_class(verbose, is_scalar_logical, "scalar logical")
-    assert_class(output, is.character, "character path", null_ok = TRUE)
-    assert_class(abort, is_scalar_logical, "scalar logical")
+    assert_bool(verbose)
+    assert_(output, is.character, "character path", null_ok = TRUE)
+    assert_bool(abort)
     if (!is.null(sys_args$env)) {
         cli::cli_warn(
             "!" = "{.arg env} in {.arg sys_args} will not work",
@@ -65,9 +66,7 @@ run_sys_command <- function(cmd = NULL, name, args = character(), envpath = NULL
 
 #' @noRd
 sys_command <- function(cmd = NULL, name, args = character(), sys_args = list(), verbose = TRUE) {
-    assert_class(cmd, is_scalar_character, "scalar character",
-        null_ok = !is.null(name)
-    )
+    assert_string(cmd, null_ok = !is.null(name))
     command <- define_command(cmd = cmd, name = name)
     if (verbose) {
         cli_args <- cli::cli_vec( # nolint
@@ -127,7 +126,7 @@ return_command <- function(status, name = NULL, output = NULL, abort = FALSE) {
 
 delete_output <- function(output) {
     if (!is.null(output)) {
-        # remove trailing backslash or slash 
+        # remove trailing backslash or slash
         output <- sub("(\\\\+|/+)$", "", output, perl = TRUE)
         output <- output[file.exists(output)] # can also check dir
         if (length(output)) {

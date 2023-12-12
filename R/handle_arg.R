@@ -11,11 +11,18 @@
 #'  or "=".
 #' @return A string or NULL which can be used directly by [run_command].
 #' @export
+#' @importFrom rlang is_scalar_logical
 handle_arg <- function(tag, value = TRUE, indicator = is_scalar_logical(value), lgl2int = FALSE, format = "%s", sep = " ") {
-    assert_class(tag, is_scalar_character, "scalar {.cls character}")
-    handle_sys_arg(tag = tag, value = value, format = format, sep = sep)
+    assert_string(tag, empty_ok = FALSE)
+    handle_sys_arg(
+        tag = tag, value = value,
+        indicator = indicator, lgl2int = lgl2int,
+        format = format, sep = sep
+    )
 }
 
+#' @keywords internal
+#' @noRd 
 handle_sys_arg <- function(
     tag, value, indicator = FALSE, lgl2int = FALSE,
     format = NULL, sep = " ", call = parent.frame()) {
@@ -23,45 +30,28 @@ handle_sys_arg <- function(
         return(NULL)
     }
     if (indicator || lgl2int) {
-        assert_class(value,
-            is_scalar_logical,
-            "scalar {.cls logical}",
-            call = call
-        )
+        assert_bool(value, call = call)
     }
     if (indicator) {
-        if (isTRUE(value)) {
+        if (value) {
             return(tag)
         } else { # NA will also return NULL
             return(NULL)
         }
     } else {
-        assert_class(
-            lgl2int,
-            is_scalar_logical, "scalar {.cls logical}"
-        )
-        assert_class(
-            sep,
-            is_scalar_character, "scalar {.cls character}"
-        )
+        assert_bool(lgl2int, call = call)
+        assert_string(sep, call = call)
         if (lgl2int) {
             format <- "%d"
             value <- as.integer(value)
         } else {
-            assert_class(
-                format,
-                is_scalar_character,
-                "scalar {.cls character}",
-                null_ok = TRUE
-            )
+            assert_string(format, null_ok = TRUE)
             if (!is.null(format) && format == "%d") {
-                assert_class(value,
-                    is_scalar_numeric,
-                    "scalar {.cls numeric}",
+                assert_(value, is_scalar_numeric, "scalar {.cls numeric}",
                     call = call
                 )
             } else {
-                assert_length(value, 1L, null_ok = TRUE, call = call)
+                assert_(value, is_scalar, "scalar", call = call)
                 format <- format %||% "%s"
             }
         }

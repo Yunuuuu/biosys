@@ -36,7 +36,7 @@ run_cellranger_count <- function(id, fastqs, transcriptome = NULL, sample = NULL
 #' @inheritParams run_command
 #' @export
 run_cellranger <- function(subcmd, args = character(), cellranger_cmd = NULL, envpath = NULL, env = NULL, sys_args = list(), verbose = TRUE) {
-    assert_class(subcmd, is_scalar_character, "scalar {.cls character}")
+    assert_string(subcmd)
     run_sys_command(
         cmd = cellranger_cmd,
         name = "cellranger",

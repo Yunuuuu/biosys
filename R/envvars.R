@@ -4,7 +4,10 @@
 #' @return A string can be used in [system2]
 #' @export
 parse_envvar <- function(env) {
-    assert_class(env, function(x) is.atomic(x) && is_named2(x), "named atomic")
+    assert_(
+        env, function(x) is.atomic(x) && rlang::is_named2(x),
+        "named {.cls atomic}"
+    )
     # https://stackoverflow.com/questions/39908415/env-argument-does-not-work-in-system2
     if (length(env) > 0L) {
         paste0(names(env), "=", env, ";")
