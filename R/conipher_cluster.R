@@ -45,13 +45,13 @@ run_conipher_cluster <- function(
         name = NULL,
         args = c(
             system.file("extdata", "CONIPHER", "run_clustering.R",
-                package = "biomisc"
+                package = "biosys"
             ),
             handle_sys_arg("--case_id", case_id),
             handle_sys_arg("--working_dir", output_dir),
             handle_sys_arg("--script_dir", system.file("extdata",
                 "CONIPHER",
-                package = "biomisc"
+                package = "biosys"
             )),
             handle_sys_arg("--input_tsv", mut_tsv),
             handle_sys_arg("--input_seg_tsv", seg_tsv),
@@ -69,7 +69,7 @@ run_conipher_cluster <- function(
                 "--pyclone_yaml",
                 pyclone_yaml %||% system.file("extdata",
                     "CONIPHER", "template.config.yaml",
-                    package = "biomisc"
+                    package = "biosys"
                 )
             ),
             handle_sys_arg("--min_cluster_size",
