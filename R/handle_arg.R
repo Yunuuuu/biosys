@@ -40,12 +40,11 @@ handle_sys_arg <- function(tag, value, indicator = FALSE, lgl2int = FALSE, forma
     } else {
         assert_string(format, empty_ok = FALSE, call = call)
         if (format == "%d") {
-            assert_(value, rlang::is_scalar_numeric,
-                "scalar {.cls numeric}",
-                call = call
-            )
+            assert_(value, is_number, "scalar {.cls numeric}", call = call)
         } else {
-            assert_(value, is_scalar, "scalar", call = call)
+            assert_(value, function(x) is_scalar(x) && !is.na(x),
+                "scalar", call = call # styler: off
+            )
         }
     }
     sprintf(paste(tag, format, sep = sep), value)

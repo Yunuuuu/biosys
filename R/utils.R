@@ -10,12 +10,23 @@ is_scalar_numeric <- function(x) {
     is_scalar(x) && is.numeric(x)
 }
 
+is_number <- function(x) is_scalar_numeric(x) && !is.na(x)
+
 dir_create <- function(dir, ...) {
     if (!dir.exists(dir)) {
         if (!dir.create(path = dir, showWarnings = FALSE, ...)) {
             cli::cli_abort("Cannot create directory {.path {dir}}")
         }
     }
+}
+
+path_ext_remove <- function(x) {
+    sub("([^.]+)\\.[[:alnum:]]+$", "\\1", x, perl = TRUE)
+}
+
+path_ext <- function(x) {
+    pos <- regexpr("\\.([[:alnum:]]+)$", x, perl = TRUE)
+    ifelse(pos > -1L, substring(x, pos + 1L), "")
 }
 
 internal_file <- function(...) {
