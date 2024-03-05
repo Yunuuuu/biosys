@@ -19,7 +19,7 @@
 #' @param seg A data.frame of segmented data.
 #' @param refgene Path to reference genome data input file (REQUIRED, see below
 #' for file description).
-#' @param outdir The output directory.
+#' @param odir The output directory.
 #' @param t_amp Threshold for copy number amplifications. Regions with a copy
 #' number gain above this positive value are considered amplified. Regions with
 #' a copy number gain smaller than this value are considered noise and set to 0.
@@ -97,20 +97,20 @@
 #' @seealso <https://broadinstitute.github.io/gistic2/>
 #' @inheritParams run_command
 #' @export
-run_gistic2 <- function(seg, refgene, outdir = getwd(), t_amp = 0.1, t_del = 0.1, join_segment_size = 4L, qv_thresh = 0.25, fname = NULL, ext = NULL, remove_XY = TRUE, cap = 1.5, run_broad_analysis = FALSE, broad_len_cutoff = 0.98, twoside = FALSE, maxseg = 2500L, resolution = 0.05, conf_level = 0.75, genegistic = FALSE, do_arbitration = TRUE, peak_type = "robust", arm_peeloff = FALSE, sample_center = "median", savegene = FALSE, saveseg = TRUE, savedata = TRUE, markers = NULL, maxspace = 10000L, ..., gistic2_cmd = NULL, gistic2_verbose = 0L, envpath = NULL, env = NULL, output = outdir, abort = FALSE, sys_args = list(), verbose = TRUE) { # nolint
+run_gistic2 <- function(seg, refgene, odir = getwd(), t_amp = 0.1, t_del = 0.1, join_segment_size = 4L, qv_thresh = 0.25, fname = NULL, ext = NULL, remove_XY = TRUE, cap = 1.5, run_broad_analysis = FALSE, broad_len_cutoff = 0.98, twoside = FALSE, maxseg = 2500L, resolution = 0.05, conf_level = 0.75, genegistic = FALSE, do_arbitration = TRUE, peak_type = "robust", arm_peeloff = FALSE, sample_center = "median", savegene = FALSE, saveseg = TRUE, savedata = TRUE, markers = NULL, maxspace = 10000L, ..., gistic2_cmd = NULL, gistic2_verbose = 0L, envpath = NULL, env = NULL, abort = FALSE, sys_args = list(), verbose = TRUE) { # nolint
 
     assert_data_frame(seg)
     peak_type <- match.arg(peak_type, c("robust", "loo"))
     sample_center <- match.arg(sample_center, c("median", "mean", "none"))
+    opath <- build_opath(odir)
     seg_file <- tempfile("run_gistic2")
     data.table::fwrite(seg, file = seg_file, sep = "\t")
     on.exit(file.remove(seg_file))
     sep <- " "
-    dir_create(outdir)
     args <- c(
         handle_sys_arg("-seg", seg_file, sep = sep),
         handle_sys_arg("-refgene", refgene, sep = sep),
-        handle_sys_arg("-b", outdir, sep = sep),
+        handle_sys_arg("-b", opath, sep = sep),
         handle_sys_arg("-mk", markers, sep = sep),
         handle_sys_arg("-maxspace", maxspace, format = "%d", sep = sep),
         handle_sys_arg("-ta", t_amp, sep = sep),
@@ -155,8 +155,7 @@ run_gistic2 <- function(seg, refgene, outdir = getwd(), t_amp = 0.1, t_del = 0.1
     run_sys_command(
         cmd = gistic2_cmd,
         name = "gistic2", args = args,
-        env = env, output = output, abort = abort,
-        sys_args = sys_args,
-        verbose = verbose
+        env = env, output = opath, abort = abort,
+        sys_args = sys_args, verbose = verbose
     )
 }

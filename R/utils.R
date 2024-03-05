@@ -12,7 +12,23 @@ is_scalar_numeric <- function(x) {
 
 dir_create <- function(dir, ...) {
     if (!dir.exists(dir)) {
-        cli::cli_alert_info("Create {.path {dir}}")
-        dir.create(path = dir, ...)
+        if (!dir.create(path = dir, showWarnings = FALSE, ...)) {
+            cli::cli_abort("Cannot create directory {.path {dir}}")
+        }
     }
+}
+
+internal_file <- function(...) {
+    system.file(..., package = pkg_nm(), mustWork = TRUE)
+}
+
+pkg_nm <- function() {
+    utils::packageName(topenv(environment()))
+}
+
+build_opath <- function(odir, ofile, call = rlang::caller_env()) {
+    assert_string(odir, empty_ok = FALSE, call = call)
+    if (!missing(ofile)) assert_string(ofile, empty_ok = FALSE)
+    dir_create(odir)
+    file.path(odir, ofile)
 }
