@@ -10,8 +10,8 @@
 #' @param sep A character string used to separate "tag" and "value", usually " "
 #'  or "=".
 #' @return A string or NULL which can be used directly by [run_command].
-#' @export
 #' @importFrom rlang is_scalar_logical
+#' @export
 handle_arg <- function(tag, value = TRUE, indicator = is_scalar_logical(value), lgl2int = FALSE, format = "%s", sep = " ") {
     assert_string(tag, empty_ok = FALSE)
     handle_sys_arg(
