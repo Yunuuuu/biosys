@@ -1,0 +1,18 @@
+name: update scripts with file-sync
+on:
+  workflow_dispatch:
+  schedule:
+    # At 03:03 on Tuesday
+    - cron: '3 3 * * 2'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - run: ./.github/sync.sh liulab-dfci/TRUST4 BuildImgtAnnot.pl inst/extdata/TRUST4/
+      
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "update TRUST4: BuildImgtAnnot.pl"
