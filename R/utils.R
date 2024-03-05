@@ -20,13 +20,17 @@ dir_create <- function(dir, ...) {
     }
 }
 
-path_ext_remove <- function(x) {
-    sub("([^.]+)\\.[[:alnum:]]+$", "\\1", x, perl = TRUE)
+path_ext_remove <- function(path) {
+    sub("([^.]+)\\.[[:alnum:]]+$", "\\1", path, perl = TRUE)
 }
 
-path_ext <- function(x) {
-    pos <- regexpr("\\.([[:alnum:]]+)$", x, perl = TRUE)
-    ifelse(pos > -1L, substring(x, pos + 1L), "")
+path_ext <- function(path) {
+    pos <- regexpr("\\.([[:alnum:]]+)$", path, perl = TRUE)
+    ifelse(pos > -1L, substring(path, pos + 1L), "")
+}
+
+path_abs <- function(path) {
+    file.path(normalizePath(dirname(path), "/", mustWork = FALSE), path)
 }
 
 internal_file <- function(...) {
