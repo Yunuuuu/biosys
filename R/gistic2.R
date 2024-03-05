@@ -106,7 +106,7 @@ run_gistic2 <- function(seg, refgene, outdir = getwd(), t_amp = 0.1, t_del = 0.1
     data.table::fwrite(seg, file = seg_file, sep = "\t")
     on.exit(file.remove(seg_file))
     sep <- " "
-    create_dir(outdir)
+    dir_create(outdir)
     args <- c(
         handle_sys_arg("-seg", seg_file, sep = sep),
         handle_sys_arg("-refgene", refgene, sep = sep),

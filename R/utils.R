@@ -10,7 +10,7 @@ is_scalar_numeric <- function(x) {
     is_scalar(x) && is.numeric(x)
 }
 
-create_dir <- function(dir, ...) {
+dir_create <- function(dir, ...) {
     if (!dir.exists(dir)) {
         cli::cli_alert_info("Create {.path {dir}}")
         dir.create(path = dir, ...)
