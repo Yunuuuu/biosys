@@ -7,7 +7,7 @@
 handle_arg(
   tag,
   value = TRUE,
-  indicator = is_scalar_logical(value),
+  indicator = NULL,
   lgl2int = FALSE,
   format = "\%s",
   sep = " "
@@ -20,7 +20,8 @@ handle_arg(
 
 \item{indicator}{A logical value specifying whether value should be a
 ndicator of tag. If TRUE, logical value will explain the set (TRUE or NULL)
-or unset (FALSE) of tag.}
+or unset (FALSE) of tag. If \code{NULL}, \code{indicator} will be \code{TRUE} for logical
+\code{value} argument, otherwise, will be \code{FALSE}.}
 
 \item{lgl2int}{A logical value indicates whether transfrom value TRUE to 1 or
 FALSE to 0. If \code{TRUE}, format will always be set to "\%d".}
