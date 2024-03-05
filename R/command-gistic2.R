@@ -155,7 +155,7 @@ run_gistic2 <- function(seg, refgene, odir = getwd(), t_amp = 0.1, t_del = 0.1, 
     run_sys_command(
         cmd = gistic2_cmd,
         name = "gistic2", args = args,
-        env = env, output = opath, abort = abort,
+        env = env, output = NULL, abort = abort,
         sys_args = sys_args, verbose = verbose
     )
 }
