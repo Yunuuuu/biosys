@@ -5,7 +5,8 @@
 #'  command.
 #' @param env A named atomic vector define running environment of the command.
 #' @param output Specifying the output file or directory to be removed if
-#'  command running error.
+#'  command running error. Note: all files in the directory will be removed, you
+#'  must use this argument carefully.
 #' @param abort A scalar logical indicates whether to report error if command
 #'  return non-zero status.
 #' @param sys_args A list of arguments passed to [system2].

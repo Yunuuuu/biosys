@@ -26,7 +26,8 @@ command.}
 \item{env}{A named atomic vector define running environment of the command.}
 
 \item{output}{Specifying the output file or directory to be removed if
-command running error.}
+command running error. Note: all files in the directory will be removed, you
+must use this argument carefully.}
 
 \item{abort}{A scalar logical indicates whether to report error if command
 return non-zero status.}
