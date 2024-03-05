@@ -39,7 +39,7 @@ pkg_nm <- function() {
 
 build_opath <- function(odir, ofile, call = rlang::caller_env()) {
     assert_string(odir, empty_ok = FALSE, call = call)
-    if (!missing(ofile)) assert_string(ofile, empty_ok = FALSE)
+    if (!missing(ofile)) assert_string(ofile, empty_ok = FALSE, call = call)
     dir_create(odir)
     file.path(odir, ofile)
 }
