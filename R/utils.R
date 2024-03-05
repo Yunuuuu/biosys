@@ -30,7 +30,10 @@ path_ext <- function(path) {
 }
 
 path_abs <- function(path) {
-    file.path(normalizePath(dirname(path), "/", mustWork = FALSE), path)
+    file.path(
+        normalizePath(dirname(path), "/", mustWork = FALSE),
+        basename(path)
+    )
 }
 
 internal_file <- function(...) {
