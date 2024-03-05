@@ -24,7 +24,7 @@ parse_envvar <- function(env) {
 #'  variables with the same name.
 #' @param sep A string separates the elements in the environment variable.
 #' @noRd
-with_envvar <- function(env, call, action = "replace", sep = .Platform$path.sep) {
+with_envvar <- function(env, call, action = "replace", sep = .Platform$path.sep, envir = parent.frame()) {
     action <- match.arg(action, c("replace", "prefix", "suffix"))
     old <- set_envvar(as_envvars(env), action = action, sep = sep)
     old_set <- !is.na(old)
@@ -34,7 +34,7 @@ with_envvar <- function(env, call, action = "replace", sep = .Platform$path.sep)
     if (any(!old_set)) {
         on.exit(Sys.unsetenv(names(old)[!old_set]), add = TRUE)
     }
-    eval(substitute(call))
+    eval(substitute(call), envir = envir)
 }
 
 #' @param env A named atomic character
