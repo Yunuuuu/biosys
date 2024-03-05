@@ -25,25 +25,27 @@ handle_arg <- function(tag, value = TRUE, indicator = NULL, lgl2int = FALSE, for
 
 #' @keywords internal
 #' @noRd
-handle_sys_arg <- function(tag, value, indicator = FALSE, lgl2int = FALSE, format = "%s", sep = " ", call = rlang::caller_env()) {
+handle_sys_arg <- function(tag, value, indicator = FALSE, lgl2int = FALSE, format = "%s", sep = " ", arg = rlang::caller_arg(value), call = rlang::caller_env()) {
     if (is.null(value)) return(NULL) # styler: off
     assert_bool(lgl2int, call = call)
     if (indicator) {
-        assert_bool(value, call = call)
+        assert_bool(value, arg = arg, call = call)
         if (value) return(tag) else return(NULL) # styler: off
     }
     assert_string(sep, call = call)
     if (lgl2int) {
-        assert_bool(value, call = call)
+        assert_bool(value, arg = arg, call = call)
         format <- "%d"
         value <- as.integer(value)
     } else {
         assert_string(format, empty_ok = FALSE, call = call)
         if (format == "%d") {
-            assert_(value, is_number, "scalar {.cls numeric}", call = call)
+            assert_(value, is_number, "scalar {.cls numeric}",
+                arg = arg, call = call
+            )
         } else {
             assert_(value, function(x) is_scalar(x) && !is.na(x),
-                "scalar", call = call # styler: off
+                "scalar", arg = arg, call = call # styler: off
             )
         }
     }
