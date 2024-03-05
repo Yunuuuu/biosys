@@ -16,3 +16,9 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "update TRUST4: BuildImgtAnnot.pl"
+
+      - run: ./.github/sync.sh liulab-dfci/TRUST4 BuildDatabaseFa.pl inst/extdata/TRUST4/
+      
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "update TRUST4: BuildDatabaseFa.pl"
