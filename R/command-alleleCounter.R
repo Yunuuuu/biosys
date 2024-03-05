@@ -14,7 +14,7 @@
 #' @param ... Other arguments passed to alleleCounter
 #' @param allelecounter_cmd Path to alleleCounter command.
 #' @inheritParams run_command
-#' @seealso https://github.com/cancerit/alleleCount
+#' @seealso <https://github.com/cancerit/alleleCount>
 #' @export
 run_allele_counter <- function(
     hts_file, loci_file, ofile, odir = getwd(),

@@ -61,5 +61,5 @@ The alleleCount package primarily exists to prevent code duplication between
 some other projects, specifically AscatNGS and Battenberg.
 }
 \seealso{
-https://github.com/cancerit/alleleCount
+\url{https://github.com/cancerit/alleleCount}
 }
