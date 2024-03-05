@@ -7,6 +7,7 @@
 run_gistic2(
   seg,
   refgene,
+  ...,
   odir = getwd(),
   t_amp = 0.1,
   t_del = 0.1,
@@ -32,7 +33,6 @@ run_gistic2(
   savedata = TRUE,
   markers = NULL,
   maxspace = 10000L,
-  ...,
   gistic2_cmd = NULL,
   gistic2_verbose = 0L,
   envpath = NULL,
@@ -47,6 +47,8 @@ run_gistic2(
 
 \item{refgene}{Path to reference genome data input file (REQUIRED, see below
 for file description).}
+
+\item{...}{Other arguments passed to gistic2. Details see: \url{https://broadinstitute.github.io/gistic2/}.}
 
 \item{odir}{The output directory.}
 
@@ -142,8 +144,6 @@ MatlabTM files).}
 Pseudo-markers are generated when the markers file input is omitted. Segments
 that contain fewer than this number of markers are joined to the neighboring
 segment that is closest in copy number. (DEFAULT=10,000).}
-
-\item{...}{Other arguments passed to gistic2. Details see: \url{https://broadinstitute.github.io/gistic2/}.}
 
 \item{gistic2_cmd}{Path to gistic2 command.}
 

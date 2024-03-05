@@ -17,9 +17,9 @@
 #' @seealso <https://github.com/cancerit/alleleCount>
 #' @export
 run_allele_counter <- function(
-    hts_file, loci_file, ofile, odir = getwd(),
+    hts_file, loci_file, ofile, ..., odir = getwd(),
     ref_fasta = NULL, min_base_qual = 20L,
-    min_map_qual = 35L, dense_snp = TRUE, ...,
+    min_map_qual = 35L, dense_snp = TRUE,
     allelecounter_cmd = NULL, envpath = NULL,
     env = NULL, abort = FALSE,
     sys_args = list(), verbose = TRUE) {

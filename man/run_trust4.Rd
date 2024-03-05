@@ -9,13 +9,13 @@ data}
 \usage{
 run_trust4(
   file1,
+  ref_coordinate,
+  ...,
   file2 = NULL,
   type = NULL,
-  ref_coordinate,
   ref_annot = NULL,
   ofile = NULL,
   odir = getwd(),
-  ...,
   trust4_cmd = NULL,
   envpath = NULL,
   env = NULL,
@@ -51,13 +51,16 @@ trust4_gene_names(
 \arguments{
 \item{file1}{Path to bam file or fastq file.}
 
+\item{ref_coordinate}{Path to the fasta file coordinate and sequence of
+V/D/J/C genes.}
+
+\item{...}{Other arguments passed to \code{run-trust4}. Details see:
+\url{https://github.com/liulab-dfci/TRUST4}.}
+
 \item{file2}{Path to the second paired-end read fastq file, only used for
 \code{type = "fastq"}.}
 
 \item{type}{One of "bam" or "fastq".}
-
-\item{ref_coordinate}{Path to the fasta file coordinate and sequence of
-V/D/J/C genes.}
 
 \item{ref_annot}{Path to detailed V/D/J/C gene reference file, such as from
 IMGT database. (default: not used). (recommended).}
@@ -70,9 +73,6 @@ prefix).
 }}
 
 \item{odir}{Output directory.}
-
-\item{...}{Other arguments passed to \code{run-trust4}. Details see:
-\url{https://github.com/liulab-dfci/TRUST4}.}
 
 \item{trust4_cmd}{Path to \code{run-trust4} command.}
 

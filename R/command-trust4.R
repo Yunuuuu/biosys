@@ -21,17 +21,17 @@
 #' @inheritParams run_command
 #' @seealso <https://github.com/liulab-dfci/TRUST4>
 #' @export
-run_trust4 <- function(file1, file2 = NULL, type = NULL, ref_coordinate, ref_annot = NULL, ofile = NULL, odir = getwd(), ..., trust4_cmd = NULL, envpath = NULL, env = NULL, abort = FALSE, sys_args = list(), verbose = TRUE) {
+run_trust4 <- function(file1, ref_coordinate, ..., file2 = NULL, type = NULL, ref_annot = NULL, ofile = NULL, odir = getwd(), trust4_cmd = NULL, envpath = NULL, env = NULL, abort = FALSE, sys_args = list(), verbose = TRUE) {
     assert_string(file1, empty_ok = FALSE)
     assert_string(file2, empty_ok = FALSE, null_ok = TRUE)
-    ext <- path_ext(file1)
     if (is.null(type)) {
-        type <- switch(ext,
-            bam = "bam",
-            fastq = ,
-            fq = "fastq",
+        if (grepl("(fastq|fq)(\\.gz)?$", file1, perl = TRUE)) {
+            type <- "fastq"
+        } else if (endsWith(file1, "bam")) {
+            type <- "bam"
+        } else {
             cli::cli_abort("Cannot infer {.arg type} from {.arg file1}")
-        )
+        }
     } else {
         type <- match.arg(type, c("bam", "fastq"))
     }

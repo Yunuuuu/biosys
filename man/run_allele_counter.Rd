@@ -8,12 +8,12 @@ run_allele_counter(
   hts_file,
   loci_file,
   ofile,
+  ...,
   odir = getwd(),
   ref_fasta = NULL,
   min_base_qual = 20L,
   min_map_qual = 35L,
   dense_snp = TRUE,
-  ...,
   allelecounter_cmd = NULL,
   envpath = NULL,
   env = NULL,
@@ -29,6 +29,8 @@ run_allele_counter(
 
 \item{ofile}{Output file.}
 
+\item{...}{Other arguments passed to alleleCounter}
+
 \item{odir}{Output directory.}
 
 \item{ref_fasta}{Path to reference fasta index file.}
@@ -39,8 +41,6 @@ run_allele_counter(
 
 \item{dense_snp}{Improves performance where many positions are close
 together.}
-
-\item{...}{Other arguments passed to alleleCounter}
 
 \item{allelecounter_cmd}{Path to alleleCounter command.}
 

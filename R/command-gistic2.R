@@ -97,7 +97,7 @@
 #' @seealso <https://broadinstitute.github.io/gistic2/>
 #' @inheritParams run_command
 #' @export
-run_gistic2 <- function(seg, refgene, odir = getwd(), t_amp = 0.1, t_del = 0.1, join_segment_size = 4L, qv_thresh = 0.25, fname = NULL, ext = NULL, remove_XY = TRUE, cap = 1.5, run_broad_analysis = FALSE, broad_len_cutoff = 0.98, twoside = FALSE, maxseg = 2500L, resolution = 0.05, conf_level = 0.75, genegistic = FALSE, do_arbitration = TRUE, peak_type = "robust", arm_peeloff = FALSE, sample_center = "median", savegene = FALSE, saveseg = TRUE, savedata = TRUE, markers = NULL, maxspace = 10000L, ..., gistic2_cmd = NULL, gistic2_verbose = 0L, envpath = NULL, env = NULL, abort = FALSE, sys_args = list(), verbose = TRUE) { # nolint
+run_gistic2 <- function(seg, refgene, ..., odir = getwd(), t_amp = 0.1, t_del = 0.1, join_segment_size = 4L, qv_thresh = 0.25, fname = NULL, ext = NULL, remove_XY = TRUE, cap = 1.5, run_broad_analysis = FALSE, broad_len_cutoff = 0.98, twoside = FALSE, maxseg = 2500L, resolution = 0.05, conf_level = 0.75, genegistic = FALSE, do_arbitration = TRUE, peak_type = "robust", arm_peeloff = FALSE, sample_center = "median", savegene = FALSE, saveseg = TRUE, savedata = TRUE, markers = NULL, maxspace = 10000L, gistic2_cmd = NULL, gistic2_verbose = 0L, envpath = NULL, env = NULL, abort = FALSE, sys_args = list(), verbose = TRUE) { # nolint
 
     assert_data_frame(seg)
     peak_type <- match.arg(peak_type, c("robust", "loo"))
