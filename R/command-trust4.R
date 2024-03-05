@@ -82,7 +82,7 @@ run_trust4 <- function(file1, file2 = NULL, type = NULL, ref_coordinate, ref_ann
 #' @rdname run_trust4
 trust4_imgt_annot <- function(species = "Homo_sapien", ofile = "IMGT+C.fa", odir = getwd(), perl_cmd = NULL, envpath = NULL, env = NULL, abort = FALSE, sys_args = list(), verbose = TRUE) {
     assert_string(species, empty_ok = FALSE)
-    opath <- build_opath(odir, ofile)
+    opath <- normalizePath(build_opath(odir, ofile), mustWork = FALSE)
     cur_dir <- getwd()
     tmp_dir <- tempdir()
     on.exit(setwd(cur_dir))
