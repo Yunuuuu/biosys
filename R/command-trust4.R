@@ -4,7 +4,8 @@
 #' @param file1 Path to bam file or fastq file.
 #' @param file2 Path to the second paired-end read fastq file, only used for
 #' `type = "fastq"`.
-#' @param type One of "bam" or "fastq".
+#' @param type One of "bam" or "fastq". If `NULL`, will be inferred from
+#' `file1`.
 #' @param ref_coordinate Path to the fasta file coordinate and sequence of
 #' V/D/J/C genes.
 #' @param ref_annot Path to detailed V/D/J/C gene reference file, such as from
@@ -22,6 +23,7 @@
 #' @seealso <https://github.com/liulab-dfci/TRUST4>
 #' @export
 run_trust4 <- function(file1, ref_coordinate, ..., file2 = NULL, type = NULL, ref_annot = NULL, ofile = NULL, odir = getwd(), trust4_cmd = NULL, envpath = NULL, env = NULL, abort = FALSE, sys_args = list(), verbose = TRUE) {
+    assert_string(file1, empty_ok = FALSE)
     if (is.null(type)) {
         if (grepl("(fastq|fq)(\\.gz)?$", file1, perl = TRUE)) {
             type <- "fastq"

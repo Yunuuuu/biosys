@@ -60,7 +60,8 @@ V/D/J/C genes.}
 \item{file2}{Path to the second paired-end read fastq file, only used for
 \code{type = "fastq"}.}
 
-\item{type}{One of "bam" or "fastq".}
+\item{type}{One of "bam" or "fastq". If \code{NULL}, will be inferred from
+\code{file1}.}
 
 \item{ref_annot}{Path to detailed V/D/J/C gene reference file, such as from
 IMGT database. (default: not used). (recommended).}
