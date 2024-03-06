@@ -36,17 +36,7 @@ trust4_imgt_annot(
   verbose = TRUE
 )
 
-trust4_gene_names(
-  imgt_annot,
-  ofile = "bcr_tcr_gene_name.txt",
-  odir = getwd(),
-  grep_cmd = NULL,
-  envpath = NULL,
-  env = NULL,
-  abort = FALSE,
-  sys_args = list(),
-  verbose = TRUE
-)
+trust4_gene_names(imgt_annot, ofile = "bcr_tcr_gene_name.txt", odir = getwd())
 }
 \arguments{
 \item{file1}{Path to bam file or fastq file.}
@@ -96,8 +86,6 @@ return non-zero status.}
 
 \item{imgt_annot}{Path of IMGT annotation file, created via
 \code{trust4_imgt_annot}.}
-
-\item{grep_cmd}{Path to \code{grep} command.}
 }
 \description{
 TRUST4: immune repertoire reconstruction from bulk and single-cell RNA-seq

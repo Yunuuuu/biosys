@@ -103,26 +103,16 @@ trust4_imgt_annot <- function(species = "Homo_sapien", ofile = "IMGT+C.fa", odir
 
 #' @param imgt_annot Path of IMGT annotation file, created via
 #' `trust4_imgt_annot`.
-#' @param grep_cmd Path to `grep` command.
 #' @export
 #' @rdname run_trust4
-trust4_gene_names <- function(imgt_annot, ofile = "bcr_tcr_gene_name.txt", odir = getwd(), grep_cmd = NULL, envpath = NULL, env = NULL, abort = FALSE, sys_args = list(), verbose = TRUE) {
+trust4_gene_names <- function(imgt_annot, ofile = "bcr_tcr_gene_name.txt", odir = getwd()) {
     assert_string(imgt_annot, empty_ok = FALSE)
     opath <- build_opath(odir, ofile)
-    run_sys_command(
-        grep_cmd,
-        name = "grep",
-        args = c(
-            shQuote(">"), imgt_annot,
-            "|", "cut -f2 -d'>'",
-            "|", "cut -f1 -d'*'",
-            "|", "sort",
-            "|", "uniq",
-            ">", opath
-        ),
-        envpath = envpath, env = env,
-        output = opath, abort = abort,
-        sys_args = sys_args,
-        verbose = verbose
+    lines <- read_lines(imgt_annot)
+    gene_lines <- grep("^\\^", lines, value = TRUE, perl = TRUE)
+    genes <- sub("^\\^", "", gene_lines, perl = TRUE)
+    genes <- vapply(strsplit(genes, "*", fixed = TRUE),
+        `[[`, character(1L), 1L, USE.NAMES = FALSE # styler: off
     )
+    write_lines(genes, opath)
 }

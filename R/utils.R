@@ -61,3 +61,26 @@ path_ext <- function(path) {
 internal_file <- function(...) {
     system.file(..., package = pkg_nm(), mustWork = TRUE)
 }
+
+read_lines <- function(file) {
+    data.table::fread(
+        file = file, sep = "", header = FALSE,
+        colClasses = "character",
+        showProgress = FALSE
+    )[[1L]]
+}
+
+# To write a file with windows line endings use write_lines(eol = "\r\n")
+write_lines <- function(text, path, eol = "\n", compress = "auto") {
+    data.table::fwrite(
+        x = list(text),
+        file = path,
+        quote = FALSE,
+        na = "NA",
+        col.names = FALSE,
+        logical01 = FALSE,
+        showProgress = FALSE,
+        verbose = FALSE,
+        compress = compress
+    )
+}
