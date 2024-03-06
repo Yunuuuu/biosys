@@ -10,7 +10,7 @@ parse_envvar(env)
 \item{env}{A named atomic character of environment variables.}
 }
 \value{
-A string can be used in \link{system2}
+An atomic character which can be used directly in \link{system2}
 }
 \description{
 Parse an atomic character for system2 env argument

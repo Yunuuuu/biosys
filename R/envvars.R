@@ -1,7 +1,7 @@
 #' Parse an atomic character for system2 env argument
 #'
 #' @param env A named atomic character of environment variables.
-#' @return A string can be used in [system2]
+#' @return An atomic character which can be used directly in [system2]
 #' @export
 parse_envvar <- function(env) {
     assert_(
