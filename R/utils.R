@@ -83,4 +83,5 @@ write_lines <- function(text, path, eol = "\n", compress = "auto") {
         verbose = FALSE,
         compress = compress
     )
+    invisible(text)
 }
