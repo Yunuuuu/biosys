@@ -133,7 +133,7 @@ delete_output <- function(output) {
         output <- output[file.exists(output)] # can also check dir
         if (length(output)) {
             failed_unlink_files <- vapply(output, unlink, integer(1L),
-                recursive = TRUE
+                recursive = TRUE, USE.NAMES = FALSE
             ) != 0L
             if (any(failed_unlink_files)) {
                 cli::cli_warn(
