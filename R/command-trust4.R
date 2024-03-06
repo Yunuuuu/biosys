@@ -109,8 +109,8 @@ trust4_gene_names <- function(imgt_annot, ofile = "bcr_tcr_gene_name.txt", odir 
     assert_string(imgt_annot, empty_ok = FALSE)
     opath <- build_opath(odir, ofile)
     lines <- read_lines(imgt_annot)
-    gene_lines <- grep("^\\^", lines, value = TRUE, perl = TRUE)
-    genes <- sub("^\\^", "", gene_lines, perl = TRUE)
+    gene_lines <- grep("^>", lines, value = TRUE, perl = TRUE)
+    genes <- sub("^>", "", gene_lines, perl = TRUE)
     genes <- vapply(strsplit(genes, "*", fixed = TRUE),
         `[[`, character(1L), 1L, USE.NAMES = FALSE # styler: off
     )
