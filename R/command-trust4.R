@@ -22,8 +22,6 @@
 #' @seealso <https://github.com/liulab-dfci/TRUST4>
 #' @export
 run_trust4 <- function(file1, ref_coordinate, ..., file2 = NULL, type = NULL, ref_annot = NULL, ofile = NULL, odir = getwd(), trust4_cmd = NULL, envpath = NULL, env = NULL, abort = FALSE, sys_args = list(), verbose = TRUE) {
-    assert_string(file1, empty_ok = FALSE)
-    assert_string(file2, empty_ok = FALSE, null_ok = TRUE)
     if (is.null(type)) {
         if (grepl("(fastq|fq)(\\.gz)?$", file1, perl = TRUE)) {
             type <- "fastq"
@@ -41,21 +39,21 @@ run_trust4 <- function(file1, ref_coordinate, ..., file2 = NULL, type = NULL, re
                 "{.arg file2} must be {.code NULL} for {.code type = \"bam\"}"
             )
         }
-        args <- handle_sys_arg("-b", file1)
+        args <- handle_sys_arg("-b", file1, null_ok = FALSE)
     } else {
         if (is.null(file2)) {
-            args <- handle_sys_arg("-u", file1)
+            args <- handle_sys_arg("-u", file1, null_ok = FALSE)
         } else {
             args <- c(
-                handle_sys_arg("-1", file1),
+                handle_sys_arg("-1", file1, null_ok = FALSE),
                 handle_sys_arg("-2", file2)
             )
         }
     }
-    dir_create(odir)
+    odir <- build_opath(odir)
     args <- c(
         args,
-        handle_sys_arg("-f", ref_coordinate),
+        handle_sys_arg("-f", ref_coordinate, null_ok = FALSE),
         handle_sys_arg("-ref", ref_annot),
         handle_sys_arg("-o", ofile),
         handle_sys_arg("--od", odir),

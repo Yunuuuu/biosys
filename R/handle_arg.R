@@ -25,8 +25,11 @@ handle_arg <- function(tag, value = TRUE, indicator = NULL, lgl2int = FALSE, for
 
 #' @keywords internal
 #' @noRd
-handle_sys_arg <- function(tag, value, indicator = FALSE, lgl2int = FALSE, format = "%s", sep = " ", arg = rlang::caller_arg(value), call = rlang::caller_env()) {
-    if (is.null(value)) return(NULL) # styler: off
+handle_sys_arg <- function(tag, value, indicator = FALSE, lgl2int = FALSE, format = "%s", sep = " ", null_ok = TRUE, arg = rlang::caller_arg(value), call = rlang::caller_env()) {
+    if (is.null(value)) {
+        if (null_ok) return(NULL) # styler: off
+        cli::cli_abort("{.arg {arg}} cannot be {.code NULL}")
+    }
     assert_bool(lgl2int, call = call)
     if (indicator) {
         assert_bool(value, arg = arg, call = call)
