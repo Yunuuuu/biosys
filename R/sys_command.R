@@ -31,38 +31,42 @@ run_sys_command <- function(cmd = NULL, name, args = character(), envpath = NULL
         "named {.cls atomic}",
         null_ok = TRUE
     )
-    assert_bool(verbose)
     assert_(output, is.character, "character path", null_ok = TRUE)
     assert_bool(abort)
-    if (!is.null(sys_args$env)) {
-        cli::cli_warn(
-            "!" = "{.arg env} in {.arg sys_args} will not work",
+    assert_(sys_args, is.list, "a list", null_ok = TRUE)
+    assert_bool(verbose)
+    if (!is.null(sys_args) && !is.null(sys_args$env)) {
+        cli::cli_warn(c(
+            "!" = "{.arg env} in {.arg sys_args} won't work",
             "i" = "Please use {.arg env} argument directly."
-        )
+        ))
         sys_args$env <- NULL
     }
-    call <- quote(sys_command(
+    run <- quote(sys_command(
         cmd = cmd, name = name, args = args, sys_args = sys_args,
         verbose = verbose
     ))
-    if (!is.null(envpath)) {
-        # alyways override PATH in env
-        env <- env[names(env) != "PATH"]
-        env <- c(env, PATH = paste(
-            paste0(envpath, collapse = .Platform$path.sep),
-            Sys.getenv("PATH", unset = ""),
-            sep = .Platform$path.sep
+    if (!is.null(env) && any(names(env) == "PATH")) {
+        cli::cli_warn(c(
+            "!" = "{.field PATH} in {.arg env} won't work",
+            "i" = "Please use {.arg envpath} argument directly."
         ))
+        env <- env[names(env) != "PATH"]
     }
+    if (!is.null(envpath)) env <- c(env, PATH = ENV_PATH_ADD(envpath))
     if (!is.null(env)) {
-        if (verbose) {
-            cli::cli_inform("Setting environment")
-        }
-        status <- with_envvar(env = env, eval(call), action = "replace")
+        if (verbose) cli::cli_inform("Setting environment")
+        status <- with_envvar(env = env, eval(run), action = "replace")
     } else {
-        status <- eval(call)
+        status <- eval(run)
     }
     return_command(status, name = name, output = output, abort = abort)
+}
+
+ENV_PATH_ADD <- function(paths, sep = .Platform$path.sep) {
+    path <- paste0(paths, collapse = sep)
+    old_path <- Sys.getenv("PATH", unset = NA_character_)
+    if (is.na(old_path)) path else paste(path, old_path, sep = sep)
 }
 
 #' @noRd
@@ -76,10 +80,7 @@ sys_command <- function(cmd = NULL, name, args = character(), sys_args = list(),
         )
         cli::cli_inform("Running command {.field {command} {cli_args}}")
     }
-    sys_args <- c(
-        list(command = command, args = as.character(args)),
-        sys_args
-    )
+    sys_args <- c(list(command = command, args = as.character(args)), sys_args)
     do.call(system2, sys_args)
 }
 
@@ -135,7 +136,9 @@ delete_output <- function(output) {
                 recursive = TRUE
             ) != 0L
             if (any(failed_unlink_files)) {
-                cli::cli_warn("Cannot remove {.file {output[failed_unlink_files]}}")
+                cli::cli_warn(
+                    "Cannot remove {.path {output[failed_unlink_files]}}"
+                )
             }
         }
     }
