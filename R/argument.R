@@ -1,22 +1,23 @@
 #' Deliver arguments of command
 #' @param tag A string specifying argument tag, like "-i", "-o".
 #' @param value Value passed to the argument.
-#' @param indicator A logical value specifying whether value should be a
-#'   ndicator of tag. If TRUE, logical value will explain the set (TRUE or NULL)
-#'  or unset (FALSE) of tag. If `NULL`, `indicator` will be `TRUE` for logical
-#'  `value` argument, otherwise, will be `FALSE`.
-#' @param lgl2int A logical value indicates whether transfrom value TRUE to 1 or
-#'  FALSE to 0. If `TRUE`, format will always be set to "%d".
+#' @param indicator A logical value specifying whether value should be an
+#'  indicator of tag. If TRUE, logical value will explain the set or unset of
+#'  tag.
+#' @param lgl2int A logical value indicates whether transfrom value `TRUE` to 1
+#'  or `FALSE` to 0. If `TRUE`, format will always be set to "%d".
 #' @param format The format of the value, details see [sprintf].
 #' @param sep A character string used to separate "tag" and "value", usually " "
 #'  or "=".
-#' @return A string or NULL which can be used directly by [run_command].
+#' @return A string.
 #' @export
-handle_arg <- function(tag, value = TRUE, indicator = NULL, lgl2int = FALSE, format = "%s", sep = " ") {
+arg <- function(tag, value, indicator = FALSE, lgl2int = FALSE, format = "%s", sep = " ") {
     assert_string(tag, empty_ok = FALSE)
-    assert_bool(indicator, null_ok = TRUE)
-    indicator <- indicator %||% rlang::is_scalar_logical(value)
-    handle_sys_arg(
+    assert_bool(lgl2int)
+    assert_bool(indicator)
+    assert_string(format, empty_ok = FALSE)
+    assert_string(sep)
+    arg_internal(
         tag = tag, value = value,
         indicator = indicator, lgl2int = lgl2int,
         format = format, sep = sep
@@ -25,12 +26,17 @@ handle_arg <- function(tag, value = TRUE, indicator = NULL, lgl2int = FALSE, for
 
 #' @keywords internal
 #' @noRd
-handle_sys_arg <- function(tag, value, indicator = FALSE, lgl2int = FALSE, format = "%s", sep = " ", null_ok = TRUE, arg = rlang::caller_arg(value), call = rlang::caller_env()) {
+arg_internal <- function(
+    tag, value,
+    indicator = FALSE, lgl2int = FALSE,
+    format = "%s", sep = " ",
+    null_ok = FALSE,
+    arg = rlang::caller_arg(value),
+    call = rlang::caller_env()) {
     if (is.null(value)) {
         if (null_ok) return(NULL) # styler: off
         cli::cli_abort("{.arg {arg}} cannot be {.code NULL}")
     }
-    assert_bool(lgl2int, call = call)
     if (indicator) {
         assert_bool(value, arg = arg, call = call)
         if (value) return(tag) else return(NULL) # styler: off

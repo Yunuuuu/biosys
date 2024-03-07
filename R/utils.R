@@ -16,11 +16,10 @@ pkg_nm <- function() {
     utils::packageName(topenv(environment()))
 }
 
-dir_create <- function(dir, ...) {
-    if (!dir.exists(dir)) {
-        if (!dir.create(path = dir, showWarnings = FALSE, ...)) {
-            cli::cli_abort("Cannot create directory {.path {dir}}")
-        }
+dir_create <- function(path, ...) {
+    if (!dir.exists(path) &&
+        !dir.create(path = path, showWarnings = FALSE, ...)) {
+        cli::cli_abort("Cannot create directory {.path {path}}")
     }
 }
 
@@ -33,10 +32,10 @@ build_opath <- function(odir, ofile = NULL, abs = FALSE, call = rlang::caller_en
     dir_create(odir)
     # whether to use absolute path
     if (abs) odir <- normalizePath(odir, "/", mustWork = TRUE)
-    if (!is.null(ofile)) path(odir, ofile) else odir
+    if (!is.null(ofile)) file_path(odir, ofile) else odir
 }
 
-path <- function(..., ext = NULL) {
+file_path <- function(..., ext = NULL) {
     paths <- file.path(..., fsep = "/")
     if (!is.null(ext)) paths <- paste(paths, ext, sep = ".")
     paths
@@ -58,8 +57,29 @@ path_ext <- function(path) {
     ifelse(pos > -1L, substring(path, pos + 1L), "")
 }
 
-internal_file <- function(...) {
-    system.file(..., package = pkg_nm(), mustWork = TRUE)
+#' Will always add the basename of file into the exdir
+#' @noRd
+unzip2 <- function(file, exdir, overwrite = TRUE) {
+    dir_create(exdir)
+    exdir <- file.path(exdir, path_ext_remove(file))
+    dir_create(exdir)
+    if (is.null(utils::unzip(file, exdir = exdir, overwrite = overwrite))) {
+        cli::cli_abort("Cannot unzip {.path {file}}")
+    }
+    exdir
+}
+
+download_file <- function(url, path, ...) {
+    cli::cli_inform("Downloading from {.path {url}}")
+    if (utils::download.file(url = url, destfile = path, ...) > 0L) {
+        cli::cli_abort("Cannot download {.path {url}}")
+    }
+}
+
+# file.symlink
+
+internal_file <- function(..., dir = "extdata") {
+    system.file(dir, ..., package = pkg_nm(), mustWork = TRUE)
 }
 
 read_lines <- function(file) {
