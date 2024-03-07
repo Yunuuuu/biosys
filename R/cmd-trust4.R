@@ -63,8 +63,7 @@ trust4 <- exec_fn(
             arg_internal("-f", ref_coordinate),
             arg_internal("-ref", ref_annot, null_ok = TRUE),
             arg_internal("-o", ofile, null_ok = TRUE),
-            arg_internal("--od", odir),
-            ...
+            arg_internal("--od", odir)
         )
     )
 )
