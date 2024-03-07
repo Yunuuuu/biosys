@@ -15,9 +15,9 @@
 #'    prefix).
 #'  - `trust4_imgt_annot`: Output file name.
 #'  - `trust4_gene_names`: Output file name.
-#' @inheritParams allele_counter
 #' @param ... Other arguments passed to `run-trust4`. Details see:
 #' <https://github.com/liulab-dfci/TRUST4>.
+#' @inheritParams allele_counter
 #' @param trust4 Path to `run-trust4` command.
 #' @inheritParams exec
 #' @seealso <https://github.com/liulab-dfci/TRUST4>
@@ -26,8 +26,8 @@ trust4 <- exec_fn(
     "run-trust4",
     cmd = "trust4",
     file1 = , ref_coordinate = , ... = , file2 = NULL, mode = NULL,
-    ref_annot = NULL, ofile = NULL, odir = getwd(),
-    before = expression(
+    ref_annot = NULL, ofile = NULL, odir = getwd(), help = NULL,
+    prepare = expression(
         assert_string(file1, empty_ok = FALSE),
         if (is.null(mode)) {
             if (grepl("(fastq|fq)(\\.gz)?$", file1, perl = TRUE)) {
@@ -80,7 +80,7 @@ trust4_imgt_annot <- exec_fn("perl",
     species = "Homo_sapien",
     ofile = "IMGT+C.fa", odir = getwd(),
     oopath = quote(opath),
-    before = expression(
+    prepare = expression(
         assert_string(species, empty_ok = FALSE),
         opath <- build_opath(odir, ofile, abs = TRUE),
         cur_dir <- getwd(),

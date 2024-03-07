@@ -8,14 +8,15 @@
 #' @param ofile Output file.
 #' @param odir Output directory.
 #' @param ... Additional arguments passed to `alleleCounter` command.
-#' @param alleleCounter Path to alleleCounter command.
 #' @inheritParams exec
+#' @param help If `TRUE`, will print the help document for this command.
+#' @param alleleCounter Path to alleleCounter command.
 #' @seealso <https://github.com/cancerit/alleleCount>
 #' @export
 allele_counter <- exec_fn("alleleCounter",
     hts_file = , loci_file = , ofile = , ... = ,
-    odir = getwd(), oopath = quote(opath),
-    before = expression(
+    odir = getwd(), oopath = quote(opath), help = "--help",
+    prepare = expression(
         opath <- build_opath(odir, ofile),
         required_args <- c(
             arg_internal("-l", loci_file),

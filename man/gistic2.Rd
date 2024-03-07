@@ -18,6 +18,7 @@ gistic2(
   wait = TRUE,
   timeout = 0L,
   verbose = TRUE,
+  help = FALSE,
   gistic2 = NULL
 )
 }
@@ -27,10 +28,10 @@ gistic2(
 \item{refgene}{Path to reference genome data input file (REQUIRED, see below
 for file description).}
 
-\item{...}{Other arguments passed to gistic2. Details see:
+\item{...}{Other arguments passed to \code{gistic2}. Details see:
 \url{https://broadinstitute.github.io/gistic2/}.}
 
-\item{odir}{The output directory.}
+\item{odir}{Output directory.}
 
 \item{envpath}{A character define the environment variables \code{PATH} to be
 added before running command.}
@@ -63,6 +64,8 @@ for the command to finish, or run it asynchronously. This will be ignored
 
 \item{verbose}{A logical value indicates whether to print running command
 message.}
+
+\item{help}{If \code{TRUE}, will print the help document for this command.}
 
 \item{gistic2}{Path to gistic2 command.}
 }

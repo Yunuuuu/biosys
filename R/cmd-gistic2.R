@@ -19,16 +19,16 @@
 #' @param seg A data.frame of segmented data.
 #' @param refgene Path to reference genome data input file (REQUIRED, see below
 #' for file description).
-#' @param odir The output directory.
-#' @param ... Other arguments passed to gistic2. Details see:
+#' @param ... Other arguments passed to `gistic2`. Details see:
 #' <https://broadinstitute.github.io/gistic2/>.
+#' @inheritParams allele_counter
 #' @param gistic2 Path to gistic2 command.
 #' @seealso <https://broadinstitute.github.io/gistic2/>
 #' @inheritParams exec
 #' @export
 gistic2 <- exec_fn("gistic2",
-    seg = , refgene = , ... = , odir = getwd(),
-    before = expression(
+    seg = , refgene = , ... = , odir = getwd(), help = NULL,
+    prepare = expression(
         assert_data_frame(seg),
         odir <- build_opath(odir),
         seg_file <- tempfile("gistic2"),

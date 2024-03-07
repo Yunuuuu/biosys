@@ -16,6 +16,7 @@ cellranger(
   wait = TRUE,
   timeout = 0L,
   verbose = TRUE,
+  help = FALSE,
   cellranger = NULL
 )
 }
@@ -55,6 +56,8 @@ for the command to finish, or run it asynchronously. This will be ignored
 
 \item{verbose}{A logical value indicates whether to print running command
 message.}
+
+\item{help}{If \code{TRUE}, will print the help document for this command.}
 
 \item{cellranger}{Path to cellranger command.}
 }

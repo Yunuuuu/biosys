@@ -11,16 +11,26 @@
 #' @param ... Required arguments to run command
 #' @param cmd The argument name used to specify command path.
 #' @param oopath NULL or a symbol specify the variable passed into
-#'  `opath` of `exec_internal`
+#'  `opath` of `exec_internal`.
+#' @param help If not `FALSE`, will create a function with an argument `help`.
+#' in which case the help string will be passed into argument to print help
+#' document. (Often "--help" or NULL).
+#' @param prepare Expression list used to create `required_args`.
 #' @importFrom rlang :=
 #' @keywords internal
 #' @noRd
-exec_fn <- function(name, ..., cmd = name, oopath = NULL, before = NULL, after = NULL) {
+# running order:
+# 1. help (hijack, can skip 2nd and 3rd steps)
+# 2. prepare (required_args)
+# 3. optional_args
+# 4. `exec_internal`
+exec_fn <- function(name, ..., cmd = name, oopath = NULL, help = FALSE, prepare = NULL) {
     argv <- list(
         envpath = NULL, envvar = NULL, abort = TRUE,
         stdout = TRUE, stderr = TRUE, stdin = "", wait = TRUE, timeout = 0L,
         verbose = TRUE
     )
+    if (!isFALSE(help)) argv <- c(argv, list(help = FALSE))
     # prepare arguments for function ------------------------------
     # insert `cmd` argument in suitable position
     if (cmd_null_ok <- !is.null(name)) {
@@ -29,8 +39,9 @@ exec_fn <- function(name, ..., cmd = name, oopath = NULL, before = NULL, after =
         argv <- rlang::exprs(cmd = , ..., !!!argv)
         cmd <- "cmd"
     }
-    # prepare body for function ---------------------------
+    # prepare body for function ----------------------------
     ## prepare `cmd` argument ------------------------------
+    # this should be in the top of function body
     cmd_symbol <- rlang::sym(cmd)
     cmd_assert <- rlang::exprs(
         assert_string(!!cmd_symbol, empty_ok = FALSE, null_ok = !!cmd_null_ok)
@@ -40,7 +51,7 @@ exec_fn <- function(name, ..., cmd = name, oopath = NULL, before = NULL, after =
     # `opath` is an argument for `exec_internal`
     if (length(setdiff(...names(), c("...", "opath")))) {
         # if there are some required arguments passed into `cmd`, we should use
-        # `before` argument to pre-process required argument
+        # `prepare` argument to pre-process required argument
         any_required_args <- TRUE
     }
 
@@ -62,18 +73,19 @@ exec_fn <- function(name, ..., cmd = name, oopath = NULL, before = NULL, after =
         optional_args <- NULL
     }
 
-    ## construct `arg` expression ---------------------------------
+    ## combining `optional_args` and `required_args` expression ------
     if (any_required_args && any_optional_args) {
-        args <- quote(c(required_args, dots))
+        combining_args <- quote(args <- c(required_args, dots))
     } else if (any_required_args) {
-        args <- quote(required_args)
+        combining_args <- quote(args <- required_args)
     } else if (any_optional_args) {
-        args <- quote(dots)
+        combining_args <- quote(args <- dots)
     } else {
-        args <- quote(character())
+        combining_args <- quote(args <- character())
     }
-    ## construct function body ----------------------------------
-    body <- substitute(
+
+    ## construct run command expression ---------------------------
+    exec_call <- substitute(
         exec_internal(
             name = name, cmd = cmd_symbol, args = args,
             # nolint start
@@ -82,13 +94,34 @@ exec_fn <- function(name, ..., cmd = name, oopath = NULL, before = NULL, after =
             timeout = timeout, verbose = verbose
             # nolint end
         ),
-        list(name = name, cmd_symbol = cmd_symbol, args = args, oopath = oopath)
+        list(name = name, cmd_symbol = cmd_symbol, oopath = oopath)
     )
-    body <- c(optional_args, list(body))
-    if (!is.null(before)) body <- c(before, body)
-    if (!is.null(after)) body <- c(body, after)
+
+    ## prepare `help` expression ---------------------------
+    if (!isFALSE(help)) {
+        # for some commands, the help document can return a error code
+        # so we always use `abort=FALSE`
+        help_exec_call <- rlang::call_modify(exec_call,
+            args = help, abort = FALSE, warn = FALSE
+        )
+        help <- rlang::exprs(assert_bool(help), # styler: off
+            if (help) return(!!help_exec_call) # styler: off
+        )
+    } else {
+        help <- NULL
+    }
+    # running order:
+    # 1. cmd_assert
+    # 2. help (hijack, can skip 3rd and 4th steps)
+    # 3. prepare (required_args)
+    # 4. optional_args
+    # 5. exec_call
+    ## construct function body ----------------------------------
+    body <- as.call(c(as.name("{"), c(
+        cmd_assert, help, prepare, optional_args, combining_args, exec_call
+    )))
+
     # construct function ----------------------------------
-    body <- as.call(c(as.name("{"), c(cmd_assert, body)))
     rlang::new_function(argv, body = body)
 }
 
@@ -131,7 +164,7 @@ exec <- exec_fn(NULL, cmd = "cmd", ... = , opath = NULL, oopath = quote(opath))
 #' @noRd
 exec_internal <- function(
     name, cmd = NULL, args = character(),
-    opath = NULL, envpath = NULL, envvar = NULL, abort = TRUE,
+    opath = NULL, envpath = NULL, envvar = NULL, abort = TRUE, warn = TRUE,
     stdout = TRUE, stderr = TRUE, stdin = "", wait = TRUE, timeout = 0L,
     verbose = TRUE) {
     assert_(
@@ -166,7 +199,10 @@ exec_internal <- function(
     } else {
         status <- eval(run)
     }
-    cmd_return(status, id = cmd %||% name, opath = opath, abort = abort)
+    cmd_return(status,
+        id = cmd %||% name, opath = opath,
+        abort = abort, warn = warn
+    )
 }
 
 build_io_arg <- function(x, ..., arg = rlang::caller_arg(x), call = rlang::caller_env()) {
@@ -233,7 +269,7 @@ cmd_locate <- function(cmd = NULL, name) {
     command
 }
 
-cmd_return <- function(status, id = NULL, opath = NULL, abort = FALSE) {
+cmd_return <- function(status, id, opath, abort, warn) {
     if (is.null(id)) {
         msg <- "command"
     } else {
@@ -244,12 +280,16 @@ cmd_return <- function(status, id = NULL, opath = NULL, abort = FALSE) {
         cli::cli_inform(msg)
     } else {
         # if command run failed, we remove the output
+        remove_opath(opath)
         msg <- c(
             sprintf("something wrong when running %s", msg),
             i = "error code: {.val {status}}"
         )
-        remove_opath(opath)
-        if (abort) cli::cli_abort(msg) else cli::cli_warn(msg)
+        if (abort) {
+            cli::cli_abort(msg)
+        } else if (warn) {
+            cli::cli_warn(msg)
+        }
     }
     invisible(status)
 }
