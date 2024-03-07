@@ -75,13 +75,13 @@ exec_fn <- function(name, ..., cmd = name, oopath = NULL, help = FALSE, prepare 
 
     ## combining `optional_args` and `required_args` expression ------
     if (any_required_args && any_optional_args) {
-        combining_args <- quote(args <- c(required_args, dots))
+        combining_args <- expression(args <- c(required_args, dots))
     } else if (any_required_args) {
-        combining_args <- quote(args <- required_args)
+        combining_args <- expression(args <- required_args)
     } else if (any_optional_args) {
-        combining_args <- quote(args <- dots)
+        combining_args <- expression(args <- dots)
     } else {
-        combining_args <- quote(args <- character())
+        combining_args <- expression(args <- character())
     }
 
     ## construct run command expression ---------------------------
@@ -118,7 +118,9 @@ exec_fn <- function(name, ..., cmd = name, oopath = NULL, help = FALSE, prepare 
     # 5. exec_call
     ## construct function body ----------------------------------
     body <- as.call(c(as.name("{"), c(
-        cmd_assert, help, prepare, optional_args, combining_args, exec_call
+        cmd_assert, help,
+        prepare, optional_args, combining_args,
+        list(exec_call)
     )))
 
     # construct function ----------------------------------
