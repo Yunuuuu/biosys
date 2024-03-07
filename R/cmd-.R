@@ -190,10 +190,16 @@ cmd_run <- function(cmd = NULL, name, args = character(), arg_internals = list()
     assert_string(cmd, null_ok = !is.null(name))
     command <- cmd_locate(cmd = cmd, name = name)
     if (verbose) {
-        cli_args <- cli::cli_vec(args, # nolint styler: off
-            list("vec-sep" = " ", "vec-last" = " ")
-        )
-        cli::cli_inform("Running command {.field {command} {cli_args}}")
+        msg <- "Running command {.field {command}"
+        if (length(args)) {
+            cli_args <- cli::cli_vec(args, # nolint styler: off
+                list("vec-sep" = " ", "vec-last" = " ")
+            )
+            msg <- paste(msg, "{cli_args}}", sep = " ")
+        } else {
+            msg <- paste0(msg, "}")
+        }
+        cli::cli_inform(msg)
     }
     arg_internals <- c(list(command = command, args = as.character(args)), arg_internals)
     do.call(system2, arg_internals)
@@ -224,7 +230,7 @@ cmd_return <- function(status, id = NULL, opath = NULL, abort = FALSE) {
     if (is.null(id)) {
         msg <- "command"
     } else {
-        msg <- "command {.filed {id}}"
+        msg <- "command {.field {id}}"
     }
     if (status == 0L) {
         msg <- sprintf("Running %s successfully", msg)
