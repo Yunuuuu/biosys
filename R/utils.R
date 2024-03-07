@@ -41,20 +41,19 @@ file_path <- function(..., ext = NULL) {
     paths
 }
 
-path_ext_remove <- function(path, compression = FALSE) {
-    if (compression) {
-        path <- sub(
-            "\\.(br|bz2|gz|lz|lz4|lzma|lzo|rz|xz|7z|zip)$",
-            "", path,
-            perl = TRUE
-        )
-    }
-    sub("\\.[[:alnum:]]+$", "", path, perl = TRUE)
+path_ext_remove <- function(path) {
+    sub("\\.[[:alnum:]]*$", "", path, perl = TRUE)
+}
+
+path_ext_set <- function(path, ext) {
+    sub("\\.[[:alnum:]]*$", ext, path, perl = TRUE)
 }
 
 path_ext <- function(path) {
-    pos <- regexpr("\\.([[:alnum:]]+)$", path, perl = TRUE)
-    ifelse(pos > -1L, substring(path, pos + 1L), "")
+    matches <- regexpr("\\.([[:alnum:]]+)$", path, perl = TRUE)
+    start <- as.vector(matches)
+    end <- start + attr(matches, "match.length") - 1L
+    ifelse(start == -1L, "", substr(path, start + 1, end))
 }
 
 #' Will always add the basename of file into the exdir
