@@ -75,7 +75,7 @@ exec_fn <- function(name, ..., cmd = name, oopath = NULL, before = NULL, after =
             timeout = timeout, verbose = verbose
             # nolint end
         ),
-        list(name = name, cmd = cmd_symbol, args = args, oopath = oopath)
+        list(name = name, cmd_symbol = cmd_symbol, args = args, oopath = oopath)
     )
     body <- c(optional_args, list(body))
     if (!is.null(before)) body <- c(before, body)
