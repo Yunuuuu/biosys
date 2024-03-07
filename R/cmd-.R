@@ -282,7 +282,7 @@ cmd_return <- function(status, id, opath, abort, warn) {
         cli::cli_inform(msg)
     } else {
         # if command run failed, we remove the output
-        remove_opath(opath)
+        if (!is.null(opath)) remove_opath(opath)
         msg <- c(
             sprintf("something wrong when running %s", msg),
             i = "error code: {.val {status}}"
@@ -297,17 +297,15 @@ cmd_return <- function(status, id, opath, abort, warn) {
 }
 
 remove_opath <- function(opath) {
-    if (!is.null(opath)) {
-        # remove trailing backslash or slash
-        opath <- sub("(\\\\+|/+)$", "", opath, perl = TRUE)
-        opath <- opath[file.exists(opath)] # can also check directory
-        if (length(opath)) {
-            failed <- vapply(opath, unlink, integer(1L),
-                recursive = TRUE, USE.NAMES = FALSE
-            ) != 0L
-            if (any(failed)) {
-                cli::cli_warn("Cannot remove {.path {opath[failed]}}")
-            }
+    # remove trailing backslash or slash
+    opath <- sub("(\\\\+|/+)$", "", opath, perl = TRUE)
+    opath <- opath[file.exists(opath)] # can also check directory
+    if (length(opath)) {
+        failed <- vapply(opath, unlink, integer(1L),
+            recursive = TRUE, USE.NAMES = FALSE
+        ) != 0L
+        if (any(failed)) {
+            cli::cli_warn("Cannot remove {.path {opath[failed]}}")
         }
     }
 }
