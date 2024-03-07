@@ -22,7 +22,7 @@ exec(
 \arguments{
 \item{cmd}{Command to be invoked, as a character string.}
 
-\item{...}{Arguments passed to \code{cmd}.}
+\item{...}{<\link[rlang:dyn-dots]{dynamic dots}> Arguments passed to \code{cmd}.}
 
 \item{opath}{Specifying the output file or directory to be removed if
 command running error. Note: all files in the directory will be removed, you

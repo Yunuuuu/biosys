@@ -4,8 +4,14 @@
 #' parameters, for optional arguments, we'll provide a `...` argument to pass
 #' these parameters.
 #'
+#' we always use `ofile` and `odir` to specify output file or directory.
+#' `opath` is special for `exec_internal` argument, we ofthen build `opath` with
+#' `ofile` and `odir`.
+#'
 #' @param ... Required arguments to run command
 #' @param cmd The argument name used to specify command path.
+#' @param oopath NULL or a symbol specify the variable passed into
+#'  `opath` of `exec_internal`
 #' @importFrom rlang :=
 #' @keywords internal
 #' @noRd
@@ -31,7 +37,8 @@ exec_fn <- function(name, ..., cmd = name, oopath = NULL, before = NULL, after =
     )
     ## prepare required arguments --------------------------
     any_required_args <- FALSE
-    if (length(setdiff(...names(), "..."))) {
+    # `opath` is an argument for `exec_internal`
+    if (length(setdiff(...names(), c("...", "opath")))) {
         # if there are some required arguments passed into `cmd`, we should use
         # `before` argument to pre-process required argument
         any_required_args <- TRUE
@@ -88,7 +95,7 @@ exec_fn <- function(name, ..., cmd = name, oopath = NULL, before = NULL, after =
 #' Invoke a System Command
 #'
 #' @param cmd Command to be invoked, as a character string.
-#' @param ... Arguments passed to `cmd`.
+#' @param ... <[dynamic dots][rlang::dyn-dots]> Arguments passed to `cmd`.
 #' @param envpath A character define the environment variables `PATH` to be
 #'  added before running command.
 #' @param envvar A named atomic vector define running environment variables of
@@ -116,7 +123,7 @@ exec_fn <- function(name, ..., cmd = name, oopath = NULL, before = NULL, after =
 #'  - if `abort=FALSE` and `wait=FALSE`, always return `0`.
 #'  - if `abort=FALSE` and `wait=TRUE`, exit status returned by the command.
 #' @export
-exec <- exec_fn(NULL, cmd = "cmd", ... = , opath = NULL)
+exec <- exec_fn(NULL, cmd = "cmd", ... = , opath = NULL, oopath = quote(opath))
 
 #' Don't provide default value for name, in this way, we must provide name
 #' manually for every internal function.
@@ -237,7 +244,10 @@ cmd_return <- function(status, id = NULL, opath = NULL, abort = FALSE) {
         cli::cli_inform(msg)
     } else {
         # if command run failed, we remove the output
-        msg <- sprintf("Something wrong when running %s", msg)
+        msg <- c(
+            sprintf("something wrong when running %s", msg),
+            i = "error code: {.val {status}}"
+        )
         remove_opath(opath)
         if (abort) cli::cli_abort(msg) else cli::cli_warn(msg)
     }
