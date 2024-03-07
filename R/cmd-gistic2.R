@@ -35,9 +35,9 @@ gistic2 <- exec_fn("gistic2",
         data.table::fwrite(seg, file = seg_file, sep = "\t"),
         on.exit(file.remove(seg_file)),
         required_args <- c(
-            arg_internal("-seg", seg_file, null_ok = FALSE),
-            arg_internal("-refgene", refgene, null_ok = FALSE),
-            arg_internal("-b", odir, null_ok = FALSE)
+            arg_internal("-seg", seg_file),
+            arg_internal("-refgene", refgene),
+            arg_internal("-b", odir)
         )
     )
 )
