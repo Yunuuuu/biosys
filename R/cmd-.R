@@ -31,7 +31,7 @@ exec_fn <- function(name, ..., cmd = name, oopath = NULL, before = NULL, after =
     )
     ## prepare required arguments --------------------------
     any_required_args <- FALSE
-    if (length(setdiff(...names(), c("...", "opath", "ofile", "odir")))) {
+    if (length(setdiff(...names(), "..."))) {
         # if there are some required arguments passed into `cmd`, we should use
         # `before` argument to pre-process required argument
         any_required_args <- TRUE
