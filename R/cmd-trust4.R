@@ -22,7 +22,7 @@
 #' @inheritParams exec
 #' @seealso <https://github.com/liulab-dfci/TRUST4>
 #' @export
-trust4 <- exec_fn(
+trust4 <- exec_build(
     "run-trust4",
     cmd = "trust4",
     file1 = , ref_coordinate = , ... = , file2 = NULL, mode = NULL,
@@ -76,7 +76,7 @@ trust4 <- exec_fn(
 #' @param perl Path to `perl` command.
 #' @export
 #' @rdname trust4
-trust4_imgt_annot <- exec_fn("perl",
+trust4_imgt_annot <- exec_build("perl",
     species = "Homo_sapien",
     ofile = "IMGT+C.fa", odir = getwd(),
     opath_internal = quote(opath),

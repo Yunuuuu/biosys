@@ -26,7 +26,7 @@
 #' @seealso <https://broadinstitute.github.io/gistic2/>
 #' @inheritParams exec
 #' @export
-gistic2 <- exec_fn("gistic2",
+gistic2 <- exec_build("gistic2",
     seg = , refgene = , ... = , odir = getwd(), help = NULL,
     prepare = expression(
         assert_data_frame(seg),

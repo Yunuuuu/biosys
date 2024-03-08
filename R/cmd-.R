@@ -1,4 +1,4 @@
-#' Function factory to create function to run system command
+#' Function to create a function to run system command
 #'
 #' For each algorithm, we'll only build command arguments for required
 #' parameters, for optional arguments, we'll provide a `...` argument to pass
@@ -24,7 +24,7 @@
 # 2. prepare (required_args)
 # 3. optional_args
 # 4. `exec_internal`
-exec_fn <- function(name, ..., cmd = name, opath_internal = NULL, help = FALSE, prepare = NULL) {
+exec_build <- function(name, ..., cmd = name, opath_internal = NULL, help = FALSE, prepare = NULL) {
     argv <- list(
         envpath = NULL, envvar = NULL, abort = TRUE,
         stdout = TRUE, stderr = TRUE, stdin = "", wait = TRUE, timeout = 0L,
@@ -159,7 +159,7 @@ exec_fn <- function(name, ..., cmd = name, opath_internal = NULL, help = FALSE, 
 #'  - if `abort=FALSE` and `wait=FALSE`, always return `0`.
 #'  - if `abort=FALSE` and `wait=TRUE`, exit status returned by the command.
 #' @export
-exec <- exec_fn(NULL, cmd = "cmd", ... = , opath = NULL, opath_internal = quote(opath))
+exec <- exec_build(NULL, cmd = "cmd", ... = , opath = NULL, opath_internal = quote(opath))
 
 #' Don't provide default value for name, in this way, we must provide name
 #' manually for every internal function.
