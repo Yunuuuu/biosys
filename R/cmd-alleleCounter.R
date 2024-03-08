@@ -15,7 +15,7 @@
 #' @export
 allele_counter <- exec_fn("alleleCounter",
     hts_file = , loci_file = , ofile = , ... = ,
-    odir = getwd(), oopath = quote(opath), help = "--help",
+    odir = getwd(), opath_internal = quote(opath), help = "--help",
     prepare = expression(
         opath <- build_opath(odir, ofile),
         required_args <- c(

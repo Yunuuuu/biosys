@@ -10,7 +10,7 @@
 #'
 #' @param ... Required arguments to run command
 #' @param cmd The argument name used to specify command path.
-#' @param oopath NULL or a symbol specify the variable passed into
+#' @param opath_internal NULL or a symbol specify the variable passed into
 #'  `opath` of `exec_internal`.
 #' @param help If not `FALSE`, will create a function with an argument `help`.
 #' in which case the help string will be passed into argument to print help
@@ -24,7 +24,7 @@
 # 2. prepare (required_args)
 # 3. optional_args
 # 4. `exec_internal`
-exec_fn <- function(name, ..., cmd = name, oopath = NULL, help = FALSE, prepare = NULL) {
+exec_fn <- function(name, ..., cmd = name, opath_internal = NULL, help = FALSE, prepare = NULL) {
     argv <- list(
         envpath = NULL, envvar = NULL, abort = TRUE,
         stdout = TRUE, stderr = TRUE, stdin = "", wait = TRUE, timeout = 0L,
@@ -87,14 +87,14 @@ exec_fn <- function(name, ..., cmd = name, oopath = NULL, help = FALSE, prepare 
     ## construct run command expression ---------------------------
     exec_call <- substitute(
         exec_internal(
-            name = name, cmd = cmd_symbol, args = args,
+            name = name, cmd = cmd, args = args,
             # nolint start
-            opath = oopath, envpath = envpath, envvar = envvar, abort = abort,
-            stdout = stdout, stderr = stderr, stdin = stdin, wait = wait,
-            timeout = timeout, verbose = verbose
+            opath = opath, envpath = envpath, envvar = envvar,
+            abort = abort, stdout = stdout, stderr = stderr, stdin = stdin,
+            wait = wait, timeout = timeout, verbose = verbose
             # nolint end
         ),
-        list(name = name, cmd_symbol = cmd_symbol, oopath = oopath)
+        list(name = name, cmd = cmd_symbol, opath = opath_internal)
     )
 
     ## prepare `help` expression ---------------------------
@@ -110,13 +110,14 @@ exec_fn <- function(name, ..., cmd = name, oopath = NULL, help = FALSE, prepare 
     } else {
         help <- NULL
     }
+
+    ## construct function body ----------------------------------
     # running order:
     # 1. cmd_assert
     # 2. help (hijack, can skip 3rd and 4th steps)
     # 3. prepare (required_args)
     # 4. optional_args
     # 5. exec_call
-    ## construct function body ----------------------------------
     body <- as.call(c(as.name("{"), c(
         cmd_assert, help,
         prepare, optional_args, combining_args,
@@ -158,7 +159,7 @@ exec_fn <- function(name, ..., cmd = name, oopath = NULL, help = FALSE, prepare 
 #'  - if `abort=FALSE` and `wait=FALSE`, always return `0`.
 #'  - if `abort=FALSE` and `wait=TRUE`, exit status returned by the command.
 #' @export
-exec <- exec_fn(NULL, cmd = "cmd", ... = , opath = NULL, oopath = quote(opath))
+exec <- exec_fn(NULL, cmd = "cmd", ... = , opath = NULL, opath_internal = quote(opath))
 
 #' Don't provide default value for name, in this way, we must provide name
 #' manually for every internal function.
