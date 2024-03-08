@@ -10,7 +10,7 @@
 #' @param ... Additional arguments passed to `alleleCounter` command.
 #' @inheritParams exec
 #' @param help If `TRUE`, will print the help document for this command.
-#' @param alleleCounter Path to alleleCounter command.
+#' @param alleleCounter `r rd_cmd("alleleCounter")`.
 #' @seealso <https://github.com/cancerit/alleleCount>
 #' @export
 allele_counter <- exec_fn("alleleCounter",

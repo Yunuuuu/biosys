@@ -2,7 +2,7 @@
 #' @param subcmd Sub-Command of cellranger.
 #' @param ... Additional arguments passed to `cellranger subcmd` command.
 #' @inheritParams allele_counter
-#' @param cellranger Path to cellranger command.
+#' @param cellranger `r rd_cmd("cellranger")`.
 #' @export
 cellranger <- exec_fn("cellranger",
     subcmd = , ... = , help = "--help",

@@ -22,7 +22,7 @@
 #' @param ... Other arguments passed to `gistic2`. Details see:
 #' <https://broadinstitute.github.io/gistic2/>.
 #' @inheritParams allele_counter
-#' @param gistic2 Path to gistic2 command.
+#' @param gistic2 `r rd_cmd("gistic2")`.
 #' @seealso <https://broadinstitute.github.io/gistic2/>
 #' @inheritParams exec
 #' @export

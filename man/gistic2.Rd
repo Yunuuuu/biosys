@@ -67,7 +67,7 @@ message.}
 
 \item{help}{If \code{TRUE}, will print the help document for this command.}
 
-\item{gistic2}{Path to gistic2 command.}
+\item{gistic2}{A string of path to \code{gistic2} command.}
 }
 \description{
 The GISTIC module identifies regions of the genome that are

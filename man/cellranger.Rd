@@ -59,7 +59,7 @@ message.}
 
 \item{help}{If \code{TRUE}, will print the help document for this command.}
 
-\item{cellranger}{Path to cellranger command.}
+\item{cellranger}{A string of path to \code{cellranger} command.}
 }
 \description{
 Run cellranger

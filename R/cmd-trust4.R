@@ -18,7 +18,7 @@
 #' @param ... Other arguments passed to `run-trust4`. Details see:
 #' <https://github.com/liulab-dfci/TRUST4>.
 #' @inheritParams allele_counter
-#' @param trust4 Path to `run-trust4` command.
+#' @param trust4 `r rd_cmd("run-trust4")`.
 #' @inheritParams exec
 #' @seealso <https://github.com/liulab-dfci/TRUST4>
 #' @export

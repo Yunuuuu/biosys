@@ -108,7 +108,7 @@ message.}
 
 \item{help}{If \code{TRUE}, will print the help document for this command.}
 
-\item{trust4}{Path to \code{run-trust4} command.}
+\item{trust4}{A string of path to \code{run-trust4} command.}
 
 \item{species}{Species to extract IMGT annotation, details see
 \url{https://www.imgt.org//download/V-QUEST/IMGT_V-QUEST_reference_directory/}.}

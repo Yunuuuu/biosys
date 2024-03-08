@@ -68,7 +68,7 @@ message.}
 
 \item{help}{If \code{TRUE}, will print the help document for this command.}
 
-\item{alleleCounter}{Path to alleleCounter command.}
+\item{alleleCounter}{A string of path to \code{alleleCounter} command.}
 }
 \description{
 The alleleCount package primarily exists to prevent code duplication between
