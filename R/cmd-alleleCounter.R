@@ -7,7 +7,7 @@
 #' @param loci_file Path to loci file.
 #' @param ofile Output file.
 #' @param odir Output directory.
-#' @param ... Additional arguments passed to `alleleCounter` command.
+#' @param ... `r rd_dots("alleleCounter")`.
 #' @inheritParams exec
 #' @param help If `TRUE`, will print the help document for this command.
 #' @param alleleCounter `r rd_cmd("alleleCounter")`.

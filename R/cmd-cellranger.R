@@ -1,6 +1,6 @@
 #' Run cellranger
 #' @param subcmd Sub-Command of cellranger.
-#' @param ... Additional arguments passed to `cellranger subcmd` command.
+#' @param ... `r rd_dots("cellranger subcmd")`.
 #' @inheritParams allele_counter
 #' @param cellranger `r rd_cmd("cellranger")`.
 #' @export

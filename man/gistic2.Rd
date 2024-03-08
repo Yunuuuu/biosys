@@ -28,7 +28,7 @@ gistic2(
 \item{refgene}{Path to reference genome data input file (REQUIRED, see below
 for file description).}
 
-\item{...}{Other arguments passed to \code{gistic2}. Details see:
+\item{...}{Additional arguments passed to \code{gistic2} command. Details see:
 \url{https://broadinstitute.github.io/gistic2/}.}
 
 \item{odir}{Output directory.}

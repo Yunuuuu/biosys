@@ -19,7 +19,7 @@
 #' @param seg A data.frame of segmented data.
 #' @param refgene Path to reference genome data input file (REQUIRED, see below
 #' for file description).
-#' @param ... Other arguments passed to `gistic2`. Details see:
+#' @param ... `r rd_dots("gistic2")`. Details see:
 #' <https://broadinstitute.github.io/gistic2/>.
 #' @inheritParams allele_counter
 #' @param gistic2 `r rd_cmd("gistic2")`.

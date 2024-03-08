@@ -53,7 +53,7 @@ trust4_gene_names(imgt_annot, ofile = "bcr_tcr_gene_name.txt", odir = getwd())
 \item{ref_coordinate}{Path to the fasta file coordinate and sequence of
 V/D/J/C genes.}
 
-\item{...}{Other arguments passed to \code{run-trust4}. Details see:
+\item{...}{Additional arguments passed to \code{run-trust4} command. Details see:
 \url{https://github.com/liulab-dfci/TRUST4}.}
 
 \item{file2}{Path to the second paired-end read fastq file, only used for
