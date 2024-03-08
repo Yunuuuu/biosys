@@ -8,7 +8,8 @@
 #' `opath` is special for `exec_internal` argument, we ofthen build `opath` with
 #' `ofile` and `odir`.
 #'
-#' @param ... Required arguments to run command
+#' @param ... Arguments to run command, you can pass `... =` to add dots (which
+#' should be optional arguments).
 #' @param cmd The argument name used to specify command path.
 #' @param opath_internal NULL or a symbol specify the variable passed into
 #'  `opath` of `exec_internal`.
@@ -25,13 +26,13 @@
 # 3. optional_args
 # 4. `exec_internal`
 exec_build <- function(name, ..., cmd = name, opath_internal = NULL, help = FALSE, prepare = NULL) {
+    # prepare arguments for function ------------------------------
     argv <- list(
         envpath = NULL, envvar = NULL, abort = TRUE,
         stdout = TRUE, stderr = TRUE, stdin = "", wait = TRUE, timeout = 0L,
         verbose = TRUE
     )
     if (!isFALSE(help)) argv <- c(argv, list(help = FALSE))
-    # prepare arguments for function ------------------------------
     # insert `cmd` argument in suitable position
     if (cmd_null_ok <- !is.null(name)) {
         argv <- rlang::exprs(..., !!!argv, !!cmd := NULL) # nolint
@@ -39,10 +40,12 @@ exec_build <- function(name, ..., cmd = name, opath_internal = NULL, help = FALS
         argv <- rlang::exprs(cmd = , ..., !!!argv)
         cmd <- "cmd"
     }
+
     # prepare body for function ----------------------------
     ## prepare `cmd` argument ------------------------------
-    # this should be in the top of function body
+    # this will insert into `exec_internal` call expression
     cmd_symbol <- rlang::sym(cmd)
+    # this should be in the top of function body
     cmd_assert <- rlang::exprs(
         assert_string(!!cmd_symbol, empty_ok = FALSE, null_ok = !!cmd_null_ok)
     )
@@ -84,7 +87,7 @@ exec_build <- function(name, ..., cmd = name, opath_internal = NULL, help = FALS
         combining_args <- expression(args <- character())
     }
 
-    ## construct run command expression ---------------------------
+    ## construct `exec_internal` expression to run command -----------
     exec_call <- substitute(
         exec_internal(
             name = name, cmd = cmd, args = args,
@@ -99,8 +102,8 @@ exec_build <- function(name, ..., cmd = name, opath_internal = NULL, help = FALS
 
     ## prepare `help` expression ---------------------------
     if (!isFALSE(help)) {
-        # for some commands, the help document can return a error code
-        # so we always use `abort=FALSE`
+        # for some commands, the help document can return an error code
+        # so we always use `abort=FALSE` and `warn=FALSE`
         help_exec_call <- rlang::call_modify(exec_call,
             args = help, abort = FALSE, warn = FALSE
         )
