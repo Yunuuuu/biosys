@@ -138,7 +138,8 @@ exec_build <- function(name, ..., cmd = name, opath_internal = NULL, help = FALS
 #' @param envpath A character define the environment variables `PATH` to be
 #'  added before running command.
 #' @param envvar A named atomic vector define running environment variables of
-#' the command.
+#' the command, all environment variables will be replaced before running
+#' command. Use `NA` to remove an environment variable.
 #' @param opath Specifying the output file or directory to be removed if
 #'  command running error. Note: all files in the directory will be removed, you
 #'  must use this argument carefully.
@@ -187,28 +188,41 @@ exec_internal <- function(
         wait <- TRUE
     }
     assert_bool(verbose)
-    arg_internals <- list( # nolint
-        stdout = stdout,
-        stderr = stderr,
-        stdin = stdin,
-        wait = wait,
-        timeout = timeout
-    )
-    run <- quote(cmd_run(
-        cmd = cmd, name = name, args = args,
-        arg_internals = arg_internals, verbose = verbose
-    ))
-    envvar <- cmd_envvar(envpath, envvar)
-    if (!is.null(envvar)) {
-        if (verbose) cli::cli_inform("Setting environment variables")
-        status <- with_envvar(envvar = envvar, eval(run), action = "replace")
-    } else {
-        status <- eval(run)
+    if ((!is.null(envvar) || !is.null(envpath)) && verbose) {
+        cli::cli_inform("Setting environment variables")
     }
+    envvar <- envvar_add_envpath(envvar, envpath)
+    status <- with_envvar(
+        envvar = envvar,
+        cmd_run(
+            cmd = cmd, name = name, args = args,
+            stdout = stdout, stderr = stderr,
+            stdin = stdin, wait = wait,
+            timeout = timeout, verbose = verbose
+        ),
+        action = "replace"
+    )
     cmd_return(status,
         id = cmd %||% name, opath = opath,
         abort = abort, warn = warn
     )
+}
+
+envpath_add <- function(paths, sep = .Platform$path.sep) {
+    path <- paste0(path.expand(rev(paths)), collapse = sep)
+    old_path <- Sys.getenv("PATH", unset = NA_character_)
+    if (is.na(old_path)) path else paste(path, old_path, sep = sep)
+}
+
+envvar_add_envpath <- function(envvar, envpath) {
+    if (!is.null(envvar) && any(names(envvar) == "PATH") && !is.null(envpath)) {
+        cli::cli_warn(
+            "{.field PATH} in {.arg env} will always override {.arg envpath}"
+        )
+        envpath <- NULL
+    }
+    if (!is.null(envpath)) envvar <- c(envvar, PATH = envpath_add(envpath))
+    envvar
 }
 
 build_io_arg <- function(x, ..., arg = rlang::caller_arg(x), call = rlang::caller_env()) {
@@ -222,20 +236,8 @@ build_io_arg <- function(x, ..., arg = rlang::caller_arg(x), call = rlang::calle
     }
 }
 
-cmd_envvar <- function(envpath, envvar) {
-    if (!is.null(envvar) && any(names(envvar) == "PATH")) {
-        cli::cli_warn(c(
-            "!" = "{.field PATH} in {.arg env} won't work",
-            "i" = "Please use {.arg envpath} argument directly."
-        ))
-        envvar <- envvar[names(envvar) != "PATH"]
-    }
-    if (!is.null(envpath)) envvar <- c(envvar, PATH = envpath_add(envpath))
-    envvar
-}
-
 #' @noRd
-cmd_run <- function(cmd = NULL, name, args = character(), arg_internals = list(), verbose = TRUE) {
+cmd_run <- function(cmd = NULL, name, args = character(), ..., verbose = TRUE) {
     assert_string(cmd, null_ok = !is.null(name))
     command <- cmd_locate(cmd = cmd, name = name)
     if (verbose) {
@@ -250,8 +252,8 @@ cmd_run <- function(cmd = NULL, name, args = character(), arg_internals = list()
         }
         cli::cli_inform(msg)
     }
-    arg_internals <- c(list(command = command, args = as.character(args)), arg_internals)
-    do.call(system2, arg_internals)
+    sys_args <- c(list(command = command, args = as.character(args)), ...)
+    do.call(system2, sys_args)
 }
 
 cmd_locate <- function(cmd = NULL, name) {

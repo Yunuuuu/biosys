@@ -38,7 +38,8 @@ allele_counter(
 added before running command.}
 
 \item{envvar}{A named atomic vector define running environment variables of
-the command.}
+the command, all environment variables will be replaced before running
+command. Use \code{NA} to remove an environment variable.}
 
 \item{abort}{A bool indicates whether to report error if command return
 non-zero status.}

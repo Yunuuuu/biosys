@@ -25,13 +25,9 @@ parse_envvar <- function(envvar) {
 #' @noRd
 with_envvar <- function(envvar, code, action = "replace", sep = .Platform$path.sep) {
     action <- match.arg(action, c("replace", "prefix", "suffix"))
-    old <- set_envvar(as_envvars(envvar), action = action, sep = sep)
-    old_set <- !is.na(old)
-    if (any(old_set)) {
-        on.exit(do.call("Sys.setenv", as.list(old[old_set])))
-    }
-    if (any(!old_set)) {
-        on.exit(Sys.unsetenv(names(old)[!old_set]), add = TRUE)
+    if (length(envvar) > 0L) {
+        old <- set_envvar(as_envvars(envvar), action = action, sep = sep)
+        on.exit(set_envvar(old))
     }
     force(code)
 }
@@ -60,13 +56,6 @@ set_envvar <- function(envvar, action = "replace", sep = .Platform$path.sep) {
 }
 
 as_envvars <- function(envvar) {
-    if (length(envvar) == 0L) return(envvar) # styler: off
     # if there are duplicated entries keep only the last one
     envvar[!duplicated(names(envvar), fromLast = TRUE)]
-}
-
-envpath_add <- function(paths, sep = .Platform$path.sep) {
-    path <- paste0(paths, collapse = sep)
-    old_path <- Sys.getenv("PATH", unset = NA_character_)
-    if (is.na(old_path)) path else paste(path, old_path, sep = sep)
 }
