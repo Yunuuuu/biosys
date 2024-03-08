@@ -33,7 +33,7 @@ with_envvar <- function(envvar, code, action = "replace", sep = .Platform$path.s
     if (any(!old_set)) {
         on.exit(Sys.unsetenv(names(old)[!old_set]), add = TRUE)
     }
-    eval(substitute(code), envir = parent.frame())
+    force(code)
 }
 
 #' @noRd
