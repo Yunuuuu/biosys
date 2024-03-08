@@ -78,13 +78,13 @@ exec_build <- function(name, ..., cmd = name, opath_internal = NULL, help = FALS
 
     ## combining `optional_args` and `required_args` expression ------
     if (any_required_args && any_optional_args) {
-        combining_args <- expression(args <- c(required_args, dots))
+        args <- quote(c(required_args, dots))
     } else if (any_required_args) {
-        combining_args <- expression(args <- required_args)
+        args <- quote(required_args)
     } else if (any_optional_args) {
-        combining_args <- expression(args <- dots)
+        args <- quote(dots)
     } else {
-        combining_args <- expression(args <- character())
+        args <- quote(character())
     }
 
     ## construct `exec_internal` expression to run command -----------
@@ -97,7 +97,7 @@ exec_build <- function(name, ..., cmd = name, opath_internal = NULL, help = FALS
             wait = wait, timeout = timeout, verbose = verbose
             # nolint end
         ),
-        list(name = name, cmd = cmd_symbol, opath = opath_internal)
+        list(name = name, cmd = cmd_symbol, args = args, opath = opath_internal)
     )
 
     ## prepare `help` expression ---------------------------
@@ -122,9 +122,7 @@ exec_build <- function(name, ..., cmd = name, opath_internal = NULL, help = FALS
     # 4. optional_args
     # 5. exec_call
     body <- as.call(c(as.name("{"), c(
-        cmd_assert, help,
-        prepare, optional_args, combining_args,
-        list(exec_call)
+        cmd_assert, help, prepare, optional_args, list(exec_call)
     )))
 
     # construct function ----------------------------------
