@@ -16,7 +16,6 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Collate: 
-    'apps.R'
     'argument.R'
     'import-standalone-obj-type.R'
     'import-standalone-cli.R'
