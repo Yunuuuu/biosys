@@ -172,11 +172,7 @@ exec_internal <- function(
     opath = NULL, envpath = NULL, envvar = NULL, abort = TRUE, warn = TRUE,
     stdout = TRUE, stderr = TRUE, stdin = "", wait = TRUE, timeout = 0L,
     verbose = TRUE) {
-    assert_(
-        envvar, function(x) is.atomic(x) && rlang::is_named2(x),
-        "named {.cls atomic}",
-        null_ok = TRUE
-    )
+    assert_envvar(envvar, null_ok = TRUE)
     assert_bool(abort)
     stdout <- build_io_arg(stdout)
     stderr <- build_io_arg(stderr)
@@ -265,7 +261,9 @@ cmd_locate <- function(cmd = NULL, name) {
             command <- path.expand(cmd)
         }
     } else if (!is.null(name)) {
-        command <- Sys.which(name)
+        # let each command define their own comand based on name
+        # used by `cmd-python`
+        command <- cmd_locate_name(name)
         if (!nzchar(command)) {
             cli::cli_abort("Cannot locate {.field {name}} command")
         }
@@ -274,6 +272,9 @@ cmd_locate <- function(cmd = NULL, name) {
     }
     command
 }
+
+cmd_locate_name <- function(name) UseMethod("cmd_locate_name")
+cmd_locate_name.default <- function(name) Sys.which(name)
 
 cmd_return <- function(status, id, opath, abort, warn) {
     if (is.null(id)) {

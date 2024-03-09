@@ -3,16 +3,22 @@
 #' @return An atomic character which can be used directly in [system2]
 #' @noRd
 parse_envvar <- function(envvar) {
-    assert_(
-        envvar, function(x) is.atomic(x) && rlang::is_named2(x),
-        "named {.cls atomic}"
-    )
+    assert_envvar(envvar, null_ok = FALSE)
     # https://stackoverflow.com/questions/39908415/env-argument-does-not-work-in-system2
     if (length(envvar) > 0L) {
         paste0(names(envvar), "=", envvar, ";")
     } else {
         character()
     }
+}
+
+assert_envvar <- function(envvar, ..., arg = rlang::caller_arg(arg), call = rlang::caller_env()) {
+    assert_(
+        x = envvar,
+        assert_fn = function(x) is.atomic(x) && rlang::is_named2(x),
+        what = "named {.cls atomic}",
+        ...
+    )
 }
 
 # mimic withr::with_envvar
