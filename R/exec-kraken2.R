@@ -31,7 +31,8 @@ kraken2 <- exec_build(
             "--classified-out", classified_out,
             null_ok = TRUE
         ),
-        required_args <- c(classified_out, fq1, fq2)
+        required_args <- c(classified_out, if (!is.null(fq2)) "--paired"),
+        required_args <- c(required_args, fq1, fq2)
     )
 )
 
