@@ -16,13 +16,9 @@ pkg_nm <- function() {
     utils::packageName(topenv(environment()))
 }
 
-dir_create <- function(path, ...) {
-    if (!dir.exists(path) &&
-        !dir.create(path = path, showWarnings = FALSE, ...)) {
-        cli::cli_abort("Cannot create directory {.path {path}}")
-    }
-}
+c_msg <- function(..., sep = " ") paste(..., sep = sep)
 
+# utils file -------------------------------
 build_opath <- function(odir, ofile = NULL, abs = FALSE, call = rlang::caller_env()) {
     assert_string(odir, empty_ok = FALSE, arg = substitute(odir), call = call)
     assert_string(ofile,
@@ -33,6 +29,13 @@ build_opath <- function(odir, ofile = NULL, abs = FALSE, call = rlang::caller_en
     # whether to use absolute path
     if (abs) odir <- normalizePath(odir, "/", mustWork = TRUE)
     if (!is.null(ofile)) file_path(odir, ofile) else odir
+}
+
+dir_create <- function(path, ...) {
+    if (!dir.exists(path) &&
+        !dir.create(path = path, showWarnings = FALSE, ...)) {
+        cli::cli_abort("Cannot create directory {.path {path}}")
+    }
 }
 
 file_path <- function(..., ext = NULL) {
@@ -46,14 +49,20 @@ path_ext_remove <- function(path) {
 }
 
 path_ext_set <- function(path, ext) {
-    sub("\\.[[:alnum:]]*$", ext, path, perl = TRUE)
+    paste(path_ext_remove(path), ext, sep = ".")
 }
 
 path_ext <- function(path) {
     matches <- regexpr("\\.([[:alnum:]]+)$", path, perl = TRUE)
     start <- as.vector(matches)
     end <- start + attr(matches, "match.length") - 1L
-    ifelse(start == -1L, "", substr(path, start + 1, end))
+    ifelse(start == -1L, "", substr(path, start + 1L, end))
+}
+
+unlink2 <- function(path, ...) {
+    if (file.exists(path) && unlink(x = path, ...)) {
+        cli::cli_abort("Canno remove {.path {path}}")
+    }
 }
 
 #' Will always add the basename of file into the exdir
@@ -74,8 +83,6 @@ download_file <- function(url, path, ...) {
         cli::cli_abort("Cannot download {.path {url}}")
     }
 }
-
-# file.symlink
 
 internal_file <- function(..., dir = "extdata") {
     system.file(dir, ..., package = pkg_nm(), mustWork = TRUE)
