@@ -161,8 +161,9 @@ exec_internal <- function(
     if ((!is.null(envvar) || !is.null(envpath)) && verbose) {
         cli::cli_inform("Setting environment variables")
     }
+    envvar <- envvar_parse_path(envvar, "PATH", envpath)
     status <- with_envvar(
-        envvar = envvar_parse(envvar, envpath),
+        envvar = envvar,
         exec_run(
             cmd = cmd, name = name, args = args,
             stdout = stdout, stderr = stderr,

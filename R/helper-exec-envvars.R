@@ -1,27 +1,53 @@
-envvar_parse <- function(envvar, envpath) {
-    if (!is.null(envvar) && any(names(envvar) == "PATH") && !is.null(envpath)) {
-        cli::cli_warn(
-            "{.field PATH} in {.arg env} will always override {.arg envpath}"
-        )
-        envpath <- NULL
+envvar_parse_var <- function(
+    envvar, name, value,
+    arg = rlang::caller_arg(value), call = rlang::caller_env()) {
+    value <- envvar_override(envvar, name, value, arg = arg, call = call)
+    if (!is.null(value)) {
+        names(value) <- name
+        envvar <- c(envvar, value)
     }
-    if (!is.null(envpath)) envvar <- c(envvar, PATH = envpath_add(envpath))
     envvar
 }
 
-assert_envvar <- function(envvar, ..., arg = rlang::caller_arg(arg), call = rlang::caller_env()) {
+envvar_parse_path <- function(
+    envvar, name, value,
+    arg = rlang::caller_arg(value), call = rlang::caller_env()) {
+    value <- envvar_override(envvar, name, value, arg = arg, call = call)
+    if (!is.null(value)) {
+        value <- envpath_add(name, value)
+        names(value) <- name
+        envvar <- c(envvar, value)
+    }
+    envvar
+}
+
+envpath_add <- function(name, value, sep = .Platform$path.sep) {
+    value <- paste0(path.expand(rev(value)), collapse = sep)
+    old_value <- Sys.getenv(name, unset = NA_character_)
+    if (is.na(old_value)) value else paste(value, old_value, sep = sep)
+}
+
+envvar_override <- function(
+    envvar, name, value,
+    arg = rlang::caller_arg(value), call = rlang::caller_env()) {
+    if (!is.null(envvar) && any(names(envvar) == name) && !is.null(value)) {
+        cli::cli_warn(c_msg(
+            "{.field {name}} in {.arg envvar}",
+            "will always override {.arg {arg}}"
+        ))
+        value <- NULL
+    }
+    value
+}
+
+assert_envvar <- function(envvar, ..., arg = rlang::caller_arg(envvar), call = rlang::caller_env()) {
     assert_(
         x = envvar,
         assert_fn = function(x) is.atomic(x) && rlang::is_named2(x),
-        what = "named {.cls atomic}",
-        ...
+        what = c_msg("a named", style_cls("atomic")),
+        ...,
+        arg = arg, call = call
     )
-}
-
-envpath_add <- function(paths, sep = .Platform$path.sep) {
-    path <- paste0(path.expand(rev(paths)), collapse = sep)
-    old_path <- Sys.getenv("PATH", unset = NA_character_)
-    if (is.na(old_path)) path else paste(path, old_path, sep = sep)
 }
 
 # mimic withr::with_envvar
