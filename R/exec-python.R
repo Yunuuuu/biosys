@@ -6,7 +6,6 @@
 #'  to be added before running command.
 #' @inheritParams allele_counter
 #' @param python `r rd_cmd("python")`.
-#' @inheritParams exec
 #' @seealso <https://www.python.org/>
 #' @export
 python <- exec_build(
