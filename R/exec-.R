@@ -30,7 +30,7 @@ exec_build <- function(
     # running order:
     # 1. setup_envvar
     # 2. help (hijack, can skip 3rd and 4th steps)
-    # 3. setup_params (required_args)
+    # 3. setup_params (required_args): usually the input files
     # 4. optional_args
     # 5. `exec_internal`
     # use `command_new_name()` to pass `name` argument
@@ -58,14 +58,6 @@ exec_build <- function(
     cmd_assert <- rlang::exprs(
         assert_string(!!cmd_symbol, empty_ok = FALSE, null_ok = !!cmd_null_ok)
     )
-    ## prepare required arguments --------------------------
-    any_required_args <- FALSE
-    # `opath` is an argument for `exec_internal`
-    if (length(setdiff(...names(), c("...", "opath")))) {
-        # if there are some required arguments passed into `cmd`, we should use
-        # `prepare` argument to pre-process required argument
-        any_required_args <- TRUE
-    }
 
     ## prepare optional argument ---------------------------
     any_optional_args <- FALSE
@@ -84,11 +76,12 @@ exec_build <- function(
     } else {
         optional_args <- NULL
     }
-
+    ## required_args should be in the end
+    ## since some commands use the tail argument (un-tagged) as the input files
     ## combining `optional_args` and `required_args` expression ------
-    if (any_required_args && any_optional_args) {
-        args <- quote(c(required_args, dots))
-    } else if (any_required_args) {
+    if (!is.null(setup_params) && any_optional_args) {
+        args <- quote(c(dots, required_args))
+    } else if (!is.null(setup_params)) {
         args <- quote(required_args)
     } else if (any_optional_args) {
         args <- quote(dots)
@@ -127,7 +120,7 @@ exec_build <- function(
     # running order:
     # 1. cmd_assert
     # 2. help (hijack, can skip 3rd and 4th steps)
-    # 3. prepare (required_args)
+    # 3. setup_params (required_args): usually the input files
     # 4. optional_args
     # 5. exec_call
     body <- as.call(c(as.name("{"), c(
