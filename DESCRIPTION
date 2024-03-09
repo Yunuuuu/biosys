@@ -14,6 +14,7 @@ Imports:
     rlang (>= 1.1.0)
 Suggests: 
     testthat (>= 3.0.0)
+SystemRequirements: Unix System
 Config/testthat/edition: 3
 Collate: 
     'argument.R'
