@@ -107,7 +107,7 @@ exec_build <- function(
         # for some commands, the help document can return an error code
         # so we always use `abort=FALSE` and `warn=FALSE`
         help_exec_call <- rlang::call_modify(exec_call,
-            args = help, abort = FALSE, warn = FALSE
+            args = help, opath = NULL, abort = FALSE, warn = FALSE
         )
         help <- rlang::exprs(assert_bool(help), # styler: off
             if (help) return(!!help_exec_call) # styler: off

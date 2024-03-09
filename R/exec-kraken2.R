@@ -1,20 +1,10 @@
 #' Running Kraken2
 #'
-#' @description
-#' Metagenomic classification of paired-end reads from single-cell RNA
-#' sequencing fastq files can be performed using any k-mer based mapper that
-#' identifies a taxonomic ID for each k-mer and read. However, `SAHMI` is
-#' optimized to run with `Kraken2Uniq`, which finds exact matches of candidate
-#' 35-mer genomic substrings to the lowest common ancestor of genomes in a
-#' reference metagenomic database. It is essential that all realistically
-#' possible genomes are included as mapping references at this stage (e.g. host,
-#' known vectors, etc.), or that host mappable reads are excluded. The required
-#' outputs from this step are: a Kraken summary report with sample level
-#' metagenomic counts, a Kraken output file with read and k-mer level taxonomic
-#' classifications, an MPA-style report, and raw sequencing fastq files with
-#' taxonomic classification for each read. Please see
-#' <https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown> for
-#' more details on installation and usage of Kraken2/KrakenUniq.
+#' Kraken is a taxonomic sequence classifier that assigns taxonomic labels to
+#' DNA sequences. Kraken examines the k-mers within a query sequence and uses
+#' the information within those k-mers to query a database. That database maps
+#' k-mers to the lowest common ancestor (LCA) of all genomes known to contain a
+#' given k-mer.
 #'
 #' @param fq1,fq2 Path to fastq 1 file.
 #' @param ... `r rd_dots("kraken2")`. Details see: `kraken2(help = TRUE)`
@@ -22,6 +12,7 @@
 #' @inheritParams allele_counter
 #' @param kraken2 `r rd_cmd("kraken2")`.
 #' @seealso <https://github.com/DerrickWood/kraken2/wiki/Manual>
+#' @export
 kraken2 <- exec_build(
     command_new_name("kraken2"),
     fq1 = , ... = , fq2 = NULL, classified_out = NULL,
@@ -41,5 +32,32 @@ kraken2 <- exec_build(
             null_ok = TRUE
         ),
         required_args <- c(classified_out, fq1, fq2)
+    )
+)
+
+#' @param report A string of path or the report file returned by `kraken2`.
+#' @inheritParams python
+#' @export
+#' @rdname kraken2
+kraken2_mpa <- exec_build(
+    command_new_name("python", class = "python"),
+    report = , ofile = NULL, odir = getwd(), pythonpath = NULL,
+    opath_internal = quote(opath),
+    setup_envvar = expression(
+        envvar <- envvar_parse_path(envvar, name = "PYTHONPATH", pythonpath)
+    ),
+    setup_params = expression(
+        ofile <- ofile %||% paste0(basename(report), ".mpa"),
+        kreport2mpa <- internal_file("kraken2", "kreport2mpa.py"),
+        if (file.access(kreport2mpa, mode = 1L) != 0L) {
+            Sys.chmod(kreport2mpa, "555")
+        },
+        opath <- build_opath(odir, ofile),
+        required_args <- c(
+            kreport2mpa,
+            arg_internal("-r", report),
+            arg_internal("-o", opath),
+            "--intermediate-ranks"
+        )
     )
 )

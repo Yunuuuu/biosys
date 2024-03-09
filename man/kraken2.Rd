@@ -2,6 +2,7 @@
 % Please edit documentation in R/exec-kraken2.R
 \name{kraken2}
 \alias{kraken2}
+\alias{kraken2_mpa}
 \title{Running Kraken2}
 \usage{
 kraken2(
@@ -20,6 +21,23 @@ kraken2(
   verbose = TRUE,
   help = FALSE,
   kraken2 = NULL
+)
+
+kraken2_mpa(
+  report,
+  ofile = NULL,
+  odir = getwd(),
+  pythonpath = NULL,
+  envpath = NULL,
+  envvar = NULL,
+  abort = TRUE,
+  stdout = TRUE,
+  stderr = TRUE,
+  stdin = "",
+  wait = TRUE,
+  timeout = 0L,
+  verbose = TRUE,
+  python = NULL
 )
 }
 \arguments{
@@ -65,22 +83,24 @@ message.}
 \item{help}{If \code{TRUE}, will print the help document for this command.}
 
 \item{kraken2}{A string of path to \code{kraken2} command.}
+
+\item{report}{A string of path or the report file returned by \code{kraken2}.}
+
+\item{ofile}{Output file.}
+
+\item{odir}{Output directory.}
+
+\item{pythonpath}{A character define the environment variables \code{PYTHONPATH}
+to be added before running command.}
+
+\item{python}{A string of path to \code{python} command.}
 }
 \description{
-Metagenomic classification of paired-end reads from single-cell RNA
-sequencing fastq files can be performed using any k-mer based mapper that
-identifies a taxonomic ID for each k-mer and read. However, \code{SAHMI} is
-optimized to run with \code{Kraken2Uniq}, which finds exact matches of candidate
-35-mer genomic substrings to the lowest common ancestor of genomes in a
-reference metagenomic database. It is essential that all realistically
-possible genomes are included as mapping references at this stage (e.g. host,
-known vectors, etc.), or that host mappable reads are excluded. The required
-outputs from this step are: a Kraken summary report with sample level
-metagenomic counts, a Kraken output file with read and k-mer level taxonomic
-classifications, an MPA-style report, and raw sequencing fastq files with
-taxonomic classification for each read. Please see
-\url{https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown} for
-more details on installation and usage of Kraken2/KrakenUniq.
+Kraken is a taxonomic sequence classifier that assigns taxonomic labels to
+DNA sequences. Kraken examines the k-mers within a query sequence and uses
+the information within those k-mers to query a database. That database maps
+k-mers to the lowest common ancestor (LCA) of all genomes known to contain a
+given k-mer.
 }
 \seealso{
 \url{https://github.com/DerrickWood/kraken2/wiki/Manual}

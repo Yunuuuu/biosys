@@ -22,3 +22,9 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "update TRUST4: BuildDatabaseFa.pl"
+
+      - run: ./.github/sync.sh sjdlabgroup/SAHMI functions/kreport2mpa.py inst/extdata/kraken2/
+      
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "update kraken2: kreport2mpa.py"
