@@ -41,23 +41,23 @@ kraken2 <- exec_build(
 #' @rdname kraken2
 kraken2_mpa <- exec_build(
     command_new_name("python", class = "python"),
-    report = , ofile = NULL, odir = getwd(), pythonpath = NULL,
+    report = , ... = , ofile = NULL, odir = getwd(), pythonpath = NULL,
     opath_internal = quote(opath),
+    help = quote(sprintf("%s --help", kreport2mpa)),
     setup_envvar = expression(
-        envvar <- envvar_parse_path(envvar, name = "PYTHONPATH", pythonpath)
-    ),
-    setup_params = expression(
-        ofile <- ofile %||% paste0(basename(report), ".mpa"),
         kreport2mpa <- internal_file("kraken2", "kreport2mpa.py"),
         if (file.access(kreport2mpa, mode = 1L) != 0L) {
             Sys.chmod(kreport2mpa, "555")
         },
+        envvar <- envvar_parse_path(envvar, name = "PYTHONPATH", pythonpath)
+    ),
+    setup_params = expression(
+        ofile <- ofile %||% paste0(basename(report), ".mpa"),
         opath <- build_opath(odir, ofile),
         required_args <- c(
             kreport2mpa,
             arg_internal("-r", report),
-            arg_internal("-o", opath),
-            "--intermediate-ranks"
+            arg_internal("-o", opath)
         )
     )
 )

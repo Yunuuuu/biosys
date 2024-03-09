@@ -25,6 +25,7 @@ kraken2(
 
 kraken2_mpa(
   report,
+  ...,
   ofile = NULL,
   odir = getwd(),
   pythonpath = NULL,
@@ -37,6 +38,7 @@ kraken2_mpa(
   wait = TRUE,
   timeout = 0L,
   verbose = TRUE,
+  help = FALSE,
   python = NULL
 )
 }
