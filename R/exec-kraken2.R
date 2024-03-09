@@ -11,6 +11,7 @@
 #' @param ofile A string of path to save kraken2 output.
 #' @param report A string of path to save kraken2 report.
 #' @param classified_out A string of path to save classified sequences.
+#' @param unclassified_out A string of path to save unclassified sequences.
 #' @inheritParams allele_counter
 #' @param kraken2 `r rd_cmd("kraken2")`.
 #' @seealso <https://github.com/DerrickWood/kraken2/wiki/Manual>
@@ -19,7 +20,7 @@ kraken2 <- exec_build(
     command_new_name("kraken2"),
     fq1 = , ... = , fq2 = NULL,
     ofile = "kraken_output.txt", report = "kraken_report.txt",
-    classified_out = NULL, odir = getwd(),
+    classified_out = NULL, unclassified_out = NULL, odir = getwd(),
     opath_internal = quote(opath), help = "--help",
     setup_params = expression(
         assert_string(ofile, null_ok = TRUE),
@@ -31,18 +32,25 @@ kraken2 <- exec_build(
         # filenames provided to those options, which will be replaced by kraken2
         # with "_1" and "_2" with mates spread across the two files
         # appropriately. For example:
-        if (!is.null(fq2) && !is.null(classified_out)) {
-            classified_out <- sprintf("%s#", classified_out)
-        },
         odir <- build_opath(odir),
         if (!is.null(classified_out)) {
+            if (!is.null(fq2)) {
+                classified_out <- sprintf("%s#", classified_out)
+            }
             classified_out <- file_path(odir, classified_out)
+        },
+        if (!is.null(unclassified_out)) {
+            if (!is.null(fq2)) {
+                unclassified_out <- sprintf("%s#", unclassified_out)
+            }
+            unclassified_out <- file_path(odir, unclassified_out)
         },
         if (!is.null(ofile)) ofile <- file_path(odir, ofile),
         if (!is.null(report)) report <- file_path(odir, report),
         opath <- c(ofile, report),
         required_args <- c(
             arg_internal("--classified-out", classified_out, null_ok = TRUE),
+            arg_internal("--unclassified-out", classified_out, null_ok = TRUE),
             arg_internal("--output", ofile, null_ok = TRUE),
             arg_internal("--report", report, null_ok = TRUE),
             if (!is.null(fq2)) "--paired", fq1, fq2

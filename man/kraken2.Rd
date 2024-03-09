@@ -12,6 +12,7 @@ kraken2(
   ofile = "kraken_output.txt",
   report = "kraken_report.txt",
   classified_out = NULL,
+  unclassified_out = NULL,
   odir = getwd(),
   envpath = NULL,
   envvar = NULL,
@@ -55,6 +56,8 @@ kraken2_mpa(
 \item{report}{A string of path or the report file returned by \code{kraken2}.}
 
 \item{classified_out}{A string of path to save classified sequences.}
+
+\item{unclassified_out}{A string of path to save unclassified sequences.}
 
 \item{odir}{Output directory.}
 
