@@ -55,9 +55,11 @@ kraken2_mpa(
 
 \item{report}{A string of path or the report file returned by \code{kraken2}.}
 
-\item{classified_out}{A string of path to save classified sequences.}
+\item{classified_out}{A string of path to save classified sequences, which
+should be a fastq file.}
 
-\item{unclassified_out}{A string of path to save unclassified sequences.}
+\item{unclassified_out}{A string of path to save unclassified sequences,
+which should be a fastq file.}
 
 \item{odir}{Output directory.}
 

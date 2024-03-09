@@ -10,8 +10,10 @@
 #' @param ... `r rd_dots("kraken2")`. Details see: `kraken2(help = TRUE)`
 #' @param ofile A string of path to save kraken2 output.
 #' @param report A string of path to save kraken2 report.
-#' @param classified_out A string of path to save classified sequences.
-#' @param unclassified_out A string of path to save unclassified sequences.
+#' @param classified_out A string of path to save classified sequences, which
+#' should be a fastq file.
+#' @param unclassified_out A string of path to save unclassified sequences,
+#' which should be a fastq file.
 #' @inheritParams allele_counter
 #' @param kraken2 `r rd_cmd("kraken2")`.
 #' @seealso <https://github.com/DerrickWood/kraken2/wiki/Manual>
