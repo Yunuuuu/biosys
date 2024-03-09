@@ -8,6 +8,8 @@
 #'
 #' @param fq1,fq2 Path to fastq 1 file.
 #' @param ... `r rd_dots("kraken2")`. Details see: `kraken2(help = TRUE)`
+#' @param ofile A string of path to save kraken2 output.
+#' @param report A string of path to save kraken2 report.
 #' @param classified_out A string of path to save classified sequences.
 #' @inheritParams allele_counter
 #' @param kraken2 `r rd_cmd("kraken2")`.
@@ -15,8 +17,13 @@
 #' @export
 kraken2 <- exec_build(
     command_new_name("kraken2"),
-    fq1 = , ... = , fq2 = NULL, classified_out = NULL,
-    help = "--help", setup_params = expression(
+    fq1 = , ... = , fq2 = NULL,
+    ofile = "kraken_output.txt", report = "kraken_report.txt",
+    classified_out = NULL, odir = getwd(),
+    opath_internal = quote(opath), help = "--help",
+    setup_params = expression(
+        assert_string(ofile, null_ok = TRUE),
+        assert_string(report, null_ok = TRUE),
         assert_string(classified_out, null_ok = TRUE),
         # https://github.com/DerrickWood/kraken2/wiki/Manual
         # Usage of --paired also affects the --classified-out and
@@ -27,12 +34,19 @@ kraken2 <- exec_build(
         if (!is.null(fq2) && !is.null(classified_out)) {
             classified_out <- sprintf("%s#", classified_out)
         },
-        classified_out <- arg_internal(
-            "--classified-out", classified_out,
-            null_ok = TRUE
-        ),
-        required_args <- c(classified_out, if (!is.null(fq2)) "--paired"),
-        required_args <- c(required_args, fq1, fq2)
+        odir <- build_opath(odir),
+        if (!is.null(classified_out)) {
+            classified_out <- file_path(odir, classified_out)
+        },
+        if (!is.null(ofile)) ofile <- file_path(odir, ofile),
+        if (!is.null(report)) report <- file_path(odir, report),
+        opath <- c(ofile, report),
+        required_args <- c(
+            arg_internal("--classified-out", classified_out, null_ok = TRUE),
+            arg_internal("--output", ofile, null_ok = TRUE),
+            arg_internal("--report", report, null_ok = TRUE),
+            if (!is.null(fq2)) "--paired", fq1, fq2
+        )
     )
 )
 

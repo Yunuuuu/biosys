@@ -9,7 +9,10 @@ kraken2(
   fq1,
   ...,
   fq2 = NULL,
+  ofile = "kraken_output.txt",
+  report = "kraken_report.txt",
   classified_out = NULL,
+  odir = getwd(),
   envpath = NULL,
   envvar = NULL,
   abort = TRUE,
@@ -47,7 +50,13 @@ kraken2_mpa(
 
 \item{...}{Additional arguments passed to \code{kraken2} command. Details see: \code{kraken2(help = TRUE)}}
 
+\item{ofile}{A string of path to save kraken2 output.}
+
+\item{report}{A string of path or the report file returned by \code{kraken2}.}
+
 \item{classified_out}{A string of path to save classified sequences.}
+
+\item{odir}{Output directory.}
 
 \item{envpath}{A character define the environment variables \code{PATH} to be
 added before running command.}
@@ -85,12 +94,6 @@ message.}
 \item{help}{If \code{TRUE}, will print the help document for this command.}
 
 \item{kraken2}{A string of path to \code{kraken2} command.}
-
-\item{report}{A string of path or the report file returned by \code{kraken2}.}
-
-\item{ofile}{Output file.}
-
-\item{odir}{Output directory.}
 
 \item{pythonpath}{A character define the environment variables \code{PYTHONPATH}
 to be added before running command.}
