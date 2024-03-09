@@ -37,7 +37,11 @@ command_locate_name <- function(name) {
     }
     command
 }
+
+#' @export
 command_locate_name.command_name <- function(name) Sys.which(name)
+
+#' @export
 command_locate_name.default <- function(name) {
     cli::cli_abort("{.arg name} must be a {.cls command_name} object")
 }
