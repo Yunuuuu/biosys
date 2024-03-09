@@ -23,11 +23,11 @@
 #' @seealso <https://github.com/liulab-dfci/TRUST4>
 #' @export
 trust4 <- exec_build(
-    "run-trust4",
+    command_new_name("run-trust4"),
     cmd = "trust4",
     file1 = , ref_coordinate = , ... = , file2 = NULL, mode = NULL,
     ref_annot = NULL, ofile = NULL, odir = getwd(), help = NULL,
-    prepare = expression(
+    setup_params = expression(
         assert_string(file1, empty_ok = FALSE),
         if (is.null(mode)) {
             if (grepl("(fastq|fq)(\\.gz)?$", file1, perl = TRUE)) {
@@ -76,11 +76,12 @@ trust4 <- exec_build(
 #' @param perl Path to `perl` command.
 #' @export
 #' @rdname trust4
-trust4_imgt_annot <- exec_build("perl",
+trust4_imgt_annot <- exec_build(
+    command_new_name("perl"),
     species = "Homo_sapien",
     ofile = "IMGT+C.fa", odir = getwd(),
     opath_internal = quote(opath),
-    prepare = expression(
+    setup_params = expression(
         assert_string(species, empty_ok = FALSE),
         opath <- build_opath(odir, ofile, abs = TRUE),
         cur_dir <- getwd(),

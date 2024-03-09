@@ -1,15 +1,12 @@
-#' Parse an atomic character for system2 env argument
-#'
-#' @return An atomic character which can be used directly in [system2]
-#' @noRd
-parse_envvar <- function(envvar) {
-    assert_envvar(envvar, null_ok = FALSE)
-    # https://stackoverflow.com/questions/39908415/env-argument-does-not-work-in-system2
-    if (length(envvar) > 0L) {
-        paste0(names(envvar), "=", envvar, ";")
-    } else {
-        character()
+envvar_parse <- function(envvar, envpath) {
+    if (!is.null(envvar) && any(names(envvar) == "PATH") && !is.null(envpath)) {
+        cli::cli_warn(
+            "{.field PATH} in {.arg env} will always override {.arg envpath}"
+        )
+        envpath <- NULL
     }
+    if (!is.null(envpath)) envvar <- c(envvar, PATH = envpath_add(envpath))
+    envvar
 }
 
 assert_envvar <- function(envvar, ..., arg = rlang::caller_arg(arg), call = rlang::caller_env()) {
@@ -19,6 +16,12 @@ assert_envvar <- function(envvar, ..., arg = rlang::caller_arg(arg), call = rlan
         what = "named {.cls atomic}",
         ...
     )
+}
+
+envpath_add <- function(paths, sep = .Platform$path.sep) {
+    path <- paste0(path.expand(rev(paths)), collapse = sep)
+    old_path <- Sys.getenv("PATH", unset = NA_character_)
+    if (is.na(old_path)) path else paste(path, old_path, sep = sep)
 }
 
 # mimic withr::with_envvar
@@ -64,4 +67,18 @@ set_envvar <- function(envvar, action = "replace", sep = .Platform$path.sep) {
 as_envvars <- function(envvar) {
     # if there are duplicated entries keep only the last one
     envvar[!duplicated(names(envvar), fromLast = TRUE)]
+}
+
+#' Parse an atomic character for system2 env argument
+#'
+#' @return An atomic character which can be used directly in [system2]
+#' @noRd
+parse_envvar <- function(envvar) {
+    assert_envvar(envvar, null_ok = FALSE)
+    # https://stackoverflow.com/questions/39908415/env-argument-does-not-work-in-system2
+    if (length(envvar) > 0L) {
+        paste0(names(envvar), "=", envvar, ";")
+    } else {
+        character()
+    }
 }

@@ -16,17 +16,26 @@
 #' @param help If not `FALSE`, will create a function with an argument `help`.
 #' in which case the help string will be passed into argument to print help
 #' document. (Often "--help" or NULL).
-#' @param prepare Expression list used to create `required_args`.
+#' @param setup_params Expression list used to create `required_args`.
 #' @importFrom rlang :=
+#' @include helper-exec-command.R
+#' @include import-standalone-assert.R
+#' @include import-standalone-cli.R
+#' @include import-standalone-obj-type.R
 #' @keywords internal
 #' @noRd
-# running order:
-# 1. help (hijack, can skip 2nd and 3rd steps)
-# 2. prepare (required_args)
-# 3. optional_args
-# 4. `exec_internal`
-exec_build <- function(name, ..., cmd = name, opath_internal = NULL, help = FALSE, prepare = NULL) {
-    # prepare arguments for function ------------------------------
+exec_build <- function(
+    name, ..., cmd = name, opath_internal = NULL,
+    setup_envvar = NULL, help = FALSE, setup_params = NULL) {
+    # running order:
+    # 1. setup_envvar
+    # 2. help (hijack, can skip 3rd and 4th steps)
+    # 3. setup_params (required_args)
+    # 4. optional_args
+    # 5. `exec_internal`
+    # use `command_new_name()` to pass `name` argument
+    assert_s3_class(name, "command_name", null_ok = TRUE)
+    # prepare function arguments pairlist --------------------
     argv <- list(
         envpath = NULL, envvar = NULL, abort = TRUE,
         stdout = TRUE, stderr = TRUE, stdin = "", wait = TRUE, timeout = 0L,
@@ -41,9 +50,9 @@ exec_build <- function(name, ..., cmd = name, opath_internal = NULL, help = FALS
         cmd <- "cmd"
     }
 
-    # prepare body for function ----------------------------
+    # prepare function body --------------------------------
     ## prepare `cmd` argument ------------------------------
-    # this will insert into `exec_internal` call expression
+    # this will be insert into `exec_internal(cmd = cmd_symbol)`
     cmd_symbol <- rlang::sym(cmd)
     # this should be in the top of function body
     cmd_assert <- rlang::exprs(
@@ -122,46 +131,13 @@ exec_build <- function(name, ..., cmd = name, opath_internal = NULL, help = FALS
     # 4. optional_args
     # 5. exec_call
     body <- as.call(c(as.name("{"), c(
-        cmd_assert, help, prepare, optional_args, list(exec_call)
+        cmd_assert, setup_envvar, help, setup_params, optional_args,
+        list(exec_call)
     )))
 
     # construct function ----------------------------------
     rlang::new_function(argv, body = body)
 }
-
-#' Invoke a System Command
-#'
-#' @param cmd Command to be invoked, as a character string.
-#' @param ... <[dynamic dots][rlang::dyn-dots]> Arguments passed to `cmd`.
-#' @param envpath A character define the environment variables `PATH` to be
-#'  added before running command.
-#' @param envvar A named atomic vector define running environment variables of
-#' the command, all environment variables will be replaced before running
-#' command. Use `NA` to remove an environment variable.
-#' @param opath Specifying the output file or directory to be removed if
-#'  command running error. Note: all files in the directory will be removed, you
-#'  must use this argument carefully.
-#' @param abort A bool indicates whether to report error if command return
-#'  non-zero status.
-#' @param stdout,stderr Where output to ‘stdout’ or ‘stderr’ should be sent.
-#' Possible values are:
-#'
-#'  - `TRUE`: print child output in R console
-#'  - `FALSE`: suppress output stream
-#'  - **string**: name or path of file to redirect output
-#'
-#' @inheritParams base::system2
-#' @param wait A bool (not NA) indicating whether the R interpreter should wait
-#' for the command to finish, or run it asynchronously. This will be ignored
-#' (and the interpreter will always wait) if `abort = TRUE`.
-#' @param verbose A logical value indicates whether to print running command
-#'  message.
-#' @return
-#'  - if `abort=TRUE`, zero if command success, otherwise, abort error.
-#'  - if `abort=FALSE` and `wait=FALSE`, always return `0`.
-#'  - if `abort=FALSE` and `wait=TRUE`, exit status returned by the command.
-#' @export
-exec <- exec_build(NULL, cmd = "cmd", ... = , opath = NULL, opath_internal = quote(opath))
 
 #' Don't provide default value for name, in this way, we must provide name
 #' manually for every internal function.
@@ -185,10 +161,9 @@ exec_internal <- function(
     if ((!is.null(envvar) || !is.null(envpath)) && verbose) {
         cli::cli_inform("Setting environment variables")
     }
-    envvar <- envvar_add_envpath(envvar, envpath)
     status <- with_envvar(
-        envvar = envvar,
-        cmd_run(
+        envvar = envvar_parse(envvar, envpath),
+        exec_run(
             cmd = cmd, name = name, args = args,
             stdout = stdout, stderr = stderr,
             stdin = stdin, wait = wait,
@@ -196,44 +171,35 @@ exec_internal <- function(
         ),
         action = "replace"
     )
-    cmd_return(status,
+    exec_return(status,
         id = cmd %||% name, opath = opath,
         abort = abort, warn = warn
     )
 }
 
-envpath_add <- function(paths, sep = .Platform$path.sep) {
-    path <- paste0(path.expand(rev(paths)), collapse = sep)
-    old_path <- Sys.getenv("PATH", unset = NA_character_)
-    if (is.na(old_path)) path else paste(path, old_path, sep = sep)
-}
-
-envvar_add_envpath <- function(envvar, envpath) {
-    if (!is.null(envvar) && any(names(envvar) == "PATH") && !is.null(envpath)) {
-        cli::cli_warn(
-            "{.field PATH} in {.arg env} will always override {.arg envpath}"
-        )
-        envpath <- NULL
-    }
-    if (!is.null(envpath)) envvar <- c(envvar, PATH = envpath_add(envpath))
-    envvar
-}
-
+# For `stdout` and `stderr`
 build_io_arg <- function(x, ..., arg = rlang::caller_arg(x), call = rlang::caller_env()) {
     if (rlang::is_string(x)) {
-        if (x == "") cli::cli_abort("{.arg {arg}} cannot be a empty string")
+        if (x == "") {
+            cli::cli_abort(
+                "{.arg {arg}} cannot be a empty string",
+                call = call
+            )
+        }
         return(x)
     } else if (rlang::is_bool(x)) {
         if (x) return("") else return(FALSE) # styler: off
     } else {
-        cli::cli_abort("{.arg {arg}} must be a bool or a string of file path")
+        cli::cli_abort(
+            "{.arg {arg}} must be a bool or a string of file path",
+            call = call
+        )
     }
 }
 
 #' @noRd
-cmd_run <- function(cmd = NULL, name, args = character(), ..., verbose = TRUE) {
-    assert_string(cmd, null_ok = !is.null(name))
-    command <- cmd_locate(cmd = cmd, name = name)
+exec_run <- function(cmd = NULL, name, args = character(), ..., verbose = TRUE) {
+    command <- exec_locate_command(cmd = cmd, name = name)
     if (verbose) {
         msg <- "Running command {.field {command}"
         if (length(args)) {
@@ -248,69 +214,4 @@ cmd_run <- function(cmd = NULL, name, args = character(), ..., verbose = TRUE) {
     }
     sys_args <- c(list(command = command, args = as.character(args)), ...)
     do.call(system2, sys_args)
-}
-
-cmd_locate <- function(cmd = NULL, name) {
-    if (!is.null(cmd)) {
-        if (!file.exists(cmd)) {
-            command <- Sys.which(cmd)
-            if (!nzchar(command)) {
-                cli::cli_abort("Cannot locate {.field {cmd}} command")
-            }
-        } else {
-            command <- path.expand(cmd)
-        }
-    } else if (!is.null(name)) {
-        # let each command define their own comand based on name
-        # used by `cmd-python`
-        command <- cmd_locate_name(name)
-        if (!nzchar(command)) {
-            cli::cli_abort("Cannot locate {.field {name}} command")
-        }
-    } else {
-        cli::cli_abort("{.arg cmd} or {.arg name} must be provided")
-    }
-    command
-}
-
-cmd_locate_name <- function(name) UseMethod("cmd_locate_name")
-cmd_locate_name.default <- function(name) Sys.which(name)
-
-cmd_return <- function(status, id, opath, abort, warn) {
-    if (is.null(id)) {
-        msg <- "command"
-    } else {
-        msg <- "command {.field {id}}"
-    }
-    if (status == 0L) {
-        msg <- sprintf("Running %s successfully", msg)
-        cli::cli_inform(msg)
-    } else {
-        # if command run failed, we remove the output
-        if (!is.null(opath)) remove_opath(opath)
-        msg <- c(
-            sprintf("something wrong when running %s", msg),
-            i = "error code: {.val {status}}"
-        )
-        if (abort) {
-            cli::cli_abort(msg)
-        } else if (warn) {
-            cli::cli_warn(msg)
-        }
-    }
-    invisible(status)
-}
-
-remove_opath <- function(opath) {
-    # remove trailing backslash or slash
-    opath <- sub("(\\\\+|/+)$", "", opath, perl = TRUE)
-    opath <- opath[file.exists(opath)] # can also check directory
-    if (length(opath)) {
-        failed <- vapply(opath, unlink, integer(1L),
-            recursive = TRUE, USE.NAMES = FALSE
-        ) != 0L
-        if (any(failed)) {
-            cli::cli_warn("Cannot remove {.path {opath[failed]}}")
-        }
-    }
 }

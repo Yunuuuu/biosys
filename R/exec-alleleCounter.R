@@ -13,10 +13,11 @@
 #' @param alleleCounter `r rd_cmd("alleleCounter")`.
 #' @seealso <https://github.com/cancerit/alleleCount>
 #' @export
-allele_counter <- exec_build("alleleCounter",
+allele_counter <- exec_build(
+    command_new_name("alleleCounter"),
     hts_file = , loci_file = , ofile = , ... = ,
     odir = getwd(), opath_internal = quote(opath), help = "--help",
-    prepare = expression(
+    setup_params = expression(
         opath <- build_opath(odir, ofile),
         required_args <- c(
             arg_internal("-l", loci_file),
