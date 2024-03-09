@@ -6,9 +6,9 @@ dir_create <- function(path, ...) {
 }
 
 file_path <- function(..., ext = NULL) {
-    paths <- file.path(..., fsep = "/")
-    if (!is.null(ext)) paths <- paste(paths, ext, sep = ".")
-    paths
+    path <- file.path(..., fsep = "/")
+    if (!is.null(ext)) path <- paste(path, ext, sep = ".")
+    path
 }
 
 path_ext_remove <- function(path) {
