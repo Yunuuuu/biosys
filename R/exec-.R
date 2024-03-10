@@ -33,7 +33,7 @@ exec_build <- function(
     # 3. setup_params (required_args): usually the input files
     # 4. optional_args
     # 5. `exec_internal`
-    # 6. final: when command run successfully, what to do
+    # 6. final: what to do after run command
     # use `command_new_name()` to pass `name` argument
     assert_s3_class(name, "command_name", null_ok = TRUE)
     # prepare function arguments pairlist --------------------
@@ -117,6 +117,16 @@ exec_build <- function(
         help <- NULL
     }
 
+    ## integrate `final` expression ---------------------------
+    if (!is.null(final)) {
+        exec_call <- c(
+            list(substitute(status <- call, list(call = exec_call))), # nolint
+            final,
+            list(quote(return(status)))
+        )
+    } else {
+        exec_call <- list(exec_call)
+    }
     ## construct function body ----------------------------------
     # running order:
     # 1. cmd_assert
@@ -124,18 +134,6 @@ exec_build <- function(
     # 3. setup_params (required_args): usually the input files
     # 4. optional_args
     # 5. exec_call
-    if (!is.null(final)) {
-        exec_call <- c(
-            list(
-                substitute(status <- call, list(call = exec_call)), # nolint
-                quote(if (status != 0L) return(status)) # styler: off
-            ),
-            final,
-            list(quote(return(status)))
-        )
-    } else {
-        exec_call <- list(exec_call)
-    }
     body <- as.call(c(as.name("{"), c(
         cmd_assert, setup_envvar, help, setup_params, optional_args,
         exec_call

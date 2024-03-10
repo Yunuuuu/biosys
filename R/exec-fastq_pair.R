@@ -24,7 +24,7 @@
 fastq_pair <- exec_build(
     command_new_name("fastq_pair"),
     fq1 = , fq2 = , ... = , keep_uncompressed = TRUE, compress = TRUE,
-    help = "--help", odir = getwd(),
+    odir = getwd(), opath_internal = quote(opath), help = "--help",
     setup_params = expression(
         assert_string(fq1, empty_ok = FALSE),
         assert_string(fq2, empty_ok = FALSE),
@@ -53,6 +53,7 @@ fastq_pair <- exec_build(
         required_args <- c(new_fq1, new_fq2, ">/dev/null")
     ),
     final = expression(
+        if (status != 0L) return(status), # styler: off
         if (compress) {
             for (file in opath) {
                 compress("gzip", file,
