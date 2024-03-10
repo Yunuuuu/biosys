@@ -1,13 +1,10 @@
-exec_return <- function(status, id, opath, abort, warn) {
+exec_return <- function(status, id, opath, abort, warn, verbose) {
     if (is.null(id)) {
         msg <- "command"
     } else {
         msg <- "command {.field {id}}"
     }
-    if (status == 0L) {
-        msg <- sprintf("Running %s successfully", msg)
-        cli::cli_inform(msg)
-    } else {
+    if (status != 0L) {
         # if command run failed, we remove the output
         if (!is.null(opath)) remove_opath(opath)
         msg <- c(
@@ -19,6 +16,9 @@ exec_return <- function(status, id, opath, abort, warn) {
         } else if (warn) {
             cli::cli_warn(msg)
         }
+    } else if (verbose) {
+        msg <- sprintf("Running %s successfully", msg)
+        cli::cli_inform(msg)
     }
     invisible(status)
 }
