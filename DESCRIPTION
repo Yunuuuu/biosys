@@ -25,6 +25,7 @@ Collate:
     'exec-.R'
     'exec-alleleCounter.R'
     'exec-cellranger.R'
+    'exec-fastq_pair.R'
     'exec-gistic2.R'
     'exec-kraken2.R'
     'exec-python.R'
