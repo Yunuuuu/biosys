@@ -26,13 +26,14 @@
 #' @noRd
 exec_build <- function(
     name, ..., cmd = name, opath_internal = NULL,
-    setup_envvar = NULL, help = FALSE, setup_params = NULL) {
+    setup_envvar = NULL, help = FALSE, setup_params = NULL, final = NULL) {
     # running order:
     # 1. setup_envvar
     # 2. help (hijack, can skip 3rd and 4th steps)
     # 3. setup_params (required_args): usually the input files
     # 4. optional_args
     # 5. `exec_internal`
+    # 6. final: when command run successfully, what to do
     # use `command_new_name()` to pass `name` argument
     assert_s3_class(name, "command_name", null_ok = TRUE)
     # prepare function arguments pairlist --------------------
@@ -123,9 +124,21 @@ exec_build <- function(
     # 3. setup_params (required_args): usually the input files
     # 4. optional_args
     # 5. exec_call
+    if (!is.null(final)) {
+        exec_call <- c(
+            list(
+                substitute(status <- call, list(call = exec_call)), # nolint
+                quote(if (status != 0L) return(status)) # styler: off
+            ),
+            final,
+            list(quote(return(status)))
+        )
+    } else {
+        exec_call <- list(exec_call)
+    }
     body <- as.call(c(as.name("{"), c(
         cmd_assert, setup_envvar, help, setup_params, optional_args,
-        list(exec_call)
+        exec_call
     )))
 
     # construct function ----------------------------------
@@ -167,7 +180,7 @@ exec_internal <- function(
     )
     exec_return(status,
         id = cmd %||% name, opath = opath,
-        abort = abort, warn = warn
+        abort = abort, warn = warn, verbose = verbose
     )
 }
 
@@ -195,14 +208,9 @@ build_io_arg <- function(x, ..., arg = rlang::caller_arg(x), call = rlang::calle
 exec_run <- function(cmd = NULL, name, args = character(), ..., verbose = TRUE) {
     command <- exec_locate_command(cmd = cmd, name = name)
     if (verbose) {
-        msg <- "Running command {.field {command}"
+        msg <- c_msg("Running command", style_field(command))
         if (length(args)) {
-            cli_args <- cli::cli_vec(args, # nolint styler: off
-                list("vec-sep" = " ", "vec-last" = " ")
-            )
-            msg <- paste(msg, "{cli_args}}", sep = " ")
-        } else {
-            msg <- paste0(msg, "}")
+            msg <- c_msg(msg, style_field(paste(args, collapse = " ")))
         }
         cli::cli_inform(msg)
     }
