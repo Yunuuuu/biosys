@@ -63,12 +63,25 @@ internal_file <- function(..., dir = "extdata") {
     system.file(dir, ..., package = pkg_nm(), mustWork = TRUE)
 }
 
-read_lines <- function(file) {
-    data.table::fread(
-        file = file, sep = "", header = FALSE,
-        colClasses = "character",
-        showProgress = FALSE
-    )[[1L]]
+read_lines <- function(file, n = -1L) {
+    if (is_gzip_suffix(file) || is_gzip_signature(file)) {
+        con <- gzfile(file, open = "r")
+    } else if (is_bz2_suffix(file) || is_bz2_signature(file)) {
+        con <- bzfile(file, open = "r")
+    } else if (is_xz_suffix(file)) {
+        con <- xzfile(file, open = "r")
+    } else {
+        if (n < 0L) n <- Inf
+        lines <- data.table::fread(
+            file = file, sep = "", header = FALSE,
+            colClasses = "character",
+            showProgress = FALSE,
+            nrows = n
+        )[[1L]]
+        return(lines)
+    }
+    on.exit(close(con))
+    readLines(con, n = n)
 }
 
 # To write a file with windows line endings use write_lines(eol = "\r\n")
@@ -101,19 +114,22 @@ uncompress_file <- function(file, exdir = tempdir()) {
             style_file(file)
         ))
     }
-    if (!file_info$size) {
-        cli::cli_warn(sprintf("File %s has size 0", style_file(file)))
-        return(file)
-    }
+    # if (!file_info$size) {
+    #     cli::cli_warn(sprintf("File %s has size 0", style_file(file)))
+    #     return(file)
+    # }
     file_signature <- readBin(file, raw(), 8L)
+
     # support gzip and bz2 files
-    if (is_gzip_suffix(file)) {
+    if (is_gzip_suffix(file, tar = TRUE)) {
         file <- gunzip(file, odir = exdir, verbose = FALSE)
     } else if (is_gzip_signature(file, file_signature)) {
+        # gunzip can only work for specific file extension
         cli::cli_abort(
             "gzip only support 'z', 'gz', 'tgz', and 'taz' extension"
         )
-    } else if (is_bz2(file, file_signature)) {
+    } else if (is_bz2_suffix(file, tar = TRUE) ||
+        is_bz2_signature(file, file_signature)) {
         file <- bunzip2(file, odir = exdir, verbose = FALSE)
     }
 
@@ -140,23 +156,39 @@ uncompress_file <- function(file, exdir = tempdir()) {
 # https://github.com/Rdatatable/data.table/blob/15c127e99f8d6aab599c590d4aec346a850f1334/R/fread.R#L90
 is_tar <- function(file) endsWith(file, ".tar")
 
-is_gzip_suffix <- function(file) {
-    endsWith(file, ".z") ||
-        endsWith(file, ".gz") ||
-        endsWith(file, ".tgz") ||
-        endsWith(file, ".taz")
+is_gzip_suffix <- function(file, tar = FALSE) {
+    if (endsWith(file, ".z") || endsWith(file, ".gz")) {
+        return(TRUE)
+    } else if (tar && (endsWith(file, ".tgz") || endsWith(file, ".taz"))) {
+        return(TRUE)
+    }
+    FALSE
 }
 
 is_gzip_signature <- function(file, file_signature = NULL) {
     match_file_signature(file, file_signature, as.raw(c(0x1F, 0x8B)))
 }
 
-is_bz2 <- function(file, file_signature = NULL) {
-    endsWith(file, ".bz2") ||
-        endsWith(file, ".bz") ||
-        endsWith(file, ".tbz2") ||
-        endsWith(file, ".tbz") ||
-        match_file_signature(file, file_signature, as.raw(c(0x42, 0x5A, 0x68)))
+is_bz2_suffix <- function(file, tar = FALSE) {
+    if (endsWith(file, ".bz2") || endsWith(file, ".bz")) {
+        return(TRUE)
+    } else if (tar && (endsWith(file, ".tbz2") || endsWith(file, ".tbz"))) {
+        return(TRUE)
+    }
+    FALSE
+}
+
+is_bz2_signature <- function(file, file_signature = NULL) {
+    match_file_signature(file, file_signature, as.raw(c(0x42, 0x5A, 0x68)))
+}
+
+is_xz_suffix <- function(file, tar = FALSE) {
+    if (endsWith(file, ".xz") || endsWith(file, ".lzma")) {
+        return(TRUE)
+    } else if (tar && (endsWith(file, ".txz") || endsWith(file, ".tlz"))) {
+        return(TRUE)
+    }
+    FALSE
 }
 
 is_zip <- function(file, file_signature = NULL) {

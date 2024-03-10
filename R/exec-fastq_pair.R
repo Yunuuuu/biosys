@@ -68,15 +68,7 @@ fastq_pair <- exec_build(
 #' @export
 fastq_read_pair <- function(fastq_files) {
     header_list <- lapply(fastq_files, function(file) {
-        if (is_gzip_suffix(file)) {
-            con <- gzfile(file, open = "r")
-        } else if (is_bz2(file)) {
-            con <- bzfile(file, open = "r")
-        } else {
-            con <- file(file, open = "r")
-        }
-        on.exit(close(con))
-        header <- readLines(con, n = 1L)
+        header <- read_lines(file, n = 1L)
         strsplit(header, ":| ", perl = TRUE)[[1L]]
     })
     # @HWI-ST1276:71:C1162ACXX:1:1101:1208:2458 2:N:0:CGATGT
