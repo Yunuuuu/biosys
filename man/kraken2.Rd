@@ -47,7 +47,7 @@ kraken2_mpa(
 )
 }
 \arguments{
-\item{fq1, fq2}{Path to fastq 1 file.}
+\item{fq1, fq2}{A string of fastq file path.}
 
 \item{...}{Additional arguments passed to \code{kraken2} command. Details see: \code{kraken2(help = TRUE)}}
 

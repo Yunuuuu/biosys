@@ -6,7 +6,7 @@
 #' k-mers to the lowest common ancestor (LCA) of all genomes known to contain a
 #' given k-mer.
 #'
-#' @param fq1,fq2 Path to fastq 1 file.
+#' @param fq1,fq2 A string of fastq file path.
 #' @param ... `r rd_dots("kraken2")`. Details see: `kraken2(help = TRUE)`
 #' @param ofile A string of path to save kraken2 output.
 #' @param report A string of path to save kraken2 report.
