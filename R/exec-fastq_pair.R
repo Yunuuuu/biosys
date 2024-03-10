@@ -55,7 +55,9 @@ fastq_pair <- exec_build(
     final = expression(
         if (compress) {
             for (file in opath) {
-                gzip(file, odir = odir, keep = FALSE, verbose = FALSE)
+                compress("gzip", file,
+                    odir = odir, keep = FALSE, verbose = FALSE
+                )
             }
         } else {
             file.rename(opath, file_path(odir, basename(opath)))

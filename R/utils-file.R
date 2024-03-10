@@ -63,25 +63,29 @@ internal_file <- function(..., dir = "extdata") {
     system.file(dir, ..., package = pkg_nm(), mustWork = TRUE)
 }
 
-read_lines <- function(file, n = -1L) {
-    if (is_gzip_suffix(file) || is_gzip_signature(file)) {
-        con <- gzfile(file, open = "r")
-    } else if (is_bz2_suffix(file) || is_bz2_signature(file)) {
-        con <- bzfile(file, open = "r")
-    } else if (is_xz_suffix(file)) {
-        con <- xzfile(file, open = "r")
+read_lines <- function(file, n = -1L, connection = TRUE) {
+    # data.table don't support xz compression
+    if (connection) {
+        if (is_gzip_suffix(file) || is_gzip_signature(file)) {
+            file <- gzfile(file, open = "r")
+        } else if (is_bz2_suffix(file) || is_bz2_signature(file)) {
+            file <- bzfile(file, open = "r")
+        } else if (is_xz_suffix(file)) {
+            file <- xzfile(file, open = "r")
+        }
+    }
+    if (inherits(file, "connection")) {
+        on.exit(close(file))
+        readLines(file, n = n)
     } else {
         if (n < 0L) n <- Inf
-        lines <- data.table::fread(
+        data.table::fread(
             file = file, sep = "", header = FALSE,
             colClasses = "character",
             showProgress = FALSE,
             nrows = n
         )[[1L]]
-        return(lines)
     }
-    on.exit(close(con))
-    readLines(con, n = n)
 }
 
 # To write a file with windows line endings use write_lines(eol = "\r\n")
@@ -100,6 +104,59 @@ write_lines <- function(text, path, eol = "\n", compress = "auto") {
     invisible(text)
 }
 
+#########################################################
+compress <- function(cmd, file, ..., ofile = NULL, odir = getwd(), keep = TRUE, override = FALSE) {
+    cmd <- match.arg(cmd, c("gzip", "bzip2", "xz"))
+    if (is.null(ofile)) {
+        ext <- switch(cmd, gzip = "gz", bzip2 = "bz2", xz = "xz") # styler: off
+        ofile <- paste(basename(file), ext, sep = ".")
+    }
+    opath <- build_opath(odir, ofile)
+    if (!override && file.exists(opath)) {
+        cli::cli_abort(c(
+            "Cannot (un)compress {.path {file}} into {.path {opath}}",
+            i = "{.path {opath}} exists"
+        ))
+    }
+    status <- exec(cmd, "-c", ..., file, ">", opath, opath = opath) # nolint
+    if (status != 0L) return(status) # styler: off
+    if (!keep) file.remove(file)
+    opath
+}
+
+uncompress <- function(cmd, file, ..., ofile = NULL) {
+    if (is.null(ofile)) {
+        ofile <- basename(file)
+        ext <- tolower(path_ext(ofile))
+        if (cmd == "bzip2") {
+            ofile <- switch(ext,
+                bz2 = ,
+                bz = path_ext_remove(ofile),
+                tbz2 = ,
+                tbz = path_ext_set(ofile, ext = "tar"),
+                paste(ofile, "out", sep = ".")
+            )
+        } else if (cmd == "gzip") {
+            ofile <- switch(ext,
+                z = ,
+                gz = path_ext_remove(ofile),
+                tgz = ,
+                taz = path_ext_set(ofile, ext = "tar"),
+                paste(ofile, "out", sep = ".")
+            )
+        } else {
+            ofile <- switch(ext,
+                xz = ,
+                lzma = path_ext_remove(ofile),
+                txz = ,
+                tlz = path_ext_set(ofile, ext = "tar"),
+                paste(ofile, "out", sep = ".")
+            )
+        }
+    }
+    compress(cmd = cmd, file = file, "-d", ..., ofile = ofile)
+}
+
 uncompress_file <- function(file, exdir = tempdir()) {
     file_info <- file.info(file)
     if (is.na(file_info$size)) {
@@ -114,23 +171,17 @@ uncompress_file <- function(file, exdir = tempdir()) {
             style_file(file)
         ))
     }
-    # if (!file_info$size) {
-    #     cli::cli_warn(sprintf("File %s has size 0", style_file(file)))
-    #     return(file)
-    # }
-    file_signature <- readBin(file, raw(), 8L)
 
+    file_signature <- readBin(file, raw(), 8L)
     # support gzip and bz2 files
-    if (is_gzip_suffix(file, tar = TRUE)) {
-        file <- gunzip(file, odir = exdir, verbose = FALSE)
-    } else if (is_gzip_signature(file, file_signature)) {
-        # gunzip can only work for specific file extension
-        cli::cli_abort(
-            "gzip only support 'z', 'gz', 'tgz', and 'taz' extension"
-        )
+    if (is_gzip_suffix(file, tar = TRUE) ||
+        is_gzip_signature(file, file_signature)) {
+        file <- uncompress("gzip", file, odir = exdir, verbose = FALSE)
     } else if (is_bz2_suffix(file, tar = TRUE) ||
         is_bz2_signature(file, file_signature)) {
-        file <- bunzip2(file, odir = exdir, verbose = FALSE)
+        file <- uncompress("bzip2", file, odir = exdir, verbose = FALSE)
+    } else if (is_xz_suffix(file, tar = TRUE)) {
+        file <- uncompress("xz", file, odir = exdir, verbose = FALSE)
     }
 
     # support zip, and tar files
@@ -200,58 +251,4 @@ match_file_signature <- function(file, file_signature, match) {
     n <- length(match)
     file_signature <- file_signature %||% readBin(file, raw(), n)
     identical(file_signature[seq_len(n)], match)
-}
-
-gunzip <- function(file, ..., ofile = NULL, odir = getwd(), keep = TRUE) {
-    if (is.null(ofile)) {
-        ofile <- basename(file)
-        ofile <- switch(tolower(path_ext(ofile)),
-            z = ,
-            gz = path_ext_remove(ofile),
-            tgz = ,
-            taz = path_ext_set(ofile, ext = "tar"),
-            paste(ofile, "out", sep = ".")
-        )
-    }
-    gzip(file = file, "-d", ..., ofile = ofile, odir = odir, keep = keep)
-}
-
-gzip <- function(file, ..., ofile = NULL, odir = getwd(), keep = TRUE) {
-    ofile <- ofile %||% paste0(basename(file), ".gz")
-    opath <- build_opath(odir, ofile)
-    status <- exec(
-        "gzip", "-c",
-        ..., file, ">", opath,
-        opath = opath
-    )
-    if (status != 0L) return(status) # styler: off
-    if (!keep) file.remove(file)
-    opath
-}
-
-bunzip2 <- function(file, ..., ofile = NULL, odir = getwd(), keep = TRUE) {
-    if (is.null(ofile)) {
-        ofile <- basename(file)
-        ofile <- switch(tolower(path_ext(ofile)),
-            bz2 = ,
-            bz = path_ext_remove(ofile),
-            tbz2 = ,
-            tbz = path_ext_set(ofile, ext = "tar"),
-            paste(ofile, "out", sep = ".")
-        )
-    }
-    bzip2(file = file, "-d", ..., ofile = ofile, odir = odir, keep = keep)
-}
-
-bzip2 <- function(file, ..., ofile = NULL, odir = getwd(), keep = TRUE) {
-    ofile <- ofile %||% paste0(basename(file), ".bz2")
-    opath <- build_opath(odir, ofile)
-    status <- exec(
-        "bzip2", "-c",
-        ..., file, ">", opath,
-        opath = opath
-    )
-    if (status != 0L) return(status) # styler: off
-    if (!keep) file.remove(file)
-    opath
 }
