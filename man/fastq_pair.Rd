@@ -2,6 +2,7 @@
 % Please edit documentation in R/exec-fastq_pair.R
 \name{fastq_pair}
 \alias{fastq_pair}
+\alias{fastq_read_pair}
 \title{FASTQ PAIR}
 \usage{
 fastq_pair(
@@ -23,6 +24,8 @@ fastq_pair(
   help = FALSE,
   fastq_pair = NULL
 )
+
+fastq_read_pair(fastq_files)
 }
 \arguments{
 \item{fq1, fq2}{A string of fastq file path.}
@@ -72,7 +75,9 @@ message.}
 
 \item{help}{If \code{TRUE}, will print the help document for this command.}
 
-\item{kraken2}{A string of path to \code{kraken2} command.}
+\item{fastq_pair}{A string of path to \code{fastq_pair} command.}
+
+\item{fastq_files}{A character of the fastq file path.}
 }
 \description{
 Rewrite paired end fastq files to make sure that all reads have a mate and to
@@ -86,5 +91,5 @@ party source (e.g. the SRA) there are different numbers of reads in each file
 they demand paired end files have the same number of reads.
 }
 \seealso{
-\url{https://github.com/DerrickWood/kraken2/wiki/Manual}
+\url{https://github.com/linsalrob/fastq-pair}
 }
