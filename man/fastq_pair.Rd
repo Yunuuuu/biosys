@@ -77,7 +77,7 @@ message.}
 
 \item{fastq_pair}{A string of path to \code{fastq_pair} command.}
 
-\item{fastq_files}{A character of the fastq file path.}
+\item{fastq_files}{A character of the fastq file paths.}
 }
 \description{
 Rewrite paired end fastq files to make sure that all reads have a mate and to

@@ -65,7 +65,7 @@ fastq_pair <- exec_build(
     )
 )
 
-#' @param fastq_files A character of the fastq file path.
+#' @param fastq_files A character of the fastq file paths.
 #' @rdname fastq_pair
 #' @export
 fastq_read_pair <- function(fastq_files) {
