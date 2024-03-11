@@ -61,7 +61,7 @@ should be a fastq file.}
 \item{unclassified_out}{A string of path to save unclassified sequences,
 which should be a fastq file.}
 
-\item{odir}{Output directory.}
+\item{odir}{A string of path to the output directory.}
 
 \item{envpath}{A character define the environment variables \code{PATH} to be
 added before running command.}

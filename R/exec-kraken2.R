@@ -23,7 +23,7 @@ kraken2 <- exec_build(
     fq1 = , ... = , fq2 = NULL,
     ofile = "kraken_output.txt", report = "kraken_report.txt",
     classified_out = NULL, unclassified_out = NULL, odir = getwd(),
-    opath_internal = quote(opath), help = "--help",
+    opath_symbol = quote(opath), help = "--help",
     setup_params = exprs({
         assert_string(ofile, null_ok = TRUE)
         assert_string(report, null_ok = TRUE)
@@ -67,7 +67,7 @@ kraken2 <- exec_build(
 kraken2_mpa <- exec_build(
     command_new_name("python", class = "python"),
     report = , ... = , ofile = NULL, odir = getwd(), pythonpath = NULL,
-    opath_internal = quote(opath),
+    opath_symbol = quote(opath),
     help = quote(sprintf("%s --help", kreport2mpa)),
     setup_envvar = exprs({
         kreport2mpa <- internal_file("kraken2", "kreport2mpa.py")

@@ -11,7 +11,7 @@
 python <- exec_build(
     command_new_name("python", class = "python"),
     ... = , pythonpath = NULL,
-    opath_internal = NULL, help = "--help",
+    opath_symbol = NULL, help = "--help",
     setup_envvar = exprs(
         envvar <- envvar_parse_path(envvar, name = "PYTHONPATH", pythonpath)
     )

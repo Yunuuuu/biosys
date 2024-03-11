@@ -11,7 +11,7 @@
 #' @param ... Arguments to run command, you can pass `... =` to add dots (which
 #' should be optional arguments).
 #' @param cmd The argument name used to specify command path.
-#' @param opath_internal NULL or a symbol specify the variable passed into
+#' @param opath_symbol NULL or a symbol specify the variable passed into
 #'  `opath` of `exec_internal`.
 #' @param help If not `FALSE`, will create a function with an argument `help`.
 #' in which case the help string will be passed into argument to print help
@@ -26,7 +26,7 @@
 #' @keywords internal
 #' @noRd
 exec_build <- function(
-    name, ..., cmd = name, opath_internal = NULL,
+    name, ..., cmd = name, opath_symbol = NULL,
     setup_envvar = NULL, help = FALSE, setup_params = NULL, final = NULL) {
     # running order:
     # 1. setup_envvar
@@ -107,7 +107,7 @@ exec_build <- function(
             wait = wait, timeout = timeout, verbose = verbose
             # nolint end
         ),
-        list(name = name, cmd = cmd_symbol, args = args, opath = opath_internal)
+        list(name = name, cmd = cmd_symbol, args = args, opath = opath_symbol)
     )
 
     ## prepare `help` expression ---------------------------

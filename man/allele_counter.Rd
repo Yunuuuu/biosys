@@ -24,15 +24,15 @@ allele_counter(
 )
 }
 \arguments{
-\item{hts_file}{Path to sample HTS file.}
+\item{hts_file}{A string of path to sample HTS file.}
 
-\item{loci_file}{Path to loci file.}
+\item{loci_file}{A string of path to loci file.}
 
-\item{ofile}{Output file.}
+\item{ofile}{A string of path to the output file.}
 
 \item{...}{Additional arguments passed to \code{alleleCounter} command.}
 
-\item{odir}{Output directory.}
+\item{odir}{A string of path to the output directory.}
 
 \item{envpath}{A character define the environment variables \code{PATH} to be
 added before running command.}

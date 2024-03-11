@@ -30,4 +30,4 @@
 #'  - if `abort=FALSE` and `wait=FALSE`, always return `0`.
 #'  - if `abort=FALSE` and `wait=TRUE`, exit status returned by the command.
 #' @export
-exec <- exec_build(NULL, cmd = "cmd", ... = , opath = NULL, opath_internal = quote(opath))
+exec <- exec_build(NULL, cmd = "cmd", ... = , opath = NULL, opath_symbol = quote(opath))

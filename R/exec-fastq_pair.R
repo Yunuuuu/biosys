@@ -26,7 +26,7 @@ fastq_pair <- exec_build(
     command_new_name("fastq_pair"),
     fq1 = , fq2 = , ... = ,
     keep_decompressed = FALSE, keep_unpaired = TRUE, compress = TRUE,
-    odir = getwd(), opath_internal = quote(opath), help = "--help",
+    odir = getwd(), opath_symbol = quote(opath), help = "--help",
     setup_params = exprs({
         assert_string(fq1, empty_ok = FALSE)
         assert_string(fq2, empty_ok = FALSE)

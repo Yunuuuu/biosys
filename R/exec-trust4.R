@@ -79,7 +79,7 @@ trust4_imgt_annot <- exec_build(
     command_new_name("perl"),
     species = "Homo_sapien",
     ofile = "IMGT+C.fa", odir = getwd(),
-    opath_internal = quote(opath),
+    opath_symbol = quote(opath),
     setup_params = exprs({
         assert_string(species, empty_ok = FALSE)
         opath <- build_opath(odir, ofile, abs = TRUE)

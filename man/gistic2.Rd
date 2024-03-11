@@ -31,7 +31,7 @@ for file description).}
 \item{...}{Additional arguments passed to \code{gistic2} command. Details see:
 \url{https://broadinstitute.github.io/gistic2/}.}
 
-\item{odir}{Output directory.}
+\item{odir}{A string of path to the output directory.}
 
 \item{envpath}{A character define the environment variables \code{PATH} to be
 added before running command.}

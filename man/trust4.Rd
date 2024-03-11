@@ -72,7 +72,7 @@ prefix).
 \item \code{trust4_gene_names}: Output file name.
 }}
 
-\item{odir}{Output directory.}
+\item{odir}{A string of path to the output directory.}
 
 \item{envpath}{A character define the environment variables \code{PATH} to be
 added before running command.}

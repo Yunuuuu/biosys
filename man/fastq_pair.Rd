@@ -41,7 +41,7 @@ controls whether we should remove the decompressed temporary files.}
 
 \item{compress}{A bool, whether compress final results.}
 
-\item{odir}{Output directory.}
+\item{odir}{A string of path to the output directory.}
 
 \item{envpath}{A character define the environment variables \code{PATH} to be
 added before running command.}
