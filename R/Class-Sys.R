@@ -5,7 +5,9 @@ Sys <- R6::R6Class("Sys",
             private$validate()
             params <- rlang::list2(...)
             verbose <- params$verbose
-            params <- params[names(params) != "verbose"]
+            abort <- params$abort
+            help <- params$help
+            params <- params[!names(params) %in% c("verbose", "abort", "help")]
             # Split up params between
             # `envvar`: params used to define running environment variables
             # `system2`: params used by base::system2 function
@@ -26,18 +28,25 @@ Sys <- R6::R6Class("Sys",
                 )
             ]
             cmd <- params[[self$command]]
-            command_params <- params[
+            command_params_in_r <- params[
+                intersect(names(params), formalArgs(self$setup_command_params))
+            ]
+            command_params_in_dots <- params[
                 setdiff(names(params), c(
                     names(envvar_params),
                     names(system2_params),
-                    self$command
+                    self$command,
+                    names(command_params_in_r)
                 ))
             ]
             envvar <- rlang::inject(self$setup_envvar(!!!envvar_params))
             with_envvar(envvar, self$exec(
                 cmd,
-                command_params,
+                command_params_in_r,
+                command_params_in_dots,
                 system2_params,
+                help = help,
+                abort = abort,
                 verbose = verbose
             ))
         },
@@ -50,7 +59,7 @@ Sys <- R6::R6Class("Sys",
         },
         # The command name: must be a non-empty string
         # should also be the argument name for the associated function
-        command = NULL,
+        command = NULL, help = NULL,
         command_locate_from_user = function(cmd) {
             if (file.exists(cmd)) {
                 command <- path.expand(cmd)
@@ -65,14 +74,14 @@ Sys <- R6::R6Class("Sys",
         command_locate_from_class = function() Sys.which(self$command),
         # `dots` is usually used to pass the optional arguments for the
         # command, must always return a list.
-        setup_params = function(command_params, system2_params) params,
-        setup_help_params = function(params, verbose) list(),
         setup_command_params = function(...) list(...),
+        setup_help_params = function() list(self$help),
         success = function(status, command, params, verbose) {
             msg <- sprintf("Running command {.field %s} success", command)
             cli::cli_inform(msg)
         },
-        error = function(status, command, params, verbose) {
+        setup_opath = function(params) NULL,
+        error = function(status, command, params, abort, verbose) {
             opath <- self$setup_opath(params)
             # if command run failed, we remove the output
             if (!is.null(opath)) {
@@ -96,6 +105,8 @@ Sys <- R6::R6Class("Sys",
         final = function(status, opath, params, verbose) NULL
     ),
     private = list(
+        # sub-class shouldn't touch the private fields
+        # instead, we should always override public fields
         validate = function() {
             if (is.null(self$command)) {
                 cli::cli_abort(c_msg(
@@ -108,28 +119,47 @@ Sys <- R6::R6Class("Sys",
                 cli::cli_abort("{.field self$command} cannot be a empty string")
             }
         },
-        exec = function(cmd, params, help, verbose) {
+        exec = function(cmd,
+                        command_params_in_r,
+                        command_params_in_dots,
+                        system2_params,
+                        help, abort, verbose) {
             command <- private$command_locate(cmd)
-            params <- self$setup_params(params)
             if (help) {
-                params <- self$setup_help_params(params)
-                status <- private$run_command(
+                system2_params$wait <- TRUE
+                status <- rlang::inject(private$run_command(
                     command = command,
-                    params = self$setup_help_params(params),
+                    params = self$setup_help_params(),
+                    !!!system2_params,
                     verbose = verbose
-                )
+                ))
             } else {
-                status <- private$run_command(
-                    command = command,
-                    params = self$setup_command_params(params),
-                    verbose = verbose
+                params <- rlang::inject(
+                    self$setup_command_params(!!!command_params_in_r)
                 )
+                params <- c(params, command_params_in_dots)
+                status <- rlang::inject(private$run_command(
+                    command = command,
+                    params = params,
+                    !!!system2_params,
+                    verbose = verbose
+                ))
                 if (status == 0L) {
-                    self$success(status, command, params, verbose)
+                    self$success(
+                        status,
+                        command = command,
+                        params = command_params_in_r,
+                        verbose = verbose
+                    )
                 } else {
-                    self$error(status, command, params, verbose)
+                    self$error(status,
+                        command = command,
+                        params = command_params_in_r,
+                        verbose = verbose,
+                        abort = abort
+                    )
                 }
-                self$final(status, command, params, verbose)
+                self$final(status, command, command_params_in_r, verbose)
             }
             status
         },
