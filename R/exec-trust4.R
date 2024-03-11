@@ -80,18 +80,18 @@ trust4_imgt_annot <- exec_build(
     species = "Homo_sapien",
     ofile = "IMGT+C.fa", odir = getwd(),
     opath_internal = quote(opath),
-    setup_params = expression(
-        assert_string(species, empty_ok = FALSE),
-        opath <- build_opath(odir, ofile, abs = TRUE),
-        cur_dir <- getwd(),
-        tmp_dir <- tempdir(),
-        on.exit(setwd(cur_dir)),
-        setwd(tmp_dir),
+    setup_params = exprs({
+        assert_string(species, empty_ok = FALSE)
+        opath <- build_opath(odir, ofile, abs = TRUE)
+        cur_dir <- getwd()
+        tmp_dir <- tempdir()
+        on.exit(setwd(cur_dir))
+        setwd(tmp_dir)
         params <- c(
             internal_file("TRUST4", "BuildImgtAnnot.pl"),
             shQuote(species), ">", opath
         )
-    )
+    })
 )
 
 #' @param imgt_annot Path of IMGT annotation file, created via
