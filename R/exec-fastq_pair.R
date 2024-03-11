@@ -16,6 +16,7 @@
 #' @param keep_decompressed A bool, If `fq1` or `fq2` are compressed,
 #' `fastq_pair` function will automatically decompress them, this argument
 #' controls whether we should remove the decompressed temporary files.
+#' @param keep_unpaired A bool indicates whether to keep the unpaired sequence.
 #' @param compress A bool, whether compress final results.
 #' @inheritParams allele_counter
 #' @param fastq_pair `r rd_cmd("fastq_pair")`.
@@ -23,7 +24,8 @@
 #' @export
 fastq_pair <- exec_build(
     command_new_name("fastq_pair"),
-    fq1 = , fq2 = , ... = , keep_decompressed = FALSE, compress = TRUE,
+    fq1 = , fq2 = , ... = ,
+    keep_decompressed = FALSE, keep_unpaired = TRUE, compress = TRUE,
     odir = getwd(), opath_internal = quote(opath), help = "--help",
     setup_params = expression(
         assert_string(fq1, empty_ok = FALSE),
@@ -54,6 +56,10 @@ fastq_pair <- exec_build(
     ),
     final = expression(
         if (status != 0L) return(status), # styler: off
+        if (!keep_unpaired) {
+            file.remove(opath[c(2L, 4L)])
+            opath <- opath[c(1L, 3L)]
+        },
         if (compress) {
             for (file in opath) {
                 compress("gzip", file,

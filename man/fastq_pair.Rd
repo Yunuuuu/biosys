@@ -10,6 +10,7 @@ fastq_pair(
   fq2,
   ...,
   keep_decompressed = FALSE,
+  keep_unpaired = TRUE,
   compress = TRUE,
   odir = getwd(),
   envpath = NULL,
@@ -35,6 +36,8 @@ fastq_read_pair(fastq_files)
 \item{keep_decompressed}{A bool, If \code{fq1} or \code{fq2} are compressed,
 \code{fastq_pair} function will automatically decompress them, this argument
 controls whether we should remove the decompressed temporary files.}
+
+\item{keep_unpaired}{A bool indicates whether to keep the unpaired sequence.}
 
 \item{compress}{A bool, whether compress final results.}
 
