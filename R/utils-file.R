@@ -124,7 +124,7 @@ compress <- function(cmd, file, ..., ofile = NULL, odir = getwd(), keep = TRUE, 
     opath
 }
 
-uncompress <- function(cmd, file, ..., ofile = NULL) {
+decompress <- function(cmd, file, ..., ofile = NULL) {
     if (is.null(ofile)) {
         ofile <- basename(file)
         ext <- tolower(path_ext(ofile))
@@ -157,7 +157,7 @@ uncompress <- function(cmd, file, ..., ofile = NULL) {
     compress(cmd = cmd, file = file, "-d", ..., ofile = ofile)
 }
 
-uncompress_file <- function(file, exdir = tempdir()) {
+decompress_file <- function(file, exdir = tempdir()) {
     file_info <- file.info(file)
     if (is.na(file_info$size)) {
         cli::cli_abort(sprintf(
@@ -176,12 +176,12 @@ uncompress_file <- function(file, exdir = tempdir()) {
     # support gzip and bz2 files
     if (is_gzip_suffix(file, tar = TRUE) ||
         is_gzip_signature(file, file_signature)) {
-        file <- uncompress("gzip", file, odir = exdir, verbose = FALSE)
+        file <- decompress("gzip", file, odir = exdir, verbose = FALSE)
     } else if (is_bz2_suffix(file, tar = TRUE) ||
         is_bz2_signature(file, file_signature)) {
-        file <- uncompress("bzip2", file, odir = exdir, verbose = FALSE)
+        file <- decompress("bzip2", file, odir = exdir, verbose = FALSE)
     } else if (is_xz_suffix(file, tar = TRUE)) {
-        file <- uncompress("xz", file, odir = exdir, verbose = FALSE)
+        file <- decompress("xz", file, odir = exdir, verbose = FALSE)
     }
 
     # support zip, and tar files

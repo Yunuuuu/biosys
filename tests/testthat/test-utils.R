@@ -52,56 +52,56 @@ testthat::test_that("`compress` works as expected", {
     file.remove(gzip_file)
 })
 
-testthat::test_that("`uncompress` works as expected", {
+testthat::test_that("`decompress` works as expected", {
     # prepare file
     tmpdir <- tempdir()
     file <- tempfile(tmpdir = tmpdir)
     write_lines(letters, path = file)
 
-    # gzip uncompress works
+    # gzip decompress works
     gzip_file <- compress("gzip", file, odir = tmpdir)
     testthat::expect_no_error(
-        uncompress("gzip", gzip_file,
-            ofile = "gzip_uncompressed", odir = tmpdir
+        decompress("gzip", gzip_file,
+            ofile = "gzip_decompressed", odir = tmpdir
         )
     )
-    file.remove(file.path(tmpdir, "gzip_uncompressed"))
+    file.remove(file.path(tmpdir, "gzip_decompressed"))
     gzip_file_no_ext <- file.path(dirname(gzip_file), "gzip_no_ext")
     file.rename(gzip_file, gzip_file_no_ext)
     testthat::expect_no_error(
-        uncompress("gzip", gzip_file_no_ext, odir = tmpdir)
+        decompress("gzip", gzip_file_no_ext, odir = tmpdir)
     )
     file.remove(file.path(tmpdir, paste0(basename(gzip_file_no_ext), ".out")))
 
 
-    # bzip2 uncompress works
+    # bzip2 decompress works
     bzip2_file <- compress("bzip2", file, odir = tmpdir)
     testthat::expect_no_error(
-        uncompress("bzip2", bzip2_file,
-            ofile = "bzip2_uncompressed", odir = tmpdir
+        decompress("bzip2", bzip2_file,
+            ofile = "bzip2_decompressed", odir = tmpdir
         )
     )
-    file.remove(file.path(tmpdir, "bzip2_uncompressed"))
+    file.remove(file.path(tmpdir, "bzip2_decompressed"))
     bzip2_file_no_ext <- file.path(dirname(bzip2_file), "bzip2_no_ext")
     file.rename(bzip2_file, bzip2_file_no_ext)
     testthat::expect_no_error(
-        uncompress("bzip2", bzip2_file_no_ext, odir = tmpdir)
+        decompress("bzip2", bzip2_file_no_ext, odir = tmpdir)
     )
     file.remove(file.path(tmpdir, paste0(basename(bzip2_file_no_ext), ".out")))
 
 
-    # xz uncompress works
+    # xz decompress works
     xz_file <- compress("xz", file, odir = tmpdir)
     testthat::expect_no_error(
-        uncompress("xz", xz_file,
-            ofile = "xz_uncompressed", odir = tmpdir
+        decompress("xz", xz_file,
+            ofile = "xz_decompressed", odir = tmpdir
         )
     )
-    file.remove(file.path(tmpdir, "xz_uncompressed"))
+    file.remove(file.path(tmpdir, "xz_decompressed"))
     xz_file_no_ext <- file.path(dirname(xz_file), "xz_no_ext")
     file.rename(xz_file, xz_file_no_ext)
     testthat::expect_no_error(
-        uncompress("xz", xz_file_no_ext, odir = tmpdir)
+        decompress("xz", xz_file_no_ext, odir = tmpdir)
     )
     file.remove(file.path(tmpdir, paste0(basename(xz_file_no_ext), ".out")))
 })

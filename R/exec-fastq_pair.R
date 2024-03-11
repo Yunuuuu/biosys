@@ -13,9 +13,9 @@
 #'
 #' @param fq1,fq2 A string of fastq file path.
 #' @param ... `r rd_dots("fastq_pair")`. Details see: `fastq_pair(help = TRUE)`.
-#' @param keep_uncompressed A bool, If `fq1` or `fq2` are compressed,
-#' `fastq_pair` function will automatically uncompress them, this argument
-#' controls whether we should remove the uncompressed temporary files.
+#' @param keep_decompressed A bool, If `fq1` or `fq2` are compressed,
+#' `fastq_pair` function will automatically decompress them, this argument
+#' controls whether we should remove the decompressed temporary files.
 #' @param compress A bool, whether compress final results.
 #' @inheritParams allele_counter
 #' @param fastq_pair `r rd_cmd("fastq_pair")`.
@@ -23,15 +23,15 @@
 #' @export
 fastq_pair <- exec_build(
     command_new_name("fastq_pair"),
-    fq1 = , fq2 = , ... = , keep_uncompressed = TRUE, compress = TRUE,
+    fq1 = , fq2 = , ... = , keep_decompressed = TRUE, compress = TRUE,
     odir = getwd(), opath_internal = quote(opath), help = "--help",
     setup_params = expression(
         assert_string(fq1, empty_ok = FALSE),
         assert_string(fq2, empty_ok = FALSE),
-        assert_bool(keep_uncompressed),
+        assert_bool(keep_decompressed),
         odir <- build_opath(odir),
-        new_fq1 <- uncompress_file(fq1, exdir = odir),
-        new_fq2 <- uncompress_file(fq2, exdir = odir),
+        new_fq1 <- decompress_file(fq1, exdir = odir),
+        new_fq2 <- decompress_file(fq2, exdir = odir),
         suffix <- c(".paired.fq", ".single.fq"),
         opath1 <- file_path(
             dirname(new_fq1),
@@ -42,7 +42,7 @@ fastq_pair <- exec_build(
             paste0(basename(new_fq2), suffix)
         ),
         opath <- c(opath1, opath2),
-        if (!keep_uncompressed) {
+        if (!keep_decompressed) {
             if (!identical(fq1, new_fq1)) {
                 on.exit(file.remove(new_fq1), add = TRUE)
             }
