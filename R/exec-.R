@@ -29,14 +29,15 @@ exec_build <- function(
     name, ..., cmd = name, opath_symbol = NULL,
     setup_envvar = NULL, help = FALSE, setup_params = NULL, final = NULL) {
     # running order:
-    # 1. setup_envvar
-    # 2. help (hijack, can skip 3rd and 4th steps)
-    # 3. setup_params (params):
+    # 1. assert_arguments
+    # 2. setup_envvar
+    # 3. help (hijack, can skip 3rd and 4th steps)
+    # 4. setup_params (params):
     #    usually the required arguments, such as the input files.
-    # 4. if ... is an argument (... = ),
+    # 5. if ... is an argument (... = ),
     #    usually the optional arguments
-    # 5. `exec_internal`
-    # 6. final: what to do after run command
+    # 6. `exec_internal`
+    # 7. final: what to do after run command
     # use `command_new_name()` to pass `name` argument
     assert_s3_class(name, "command_name", null_ok = TRUE)
     # prepare function arguments pairlist --------------------
@@ -136,12 +137,6 @@ exec_build <- function(
         exec_exprs <- list(exec_call)
     }
     ## construct function body ----------------------------------
-    # running order:
-    # 1. assert_arguments
-    # 2. help (hijack, can skip 3rd and 4th steps)
-    # 3. setup_params (params): usually the input files
-    # 4. optional_args
-    # 5. exec_call
     body <- as.call(c(as.name("{"), c(
         assert_arguments,
         setup_envvar, help_exprs,
@@ -164,8 +159,8 @@ exec_internal <- function(
     verbose = TRUE) {
     assert_envvar(envvar, null_ok = TRUE)
     assert_bool(abort)
-    stdout <- build_io_arg(stdout)
-    stderr <- build_io_arg(stderr)
+    stdout <- standardize_io(stdout)
+    stderr <- standardize_io(stderr)
     assert_bool(wait)
     if (abort && !wait) {
         cli::cli_warn("{.arg wait} must be `TRUE` if `abort = TRUE`")
@@ -193,7 +188,9 @@ exec_internal <- function(
 }
 
 # For `stdout` and `stderr`
-build_io_arg <- function(x, ..., arg = rlang::caller_arg(x), call = rlang::caller_env()) {
+standardize_io <- function(x, ...,
+                           arg = rlang::caller_arg(x),
+                           call = rlang::caller_env()) {
     if (rlang::is_string(x)) {
         if (x == "") {
             cli::cli_abort(
