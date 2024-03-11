@@ -9,7 +9,7 @@ fastq_pair(
   fq1,
   fq2,
   ...,
-  keep_decompressed = TRUE,
+  keep_decompressed = FALSE,
   compress = TRUE,
   odir = getwd(),
   envpath = NULL,

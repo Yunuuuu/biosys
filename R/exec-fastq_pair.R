@@ -23,7 +23,7 @@
 #' @export
 fastq_pair <- exec_build(
     command_new_name("fastq_pair"),
-    fq1 = , fq2 = , ... = , keep_decompressed = TRUE, compress = TRUE,
+    fq1 = , fq2 = , ... = , keep_decompressed = FALSE, compress = TRUE,
     odir = getwd(), opath_internal = quote(opath), help = "--help",
     setup_params = expression(
         assert_string(fq1, empty_ok = FALSE),
