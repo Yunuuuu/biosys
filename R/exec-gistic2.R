@@ -28,16 +28,16 @@
 gistic2 <- exec_build(
     command_new_name("gistic2"),
     seg = , refgene = , ... = , odir = getwd(), help = NULL,
-    setup_params = expression(
-        assert_data_frame(seg),
-        odir <- build_opath(odir),
-        seg_file <- tempfile("gistic2"),
-        data.table::fwrite(seg, file = seg_file, sep = "\t"),
-        on.exit(file.remove(seg_file)),
-        required_args <- c(
+    setup_params = exprs({
+        assert_data_frame(seg)
+        odir <- build_opath(odir)
+        seg_file <- tempfile("gistic2")
+        data.table::fwrite(seg, file = seg_file, sep = "\t")
+        on.exit(file.remove(seg_file))
+        params <- c(
             arg_internal("-seg", seg_file),
             arg_internal("-refgene", refgene),
             arg_internal("-b", odir)
         )
-    )
+    })
 )

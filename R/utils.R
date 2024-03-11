@@ -17,3 +17,12 @@ pkg_nm <- function() {
 }
 
 c_msg <- function(..., sep = " ") paste(..., sep = sep)
+
+# mimic rlang::exprs, but will omit `{`
+exprs <- function(...) {
+    dots <- rlang::exprs(...)
+    if (...length() == 1L && identical(dots[[1L]][[1L]], as.symbol("{"))) {
+        dots <- as.list(dots[[1L]][-1L])
+    }
+    dots
+}

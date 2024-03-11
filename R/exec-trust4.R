@@ -26,8 +26,8 @@ trust4 <- exec_build(
     cmd = "trust4",
     file1 = , ref_coordinate = , ... = , file2 = NULL, mode = NULL,
     ref_annot = NULL, ofile = NULL, odir = getwd(), help = NULL,
-    setup_params = expression(
-        assert_string(file1, empty_ok = FALSE),
+    setup_params = exprs({
+        assert_string(file1, empty_ok = FALSE)
         if (is.null(mode)) {
             if (grepl("(fastq|fq)(\\.gz)?$", file1, perl = TRUE)) {
                 mode <- "fastq"
@@ -38,33 +38,33 @@ trust4 <- exec_build(
             }
         } else {
             mode <- match.arg(mode, c("bam", "fastq"))
-        },
+        }
         if (mode == "bam") {
             if (!is.null(file2)) {
                 cli::cli_abort(
                     "{.arg file2} must be {.code NULL} for {.code mode = \"bam\"}"
                 )
             }
-            required_args <- arg_internal("-b", file1)
+            params <- arg_internal("-b", file1)
         } else {
             if (is.null(file2)) {
-                required_args <- arg_internal("-u", file1)
+                params <- arg_internal("-u", file1)
             } else {
-                required_args <- c(
+                params <- c(
                     arg_internal("-1", file1),
                     arg_internal("-2", file2)
                 )
             }
-        },
-        odir <- build_opath(odir),
-        required_args <- c(
-            required_args,
+        }
+        odir <- build_opath(odir)
+        params <- c(
+            params,
             arg_internal("-f", ref_coordinate),
             arg_internal("-ref", ref_annot, null_ok = TRUE),
             arg_internal("-o", ofile, null_ok = TRUE),
             arg_internal("--od", odir)
         )
-    )
+    })
 )
 
 # Normally, the file specified by "--ref" is downloaded from IMGT website, For
@@ -87,7 +87,7 @@ trust4_imgt_annot <- exec_build(
         tmp_dir <- tempdir(),
         on.exit(setwd(cur_dir)),
         setwd(tmp_dir),
-        required_args <- c(
+        params <- c(
             internal_file("TRUST4", "BuildImgtAnnot.pl"),
             shQuote(species), ">", opath
         )

@@ -16,8 +16,9 @@
 #' @param help If not `FALSE`, will create a function with an argument `help`.
 #' in which case the help string will be passed into argument to print help
 #' document. (Often "--help" or NULL).
-#' @param setup_params Expression list used to create `required_args`.
+#' @param setup_params A list of expression used to create `params`.
 #' @importFrom rlang :=
+#' @include utils.R
 #' @include helper-exec-command.R
 #' @include import-standalone-assert.R
 #' @include import-standalone-cli.R
@@ -30,8 +31,10 @@ exec_build <- function(
     # running order:
     # 1. setup_envvar
     # 2. help (hijack, can skip 3rd and 4th steps)
-    # 3. setup_params (required_args): usually the input files
-    # 4. optional_args
+    # 3. setup_params (params):
+    #    usually the required arguments, such as the input files.
+    # 4. if ... is an argument (... = ),
+    #    usually the optional arguments
     # 5. `exec_internal`
     # 6. final: what to do after run command
     # use `command_new_name()` to pass `name` argument
@@ -45,45 +48,49 @@ exec_build <- function(
     if (!isFALSE(help)) argv <- c(argv, list(help = FALSE))
     # insert `cmd` argument in suitable position
     if (cmd_null_ok <- !is.null(name)) {
-        argv <- rlang::exprs(..., !!!argv, !!cmd := NULL) # nolint
+        argv <- exprs(..., !!!argv, !!cmd := NULL) # nolint
     } else {
-        argv <- rlang::exprs(cmd = , ..., !!!argv)
+        argv <- exprs(cmd = , ..., !!!argv)
         cmd <- "cmd"
     }
 
     # prepare function body --------------------------------
-    ## prepare `cmd` argument ------------------------------
-    # this will be insert into `exec_internal(cmd = cmd_symbol)`
-    cmd_symbol <- rlang::sym(cmd)
+    ## assert arguments before run command -----------------
+    # this will be insert into
+    # 1. `assert_arguments`
+    # 2. `exec_internal(cmd = cmd_symbol)`
+    cmd_symbol <- as.symbol(cmd)
     # this should be in the top of function body
-    cmd_assert <- rlang::exprs(
+    assert_arguments <- exprs({
+        rlang::check_dots_unnamed()
         assert_string(!!cmd_symbol, empty_ok = FALSE, null_ok = !!cmd_null_ok)
-    )
+    })
 
-    ## prepare optional argument ---------------------------
+    ## prepare optional argument (...) ---------------------
     any_optional_args <- FALSE
     if (any(...names() == "...")) {
-        optional_args <- expression(
+        optional_args <- exprs({
             # `dots` is the optional arguments passed into function
-            dots <- rlang::list2(...),
+            dots <- rlang::list2(...)
             if (length(dots) > 0L && any(lengths(dots)) > 1L) {
                 cli::cli_abort(
                     "all arguments passed into {.arg ...} must be of length 1"
                 )
-            },
+            }
             dots <- unlist(dots, recursive = FALSE, use.names = FALSE)
-        )
+        })
         any_optional_args <- TRUE
     } else {
         optional_args <- NULL
     }
-    ## required_args should be in the end
+
+    ## combining `dots` and `params` expression ------
+    ## params should be in the end
     ## since some commands use the tail argument (un-tagged) as the input files
-    ## combining `optional_args` and `required_args` expression ------
     if (!is.null(setup_params) && any_optional_args) {
-        args <- quote(c(dots, required_args))
+        args <- quote(c(dots, params))
     } else if (!is.null(setup_params)) {
-        args <- quote(required_args)
+        args <- quote(params)
     } else if (any_optional_args) {
         args <- quote(dots)
     } else {
@@ -108,35 +115,38 @@ exec_build <- function(
         # for some commands, the help document can return an error code
         # so we always use `abort=FALSE` and `warn=FALSE`
         help_exec_call <- rlang::call_modify(exec_call,
-            args = help, opath = NULL, abort = FALSE, warn = FALSE
+            args = help, opath = NULL, abort = FALSE, warn = FALSE, wait = TRUE
         )
-        help <- rlang::exprs(assert_bool(help), # styler: off
+        help_exprs <- exprs({
+            assert_bool(help) # styler: off
             if (help) return(!!help_exec_call) # styler: off
-        )
+        })
     } else {
-        help <- NULL
+        help_exprs <- NULL
     }
 
     ## integrate `final` expression ---------------------------
     if (!is.null(final)) {
-        exec_call <- c(
+        exec_exprs <- c(
             list(substitute(status <- call, list(call = exec_call))), # nolint
             final,
             list(quote(return(status)))
         )
     } else {
-        exec_call <- list(exec_call)
+        exec_exprs <- list(exec_call)
     }
     ## construct function body ----------------------------------
     # running order:
-    # 1. cmd_assert
+    # 1. assert_arguments
     # 2. help (hijack, can skip 3rd and 4th steps)
-    # 3. setup_params (required_args): usually the input files
+    # 3. setup_params (params): usually the input files
     # 4. optional_args
     # 5. exec_call
     body <- as.call(c(as.name("{"), c(
-        cmd_assert, setup_envvar, help, setup_params, optional_args,
-        exec_call
+        assert_arguments,
+        setup_envvar, help_exprs,
+        setup_params, optional_args,
+        exec_exprs
     )))
 
     # construct function ----------------------------------

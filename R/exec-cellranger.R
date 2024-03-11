@@ -7,8 +7,8 @@
 cellranger <- exec_build(
     command_new_name("cellranger"),
     subcmd = , ... = , help = "--help",
-    setup_params = expression(
-        assert_string(subcmd, empty_ok = FALSE, null_ok = TRUE),
-        required_args <- subcmd
-    )
+    setup_params = exprs({
+        assert_string(subcmd, empty_ok = FALSE, null_ok = TRUE)
+        params <- subcmd
+    })
 )

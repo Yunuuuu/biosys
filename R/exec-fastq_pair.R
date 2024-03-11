@@ -27,23 +27,23 @@ fastq_pair <- exec_build(
     fq1 = , fq2 = , ... = ,
     keep_decompressed = FALSE, keep_unpaired = TRUE, compress = TRUE,
     odir = getwd(), opath_internal = quote(opath), help = "--help",
-    setup_params = expression(
-        assert_string(fq1, empty_ok = FALSE),
-        assert_string(fq2, empty_ok = FALSE),
-        assert_bool(keep_decompressed),
-        odir <- build_opath(odir),
-        new_fq1 <- decompress_file(fq1, exdir = odir),
-        new_fq2 <- decompress_file(fq2, exdir = odir),
-        suffix <- c(".paired.fq", ".single.fq"),
+    setup_params = exprs({
+        assert_string(fq1, empty_ok = FALSE)
+        assert_string(fq2, empty_ok = FALSE)
+        assert_bool(keep_decompressed)
+        odir <- build_opath(odir)
+        new_fq1 <- decompress_file(fq1, exdir = odir)
+        new_fq2 <- decompress_file(fq2, exdir = odir)
+        suffix <- c(".paired.fq", ".single.fq")
         opath1 <- file_path(
             dirname(new_fq1),
             paste0(basename(new_fq1), suffix)
-        ),
+        )
         opath2 <- file_path(
             dirname(new_fq2),
             paste0(basename(new_fq2), suffix)
-        ),
-        opath <- c(opath1, opath2),
+        )
+        opath <- c(opath1, opath2)
         if (!keep_decompressed) {
             if (!identical(fq1, new_fq1)) {
                 on.exit(file.remove(new_fq1), add = TRUE)
@@ -51,15 +51,15 @@ fastq_pair <- exec_build(
             if (!identical(fq2, new_fq2)) {
                 on.exit(file.remove(new_fq2), add = TRUE)
             }
-        },
-        required_args <- c(new_fq1, new_fq2, ">/dev/null")
-    ),
-    final = expression(
-        if (status != 0L) return(status), # styler: off
+        }
+        params <- c(new_fq1, new_fq2, ">/dev/null")
+    }),
+    final = exprs({
+        if (status != 0L) return(status) # styler: off
         if (!keep_unpaired) {
             file.remove(opath[c(2L, 4L)])
             opath <- opath[c(1L, 3L)]
-        },
+        }
         if (compress) {
             for (file in opath) {
                 compress("gzip", file,
@@ -69,7 +69,7 @@ fastq_pair <- exec_build(
         } else {
             file.rename(opath, file_path(odir, basename(opath)))
         }
-    )
+    })
 )
 
 #' @param fastq_files A character of the fastq file paths.

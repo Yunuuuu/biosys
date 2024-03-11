@@ -17,12 +17,12 @@ allele_counter <- exec_build(
     command_new_name("alleleCounter"),
     hts_file = , loci_file = , ofile = , ... = ,
     odir = getwd(), opath_internal = quote(opath), help = "--help",
-    setup_params = expression(
-        opath <- build_opath(odir, ofile),
-        required_args <- c(
+    setup_params = exprs({
+        opath <- build_opath(odir, ofile)
+        params <- c(
             arg_internal("-l", loci_file),
             arg_internal("-b", hts_file),
             arg_internal("-o", opath)
         )
-    )
+    })
 )

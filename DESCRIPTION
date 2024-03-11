@@ -22,6 +22,7 @@ Collate:
     'import-standalone-cli.R'
     'import-standalone-assert.R'
     'helper-exec-command.R'
+    'utils.R'
     'exec-.R'
     'exec-alleleCounter.R'
     'exec-cellranger.R'
@@ -35,4 +36,3 @@ Collate:
     'helper-exec-return.R'
     'utils-Rd.R'
     'utils-file.R'
-    'utils.R'
