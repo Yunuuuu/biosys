@@ -31,7 +31,7 @@ exec_build <- function(
     # running order:
     # 1. assert_arguments
     # 2. setup_envvar
-    # 3. help (hijack, can skip 3rd and 4th steps)
+    # 3. help (hijack, can skip 4th and 5th steps)
     # 4. setup_params (params):
     #    usually the required arguments, such as the input files.
     # 5. if ... is an argument (... = ),
