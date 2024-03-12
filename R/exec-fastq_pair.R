@@ -13,6 +13,7 @@
 #'
 #' @param fq1,fq2 A string of fastq file path.
 #' @param ... `r rd_dots("fastq_pair")`. Details see: `fastq_pair(help = TRUE)`.
+#' @param hash_table_size Size of hash table to use.
 #' @param keep_decompressed A bool, If `fq1` or `fq2` are compressed,
 #' `fastq_pair` function will automatically decompress them, this argument
 #' controls whether we should remove the decompressed temporary files.
@@ -24,7 +25,7 @@
 #' @export
 fastq_pair <- exec_build(
     command_new_name("fastq_pair"),
-    fq1 = , fq2 = , ... = ,
+    fq1 = , fq2 = , ... = , hash_table_size = NULL,
     keep_decompressed = FALSE, keep_unpaired = TRUE, compress = TRUE,
     odir = getwd(), opath_symbol = quote(opath), help = "--help",
     setup_params = exprs({
@@ -50,6 +51,15 @@ fastq_pair <- exec_build(
             }
             if (!identical(fq2, new_fq2)) {
                 on.exit(file.remove(new_fq2), add = TRUE)
+            }
+        }
+        if (is.null(hash_table_size)) {
+            tempfile <- tempfile()
+            exec("wc", "-l", file, stdout = tempfile, verbose = FALSE)
+            hash_table_size <- strsplit(read_lines(tempfile), " ", fixed = TRUE)
+            hash_table_size <- ceiling(as.integer(hash_table_size[[1L]]) / 4L)
+            if (verbose) {
+                cli::cli_inform("Using -t {.val {hash_table_size}}")
             }
         }
         params <- c(new_fq1, new_fq2, ">/dev/null")
