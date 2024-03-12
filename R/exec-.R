@@ -65,6 +65,7 @@ exec_build <- function(
     assert_arguments <- exprs({
         rlang::check_dots_unnamed()
         assert_string(!!cmd_symbol, empty_ok = FALSE, null_ok = !!cmd_null_ok)
+        !!cmd_symbol <- command_new_cmd(!!cmd_symbol) # nolint
     })
 
     ## prepare optional argument (...) ---------------------

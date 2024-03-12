@@ -72,7 +72,21 @@ testthat::test_that("`decompress` works as expected", {
         decompress("gzip", gzip_file_no_ext, odir = tmpdir)
     )
     file.remove(file.path(tmpdir, paste0(basename(gzip_file_no_ext), ".out")))
-
+    
+    # pigz decompress works
+    gzip_file <- compress("pigz", file, odir = tmpdir)
+    testthat::expect_no_error(
+        decompress("pigz", gzip_file,
+            ofile = "gzip_decompressed", odir = tmpdir
+        )
+    )
+    file.remove(file.path(tmpdir, "gzip_decompressed"))
+    gzip_file_no_ext <- file.path(dirname(gzip_file), "gzip_no_ext")
+    file.rename(gzip_file, gzip_file_no_ext)
+    testthat::expect_no_error(
+        decompress("pigz", gzip_file_no_ext, odir = tmpdir)
+    )
+    file.remove(file.path(tmpdir, paste0(basename(gzip_file_no_ext), ".out")))
 
     # bzip2 decompress works
     bzip2_file <- compress("bzip2", file, odir = tmpdir)

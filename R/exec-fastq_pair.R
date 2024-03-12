@@ -62,7 +62,7 @@ fastq_pair <- exec_build(
         }
         if (compress) {
             for (file in opath) {
-                compress("gzip", file,
+                compress("gz", file,
                     odir = odir, keep = FALSE, verbose = FALSE
                 )
             }

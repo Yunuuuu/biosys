@@ -106,9 +106,15 @@ write_lines <- function(text, path, eol = "\n", compress = "auto") {
 
 #########################################################
 compress <- function(cmd, file, ..., ofile = NULL, odir = getwd(), keep = TRUE, override = FALSE) {
-    cmd <- match.arg(cmd, c("gzip", "bzip2", "xz"))
+    cmd <- match.arg(cmd, c("gz", "pigz", "gzip", "bzip2", "xz"))
     if (is.null(ofile)) {
-        ext <- switch(cmd, gzip = "gz", bzip2 = "bz2", xz = "xz") # styler: off
+        ext <- switch(cmd,
+            gz = ,
+            pigz = ,
+            gzip = "gz",
+            bzip2 = "bz2",
+            xz = "xz"
+        )
         ofile <- paste(basename(file), ext, sep = ".")
     }
     opath <- build_opath(odir, ofile)
@@ -124,6 +130,30 @@ compress <- function(cmd, file, ..., ofile = NULL, odir = getwd(), keep = TRUE, 
     opath
 }
 
+#' @export
+command_locate_cmd.gz <- function(cmd) {
+    gzip <- Sys.which("gzip")
+    pigz <- Sys.which("pigz")
+    if (cmd == "gz") {
+        if (nzchar(pigz)) {
+            command <- pigz
+        } else {
+            command <- gzip
+        }
+    } else if (!any(cmd == c("gzip", "pigz"))) {
+        cli::cli_abort(c_msg(
+            "{.arg cmd} must be",
+            oxford_comma(c("gz", "gzip", "pigz"), final = "or")
+        ))
+    } else {
+        command <- switch(cmd,
+            gzip = gzip,
+            pigz = pigz
+        )
+    }
+    command
+}
+
 decompress <- function(cmd, file, ..., ofile = NULL) {
     if (is.null(ofile)) {
         ofile <- basename(file)
@@ -136,7 +166,7 @@ decompress <- function(cmd, file, ..., ofile = NULL) {
                 tbz = path_ext_set(ofile, ext = "tar"),
                 paste(ofile, "out", sep = ".")
             )
-        } else if (cmd == "gzip") {
+        } else if (cmd == "gzip" || cmd == "gz" || cmd == "pigz") {
             ofile <- switch(ext,
                 z = ,
                 gz = path_ext_remove(ofile),
@@ -176,7 +206,7 @@ decompress_file <- function(file, exdir = tempdir()) {
     # support gzip and bz2 files
     if (is_gzip_suffix(file, tar = TRUE) ||
         is_gzip_signature(file, file_signature)) {
-        file <- decompress("gzip", file, odir = exdir, verbose = FALSE)
+        file <- decompress("gz", file, odir = exdir, verbose = FALSE)
     } else if (is_bz2_suffix(file, tar = TRUE) ||
         is_bz2_signature(file, file_signature)) {
         file <- decompress("bzip2", file, odir = exdir, verbose = FALSE)
