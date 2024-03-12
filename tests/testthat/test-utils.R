@@ -72,21 +72,6 @@ testthat::test_that("`decompress` works as expected", {
         decompress("gzip", gzip_file_no_ext, odir = tmpdir)
     )
     file.remove(file.path(tmpdir, paste0(basename(gzip_file_no_ext), ".out")))
-    
-    # pigz decompress works
-    gzip_file <- compress("pigz", file, odir = tmpdir)
-    testthat::expect_no_error(
-        decompress("pigz", gzip_file,
-            ofile = "gzip_decompressed", odir = tmpdir
-        )
-    )
-    file.remove(file.path(tmpdir, "gzip_decompressed"))
-    gzip_file_no_ext <- file.path(dirname(gzip_file), "gzip_no_ext")
-    file.rename(gzip_file, gzip_file_no_ext)
-    testthat::expect_no_error(
-        decompress("pigz", gzip_file_no_ext, odir = tmpdir)
-    )
-    file.remove(file.path(tmpdir, paste0(basename(gzip_file_no_ext), ".out")))
 
     # bzip2 decompress works
     bzip2_file <- compress("bzip2", file, odir = tmpdir)
@@ -103,7 +88,6 @@ testthat::test_that("`decompress` works as expected", {
     )
     file.remove(file.path(tmpdir, paste0(basename(bzip2_file_no_ext), ".out")))
 
-
     # xz decompress works
     xz_file <- compress("xz", file, odir = tmpdir)
     testthat::expect_no_error(
@@ -118,6 +102,22 @@ testthat::test_that("`decompress` works as expected", {
         decompress("xz", xz_file_no_ext, odir = tmpdir)
     )
     file.remove(file.path(tmpdir, paste0(basename(xz_file_no_ext), ".out")))
+
+    # pigz decompress works
+    testthat::skip_if_not(nzchar(command_locate_cmd(command_new_cmd("pigz"))))
+    gzip_file <- compress("pigz", file, odir = tmpdir)
+    testthat::expect_no_error(
+        decompress("pigz", gzip_file,
+            ofile = "gzip_decompressed", odir = tmpdir
+        )
+    )
+    file.remove(file.path(tmpdir, "gzip_decompressed"))
+    gzip_file_no_ext <- file.path(dirname(gzip_file), "gzip_no_ext")
+    file.rename(gzip_file, gzip_file_no_ext)
+    testthat::expect_no_error(
+        decompress("pigz", gzip_file_no_ext, odir = tmpdir)
+    )
+    file.remove(file.path(tmpdir, paste0(basename(gzip_file_no_ext), ".out")))
 })
 
 testthat::test_that("`read_lines()` workds as expected", {
