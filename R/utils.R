@@ -26,3 +26,5 @@ exprs <- function(...) {
     }
     dots
 }
+
+fclass <- function(x) class(x)[1L]
