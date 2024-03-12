@@ -54,9 +54,12 @@ fastq_pair <- exec_build(
             }
         }
         if (is.null(hash_table_size)) {
-            tempfile <- tempfile()
-            exec("wc", "-l", file, stdout = tempfile, verbose = FALSE)
-            hash_table_size <- strsplit(read_lines(tempfile), " ", fixed = TRUE)
+            nlines <- tempfile()
+            exec("wc", "-l", file, stdout = nlines, verbose = FALSE)
+            hash_table_size <- strsplit(read_lines(nlines, n = 1L),
+                " ", fixed = TRUE # styler: off
+            )
+            file.remove(nlines)
             hash_table_size <- ceiling(as.integer(hash_table_size[[1L]]) / 4L)
             if (verbose) {
                 cli::cli_inform("Using -t {.val {hash_table_size}}")
