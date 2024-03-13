@@ -54,16 +54,17 @@ fastq_pair <- exec_build(
             }
         }
         if (is.null(hash_table_size)) {
-            nlines <- tempfile()
+            nlines_file <- tempfile()
             if (verbose) {
                 cli::cli_inform("counting the number of lines of {.path {fq1}}")
             }
-            exec("wc", "-l", new_fq1, stdout = nlines, verbose = FALSE)
-            hash_table_size <- strsplit(read_lines(nlines, n = 1L),
+            exec("wc", "-l", new_fq1, stdout = nlines_file, verbose = FALSE)
+            hash_table_size <- strsplit(
+                read_lines(nlines_file, n = 1L),
                 " ", fixed = TRUE # styler: off
-            )
-            file.remove(nlines)
-            hash_table_size <- ceiling(as.integer(hash_table_size[[1L]]) / 4L)
+            )[[c(1L, 1L)]]
+            on.exit(file.remove(nlines_file), add = TRUE)
+            hash_table_size <- ceiling(as.integer(hash_table_size) / 4L)
             if (verbose) cli::cli_inform("Using -t {.val {hash_table_size}}")
         }
         params <- c(
