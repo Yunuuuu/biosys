@@ -316,7 +316,7 @@ SysName <- R6::R6Class(
                 if (is.null(private$name)) {
                     cli::cli_abort(c_msg(
                         "You must provide {.arg name}",
-                        "to initialize {.cls fclass(self)} object"
+                        "to initialize {.cls {fclass(self)}} object"
                     ))
                 }
             } else if (!rlang::is_string(name) || name == "") {
