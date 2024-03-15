@@ -84,14 +84,16 @@ SysFastqPair <- R6::R6Class(
             if (is.null(hash_table_size)) {
                 nlines_file <- tempfile()
                 if (verbose) {
-                    cli::cli_inform("counting the number of lines of {.path {fq1}}")
+                    cli::cli_inform(
+                        "counting the number of lines of {.path {fq1}}"
+                    )
                 }
                 exec("wc", "-l", new_fq1, stdout = nlines_file, verbose = FALSE)
+                on.exit(file.remove(nlines_file), add = TRUE)
                 hash_table_size <- strsplit(
                     read_lines(nlines_file, n = 1L),
                 " ", fixed = TRUE # styler: off
                 )[[c(1L, 1L)]]
-                on.exit(file.remove(nlines_file), add = TRUE)
                 hash_table_size <- ceiling(as.integer(hash_table_size) / 4L)
                 if (verbose) {
                     cli::cli_inform("Using -t {.val {hash_table_size}}")
