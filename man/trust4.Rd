@@ -110,7 +110,7 @@ non-zero status.}
 
 \item{verbose}{A bool indicates whether to print running command message.}
 
-\item{perl}{Path to \code{perl} command.}
+\item{perl}{A string of path to \code{perl} command.}
 
 \item{species}{Species to extract IMGT annotation, details see
 \url{https://www.imgt.org//download/V-QUEST/IMGT_V-QUEST_reference_directory/}.}

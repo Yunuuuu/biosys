@@ -94,7 +94,7 @@ SysTrust4 <- R6::R6Class(
 # `perl BuildImgtAnnot.pl Homo_sapien > IMGT+C.fa`
 #' @param species Species to extract IMGT annotation, details see
 #' <https://www.imgt.org//download/V-QUEST/IMGT_V-QUEST_reference_directory/>.
-#' @param perl Path to `perl` command.
+#' @inheritParams perl
 #' @export
 #' @rdname trust4
 trust4_imgt_annot <- function(species = "Homo_sapien", ...,
