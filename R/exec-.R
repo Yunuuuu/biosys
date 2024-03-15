@@ -41,7 +41,7 @@ Sys <- R6::R6Class("Sys",
             private$environment <- environment()
 
             # prepare common parameters for usage -------
-            # usually the script file: see `SysKraken2Mpa` and
+            # usually insert the script file: see `SysKraken2Mpa` and
             # `SysTrust4ImgtAnnot`
             sys_params <- private$setup_params(params = sys_params)
             if (!is.list(sys_params)) {
@@ -243,8 +243,7 @@ Sys <- R6::R6Class("Sys",
         #' @description Method used to prepare parameters
         #'
         #' @return An named list, the output list will be saved in
-        #' `private$params` with an active binding function `private$params` to
-        #' change or extract it.
+        #' `private$params`
         setup_params = function(params) params,
 
         #' @field add_dots A bool indicates whether `...` should be collected
