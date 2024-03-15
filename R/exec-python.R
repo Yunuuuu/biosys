@@ -8,28 +8,37 @@
 #' @param python `r rd_cmd("python")`.
 #' @seealso <https://www.python.org/>
 #' @export
-python <- exec_build(
-    command_new_name("python", class = "python"),
-    ... = , pythonpath = NULL,
-    opath_symbol = NULL, help = "--help",
-    setup_envvar = exprs(
-        envvar <- envvar_parse_path(envvar, name = "PYTHONPATH", pythonpath)
+python <- function(...,
+                   pythonpath = NULL,
+                   envpath = NULL, envvar = NULL, help = FALSE,
+                   stdout = TRUE, stderr = TRUE, stdin = "",
+                   wait = TRUE, timeout = 0L, abort = TRUE,
+                   verbose = TRUE, python = NULL) {
+    SysPython$new()$exec(
+        cmd = python, ..., pythonpath = pythonpath,
+        envpath = envpath, envvar = envvar,
+        help = help, stdout = stdout, stderr = stderr, stdin = stdin,
+        wait = wait, timeout = timeout, abort = abort, verbose = verbose
+    )
+}
+
+SysPython <- R6::R6Class(
+    "SysPython",
+    inherit = SysName,
+    private = list(
+        name = "python",
+        setup_envvar = function(envvar, pythonpath) {
+            envvar_parse_path(envvar, name = "PYTHONPATH", pythonpath)
+        },
+        command_locate_by_name = function() {
+            python2 <- Sys.which("python2")
+            python3 <- Sys.which("python3")
+            if (nzchar(python2) && !nzchar(python3)) {
+                python2
+            } else {
+                python3
+            }
+        },
+        setup_help_params = function() "--help"
     )
 )
-
-#' @export
-command_locate_name.python <- function(name) {
-    if (name == "python") {
-        if (nzchar(Sys.which("python2")) && !nzchar(Sys.which("python3"))) {
-            name <- "python2"
-        } else {
-            name <- "python3"
-        }
-    } else if (!any(name == c("python2", "python3"))) {
-        cli::cli_abort(c_msg(
-            "{.arg name} must be",
-            oxford_comma(c("python", "python2", "python3"), final = "or")
-        ))
-    }
-    Sys.which(name)
-}

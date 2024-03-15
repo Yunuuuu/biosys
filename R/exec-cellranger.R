@@ -4,11 +4,26 @@
 #' @inheritParams allele_counter
 #' @param cellranger `r rd_cmd("cellranger")`.
 #' @export
-cellranger <- exec_build(
-    command_new_name("cellranger"),
-    subcmd = , ... = , help = "--help",
-    setup_params = exprs({
-        assert_string(subcmd, empty_ok = FALSE, null_ok = TRUE)
-        params <- subcmd
-    })
+cellranger <- function(subcmd = NULL, ...,
+                       envpath = NULL, envvar = NULL, help = FALSE,
+                       stdout = TRUE, stderr = TRUE, stdin = "",
+                       wait = TRUE, timeout = 0L, abort = TRUE,
+                       verbose = TRUE, cellranger = NULL) {
+    assert_string(subcmd, empty_ok = FALSE, null_ok = TRUE)
+    SysCellranger$new()$exec(
+        cmd = cellranger,
+        ..., subcmd = subcmd, envpath = envpath, envvar = envvar,
+        help = help, stdout = stdout, stderr = stderr, stdin = stdin,
+        wait = wait, timeout = timeout, abort = abort, verbose = verbose
+    )
+}
+
+SysCellranger <- R6::R6Class(
+    "SysCellranger",
+    inherit = SysName,
+    private = list(
+        name = "cellranger",
+        setup_command_params = function(subcmd) subcmd,
+        setup_help_params = function(subcmd) c(subcmd, "--help")
+    )
 )

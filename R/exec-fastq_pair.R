@@ -23,71 +23,112 @@
 #' @param fastq_pair `r rd_cmd("fastq_pair")`.
 #' @seealso <https://github.com/linsalrob/fastq-pair>
 #' @export
-fastq_pair <- exec_build(
-    command_new_name("fastq_pair"),
-    fq1 = , fq2 = , ... = , hash_table_size = NULL,
-    keep_decompressed = FALSE, keep_unpaired = TRUE, compress = TRUE,
-    odir = getwd(), opath_symbol = quote(opath), help = "--help",
-    setup_params = exprs({
-        assert_string(fq1, empty_ok = FALSE)
-        assert_string(fq2, empty_ok = FALSE)
-        assert_bool(keep_decompressed)
-        odir <- build_opath(odir)
-        new_fq1 <- decompress_file(fq1, exdir = odir)
-        new_fq2 <- decompress_file(fq2, exdir = odir)
-        suffix <- c(".paired.fq", ".single.fq")
-        opath1 <- file_path(
-            dirname(new_fq1),
-            paste0(basename(new_fq1), suffix)
-        )
-        opath2 <- file_path(
-            dirname(new_fq2),
-            paste0(basename(new_fq2), suffix)
-        )
-        opath <- c(opath1, opath2)
-        if (!keep_decompressed) {
-            if (!identical(fq1, new_fq1)) {
-                on.exit(file.remove(new_fq1), add = TRUE)
+fastq_pair <- function(fq1, fq2, ..., hash_table_size = NULL,
+                       keep_decompressed = FALSE, keep_unpaired = TRUE, compress = TRUE, odir = getwd(),
+                       envpath = NULL, envvar = NULL, help = FALSE,
+                       stdout = TRUE, stderr = TRUE, stdin = "",
+                       wait = TRUE, timeout = 0L, abort = TRUE,
+                       verbose = TRUE, fastq_pair = NULL) {
+    SysFastqPair$new()$exec(
+        cmd = fastq_pair,
+        ...,
+        fq1 = fq1, fq2 = fq2, hash_table_size = hash_table_size,
+        keep_decompressed = keep_decompressed,
+        keep_unpaired = keep_unpaired, compress = compress,
+        odir = odir, envpath = envpath, envvar = envvar,
+        help = help, stdout = stdout, stderr = stderr, stdin = stdin,
+        wait = wait, timeout = timeout, abort = abort, verbose = verbose
+    )
+}
+
+SysFastqPair <- R6::R6Class(
+    "SysFastqPair",
+    inherit = SysName,
+    private = list(
+        name = "fastq_pair",
+        setup_command_params = function(fq1, fq2, odir, hash_table_size,
+                                        keep_decompressed, keep_unpaired,
+                                        compress) {
+            assert_string(fq1, empty_ok = FALSE)
+            assert_string(fq2, empty_ok = FALSE)
+            assert_bool(keep_decompressed)
+            assert_bool(keep_unpaired)
+            assert_bool(compress)
+            odir <- build_opath(odir)
+            private$insert_param("odir", odir)
+            new_fq1 <- decompress_file(fq1, exdir = odir)
+            new_fq2 <- decompress_file(fq2, exdir = odir)
+            suffix <- c(".paired.fq", ".single.fq")
+            opath1 <- file_path(
+                dirname(new_fq1),
+                paste0(basename(new_fq1), suffix)
+            )
+            opath2 <- file_path(
+                dirname(new_fq2),
+                paste0(basename(new_fq2), suffix)
+            )
+            opath <- c(opath1, opath2)
+            private$insert_param("opath", opath)
+            if (!keep_decompressed) {
+                if (!identical(fq1, new_fq1)) {
+                    on_exit(file.remove(new_fq1),
+                        add = TRUE, envir = private$environment
+                    )
+                }
+                if (!identical(fq2, new_fq2)) {
+                    on_exit(file.remove(new_fq2),
+                        add = TRUE, envir = private$environment
+                    )
+                }
             }
-            if (!identical(fq2, new_fq2)) {
-                on.exit(file.remove(new_fq2), add = TRUE)
-            }
-        }
-        if (is.null(hash_table_size)) {
-            nlines_file <- tempfile()
-            if (verbose) {
-                cli::cli_inform("counting the number of lines of {.path {fq1}}")
-            }
-            exec("wc", "-l", new_fq1, stdout = nlines_file, verbose = FALSE)
-            hash_table_size <- strsplit(
-                read_lines(nlines_file, n = 1L),
+            if (is.null(hash_table_size)) {
+                nlines_file <- tempfile()
+                if (verbose) {
+                    cli::cli_inform(
+                        "counting the number of lines of {.path {fq1}}"
+                    )
+                }
+                exec("wc", "-l", new_fq1, stdout = nlines_file, verbose = FALSE)
+                on.exit(file.remove(nlines_file), add = TRUE)
+                hash_table_size <- strsplit(
+                    read_lines(nlines_file, n = 1L),
                 " ", fixed = TRUE # styler: off
-            )[[c(1L, 1L)]]
-            on.exit(file.remove(nlines_file), add = TRUE)
-            hash_table_size <- ceiling(as.integer(hash_table_size) / 4L)
-            if (verbose) cli::cli_inform("Using -t {.val {hash_table_size}}")
-        }
-        params <- c(
-            arg_internal("-t", hash_table_size, format = "%d"),
-            new_fq1, new_fq2, ">/dev/null"
-        )
-    }),
-    final = exprs({
-        if (status != 0L) return(status) # styler: off
-        if (!keep_unpaired) {
-            file.remove(opath[c(2L, 4L)])
-            opath <- opath[c(1L, 3L)]
-        }
-        if (compress) {
-            for (file in opath) {
-                compress("gz", file,
-                    odir = odir, keep = FALSE, verbose = FALSE
+                )[[c(1L, 1L)]]
+                hash_table_size <- ceiling(as.integer(hash_table_size) / 4L)
+                if (verbose) {
+                    cli::cli_inform("Using -t {.val {hash_table_size}}")
+                }
+            }
+            c(
+                arg_internal("-t", hash_table_size, format = "%d"),
+                new_fq1, new_fq2, ">", nullfile()
+            )
+        },
+        setup_help_params = function() "--help",
+        success = function(status, command, verbose) {
+            opath <- private$get_param(opath)
+            if (!private$get_param(keep_unpaired)) {
+                if (verbose) {
+                    cli::cli_inform("removing unpaired reads")
+                }
+                file.remove(opath[c(2L, 4L)])
+                opath <- opath[c(1L, 3L)]
+            }
+            if (private$get_param(compress)) {
+                for (file in opath) {
+                    compress("gzip", file,
+                        odir = private$get_param(odir),
+                        keep = FALSE, verbose = FALSE
+                    )
+                }
+            } else {
+                file.rename(
+                    opath,
+                    file_path(private$get_param(odir), basename(opath))
                 )
             }
-        } else {
-            file.rename(opath, file_path(odir, basename(opath)))
         }
-    })
+    )
 )
 
 #' @param fastq_files A character of the fastq file paths.

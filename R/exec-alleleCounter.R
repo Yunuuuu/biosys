@@ -13,16 +13,36 @@
 #' @param alleleCounter `r rd_cmd("alleleCounter")`.
 #' @seealso <https://github.com/cancerit/alleleCount>
 #' @export
-allele_counter <- exec_build(
-    command_new_name("alleleCounter"),
-    hts_file = , loci_file = , ofile = , ... = ,
-    odir = getwd(), opath_symbol = quote(opath), help = "--help",
-    setup_params = exprs({
-        opath <- build_opath(odir, ofile)
-        params <- c(
-            arg_internal("-l", loci_file),
-            arg_internal("-b", hts_file),
-            arg_internal("-o", opath)
-        )
-    })
+allele_counter <- function(hts_file, loci_file, ofile, ..., odir = getwd(),
+                           envpath = NULL, envvar = NULL, help = FALSE,
+                           stdout = TRUE, stderr = TRUE, stdin = "",
+                           wait = TRUE, timeout = 0L, abort = TRUE,
+                           verbose = TRUE, alleleCounter = NULL) {
+    SysAlleleCounter$new()$exec(
+        cmd = alleleCounter,
+        ...,
+        hts_file = hts_file, loci_file = loci_file,
+        ofile = ofile, odir = odir,
+        envpath = envpath, envvar = envvar,
+        help = help, stdout = stdout, stderr = stderr, stdin = stdin,
+        wait = wait, timeout = timeout, abort = abort, verbose = verbose
+    )
+}
+
+SysAlleleCounter <- R6::R6Class(
+    "SysAlleleCounter",
+    inherit = SysName,
+    public = list(
+        name = "alleleCounter",
+        setup_command_params = function(hts_file, loci_file, ofile, odir) {
+            opath <- build_opath(odir, ofile)
+            private$insert_param("opath", opath)
+            c(
+                arg_internal("-l", loci_file),
+                arg_internal("-b", hts_file),
+                arg_internal("-o", opath)
+            )
+        },
+        setup_help_params = function() "--help"
+    )
 )

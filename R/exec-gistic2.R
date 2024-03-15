@@ -25,19 +25,40 @@
 #' @param gistic2 `r rd_cmd("gistic2")`.
 #' @seealso <https://broadinstitute.github.io/gistic2/>
 #' @export
-gistic2 <- exec_build(
-    command_new_name("gistic2"),
-    seg = , refgene = , ... = , odir = getwd(), help = NULL,
-    setup_params = exprs({
-        assert_data_frame(seg)
-        odir <- build_opath(odir)
-        seg_file <- tempfile("gistic2")
-        data.table::fwrite(seg, file = seg_file, sep = "\t")
-        on.exit(file.remove(seg_file))
-        params <- c(
-            arg_internal("-seg", seg_file),
-            arg_internal("-refgene", refgene),
-            arg_internal("-b", odir)
-        )
-    })
+gistic2 <- function(seg, refgene, ..., odir = getwd(),
+                    envpath = NULL, envvar = NULL, help = FALSE,
+                    stdout = TRUE, stderr = TRUE, stdin = "",
+                    wait = TRUE, timeout = 0L, abort = TRUE,
+                    verbose = TRUE, gistic2 = NULL) {
+    SysGistic2$new()$exec(
+        cmd = gistic2,
+        ...,
+        seg = seg, refgene = refgene,
+        odir = odir, envpath = envpath, envvar = envvar,
+        help = help, stdout = stdout, stderr = stderr, stdin = stdin,
+        wait = wait, timeout = timeout, abort = abort, verbose = verbose
+    )
+}
+
+SysGistic2 <- R6::R6Class(
+    "SysGistic2",
+    inherit = SysName,
+    private = list(
+        name = "gistic2",
+        setup_command_params = function(seg, refgene, odir) {
+            assert_data_frame(seg)
+            odir <- build_opath(odir)
+            seg_file <- tempfile("gistic2")
+            data.table::fwrite(seg, file = seg_file, sep = "\t")
+            on_exit(file.remove(seg_file),
+                add = TRUE, envir = private$environment
+            )
+            params <- c(
+                arg_internal("-seg", seg_file),
+                arg_internal("-refgene", refgene),
+                arg_internal("-b", odir)
+            )
+        },
+        setup_help_params = function() NULL
+    )
 )

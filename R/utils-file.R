@@ -130,30 +130,6 @@ compress <- function(cmd, file, ..., ofile = NULL, odir = getwd(), keep = TRUE, 
     opath
 }
 
-#' @export
-command_locate_cmd.gz <- function(cmd) {
-    gzip <- Sys.which("gzip")
-    pigz <- Sys.which("pigz")
-    if (cmd == "gz") {
-        if (nzchar(pigz)) {
-            command <- pigz
-        } else {
-            command <- gzip
-        }
-    } else if (!any(cmd == c("gzip", "pigz"))) {
-        cli::cli_abort(c_msg(
-            "{.arg cmd} must be",
-            oxford_comma(c("gz", "gzip", "pigz"), final = "or")
-        ))
-    } else {
-        command <- switch(cmd,
-            gzip = gzip,
-            pigz = pigz
-        )
-    }
-    command
-}
-
 decompress <- function(cmd, file, ..., ofile = NULL) {
     if (is.null(ofile)) {
         ofile <- basename(file)

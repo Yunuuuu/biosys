@@ -104,7 +104,7 @@ testthat::test_that("`decompress` works as expected", {
     file.remove(file.path(tmpdir, paste0(basename(xz_file_no_ext), ".out")))
 
     # pigz decompress works
-    testthat::skip_if_not(nzchar(command_locate_cmd(command_new_cmd("pigz"))))
+    testthat::skip_if_not(nzchar(Sys.which("pigz")))
     gzip_file <- compress("pigz", file, odir = tmpdir)
     testthat::expect_no_error(
         decompress("pigz", gzip_file,

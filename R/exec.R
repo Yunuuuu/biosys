@@ -10,8 +10,6 @@
 #' @param opath Specifying the output file or directory to be removed if
 #'  command running error. Note: all files in the directory will be removed, you
 #'  must use this argument carefully.
-#' @param abort A bool indicates whether to report error if command return
-#'  non-zero status.
 #' @param stdout,stderr Where output to ‘stdout’ or ‘stderr’ should be sent.
 #' Possible values are:
 #'
@@ -23,11 +21,28 @@
 #' @param wait A bool (not NA) indicating whether the R interpreter should wait
 #' for the command to finish, or run it asynchronously. This will be ignored
 #' (and the interpreter will always wait) if `abort = TRUE`.
-#' @param verbose A logical value indicates whether to print running command
-#'  message.
+#' @param abort A bool indicates whether to report error if command return
+#'  non-zero status.
+#' @param verbose A bool indicates whether to print running command message.
 #' @return
 #'  - if `abort=TRUE`, zero if command success, otherwise, abort error.
 #'  - if `abort=FALSE` and `wait=FALSE`, always return `0`.
-#'  - if `abort=FALSE` and `wait=TRUE`, exit status returned by the command.
+#'  - if `abort=FALSE` and `wait=TRUE`, exit status returned by the
+#'    command.
 #' @export
-exec <- exec_build(NULL, cmd = "cmd", ... = , opath = NULL, opath_symbol = quote(opath))
+exec <- function(cmd, ..., envpath = NULL, envvar = NULL, opath = NULL,
+                 stdout = TRUE, stderr = TRUE, stdin = "",
+                 wait = TRUE, timeout = 0L, abort = TRUE, verbose = TRUE) {
+    SysExec$new()$exec(
+        cmd = cmd,
+        ...,
+        opath = opath, envpath = envpath, envvar = envvar,
+        help = FALSE, stdout = stdout, stderr = stderr, stdin = stdin,
+        wait = wait, timeout = timeout, abort = abort, verbose = verbose
+    )
+}
+
+SysExec <- R6::R6Class("SysExec",
+    inherit = Sys,
+    private = list(setup_opath = function(opath) opath)
+)
