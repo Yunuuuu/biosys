@@ -68,8 +68,7 @@ V/D/J/C genes.}
 IMGT database. (default: not used). (recommended).}
 
 \item{ofile}{\itemize{
-\item \code{trust4}: Prefix of output files. (default: inferred from file
-prefix).
+\item \code{trust4}: Prefix of output files. (default: inferred from file prefix).
 \item \code{trust4_imgt_annot}: Output file name.
 \item \code{trust4_gene_names}: Output file name.
 }}

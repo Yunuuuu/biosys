@@ -11,8 +11,7 @@
 #' @param ref_annot Path to detailed V/D/J/C gene reference file, such as from
 #' IMGT database. (default: not used). (recommended).
 #' @param ofile
-#'  - `trust4`: Prefix of output files. (default: inferred from file
-#'    prefix).
+#'  - `trust4`: Prefix of output files. (default: inferred from file prefix).
 #'  - `trust4_imgt_annot`: Output file name.
 #'  - `trust4_gene_names`: Output file name.
 #' @param ... `r rd_dots("run-trust4")`. Details see:
@@ -130,7 +129,7 @@ SysTrust4ImgtAnnot <- R6::R6Class(
             opath <- build_opath(odir, ofile, abs = TRUE)
             c(private$get_param("script"), shQuote(species), ">", opath)
         },
-        setup_help_params = function() c(private$get_param("script")),
+        setup_help_params = function() private$get_param("script"),
         add_dots = FALSE
     )
 )
