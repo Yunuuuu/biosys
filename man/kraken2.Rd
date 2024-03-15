@@ -16,14 +16,14 @@ kraken2(
   odir = getwd(),
   envpath = NULL,
   envvar = NULL,
-  abort = TRUE,
+  help = FALSE,
   stdout = TRUE,
   stderr = TRUE,
   stdin = "",
   wait = TRUE,
   timeout = 0L,
+  abort = TRUE,
   verbose = TRUE,
-  help = FALSE,
   kraken2 = NULL
 )
 
@@ -35,14 +35,14 @@ kraken2_mpa(
   pythonpath = NULL,
   envpath = NULL,
   envvar = NULL,
-  abort = TRUE,
+  help = FALSE,
   stdout = TRUE,
   stderr = TRUE,
   stdin = "",
   wait = TRUE,
   timeout = 0L,
+  abort = TRUE,
   verbose = TRUE,
-  help = FALSE,
   python = NULL
 )
 }
@@ -70,8 +70,7 @@ added before running command.}
 the command, all environment variables will be replaced before running
 command. Use \code{NA} to remove an environment variable.}
 
-\item{abort}{A bool indicates whether to report error if command return
-non-zero status.}
+\item{help}{If \code{TRUE}, will print the help document for this command.}
 
 \item{stdout, stderr}{Where output to ‘stdout’ or ‘stderr’ should be sent.
 Possible values are:
@@ -93,10 +92,10 @@ for the command to finish, or run it asynchronously. This will be ignored
     elapsed time running \code{command} in a separate process.   Fractions
     of seconds are ignored.}
 
-\item{verbose}{A logical value indicates whether to print running command
-message.}
+\item{abort}{A bool indicates whether to report error if command return
+non-zero status.}
 
-\item{help}{If \code{TRUE}, will print the help document for this command.}
+\item{verbose}{A bool indicates whether to print running command message.}
 
 \item{kraken2}{A string of path to \code{kraken2} command.}
 

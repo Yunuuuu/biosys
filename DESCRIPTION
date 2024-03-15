@@ -11,28 +11,9 @@ RoxygenNote: 7.3.0
 Imports: 
     cli,
     data.table,
+    R6,
     rlang (>= 1.1.0)
 Suggests: 
     testthat (>= 3.0.0)
 SystemRequirements: Unix System
 Config/testthat/edition: 3
-Collate: 
-    'argument.R'
-    'import-standalone-obj-type.R'
-    'import-standalone-cli.R'
-    'import-standalone-assert.R'
-    'helper-exec-command.R'
-    'utils.R'
-    'exec-.R'
-    'exec-alleleCounter.R'
-    'exec-cellranger.R'
-    'exec-fastq_pair.R'
-    'exec-gistic2.R'
-    'exec-kraken2.R'
-    'exec-python.R'
-    'exec-trust4.R'
-    'exec.R'
-    'helper-exec-envvars.R'
-    'helper-exec-return.R'
-    'utils-Rd.R'
-    'utils-file.R'

@@ -18,29 +18,31 @@ trust4(
   odir = getwd(),
   envpath = NULL,
   envvar = NULL,
-  abort = TRUE,
+  help = FALSE,
   stdout = TRUE,
   stderr = TRUE,
   stdin = "",
   wait = TRUE,
   timeout = 0L,
+  abort = TRUE,
   verbose = TRUE,
-  help = FALSE,
-  trust4 = NULL
+  perl = NULL
 )
 
 trust4_imgt_annot(
   species = "Homo_sapien",
+  ...,
   ofile = "IMGT+C.fa",
   odir = getwd(),
   envpath = NULL,
   envvar = NULL,
-  abort = TRUE,
+  help = FALSE,
   stdout = TRUE,
   stderr = TRUE,
   stdin = "",
   wait = TRUE,
   timeout = 0L,
+  abort = TRUE,
   verbose = TRUE,
   perl = NULL
 )
@@ -81,8 +83,7 @@ added before running command.}
 the command, all environment variables will be replaced before running
 command. Use \code{NA} to remove an environment variable.}
 
-\item{abort}{A bool indicates whether to report error if command return
-non-zero status.}
+\item{help}{If \code{TRUE}, will print the help document for this command.}
 
 \item{stdout, stderr}{Where output to ‘stdout’ or ‘stderr’ should be sent.
 Possible values are:
@@ -104,20 +105,20 @@ for the command to finish, or run it asynchronously. This will be ignored
     elapsed time running \code{command} in a separate process.   Fractions
     of seconds are ignored.}
 
-\item{verbose}{A logical value indicates whether to print running command
-message.}
+\item{abort}{A bool indicates whether to report error if command return
+non-zero status.}
 
-\item{help}{If \code{TRUE}, will print the help document for this command.}
+\item{verbose}{A bool indicates whether to print running command message.}
 
-\item{trust4}{A string of path to \code{run-trust4} command.}
+\item{perl}{Path to \code{perl} command.}
 
 \item{species}{Species to extract IMGT annotation, details see
 \url{https://www.imgt.org//download/V-QUEST/IMGT_V-QUEST_reference_directory/}.}
 
-\item{perl}{Path to \code{perl} command.}
-
 \item{imgt_annot}{Path of IMGT annotation file, created via
 \code{trust4_imgt_annot}.}
+
+\item{trust4}{A string of path to \code{run-trust4} command.}
 }
 \description{
 TRUST4: immune repertoire reconstruction from bulk and single-cell RNA-seq

@@ -7,15 +7,15 @@
 exec(
   cmd,
   ...,
-  opath = NULL,
   envpath = NULL,
   envvar = NULL,
-  abort = TRUE,
+  opath = NULL,
   stdout = TRUE,
   stderr = TRUE,
   stdin = "",
   wait = TRUE,
   timeout = 0L,
+  abort = TRUE,
   verbose = TRUE
 )
 }
@@ -24,10 +24,6 @@ exec(
 
 \item{...}{<\link[rlang:dyn-dots]{dynamic dots}> Arguments passed to \code{cmd}.}
 
-\item{opath}{Specifying the output file or directory to be removed if
-command running error. Note: all files in the directory will be removed, you
-must use this argument carefully.}
-
 \item{envpath}{A character define the environment variables \code{PATH} to be
 added before running command.}
 
@@ -35,8 +31,9 @@ added before running command.}
 the command, all environment variables will be replaced before running
 command. Use \code{NA} to remove an environment variable.}
 
-\item{abort}{A bool indicates whether to report error if command return
-non-zero status.}
+\item{opath}{Specifying the output file or directory to be removed if
+command running error. Note: all files in the directory will be removed, you
+must use this argument carefully.}
 
 \item{stdout, stderr}{Where output to ‘stdout’ or ‘stderr’ should be sent.
 Possible values are:
@@ -58,14 +55,17 @@ for the command to finish, or run it asynchronously. This will be ignored
     elapsed time running \code{command} in a separate process.   Fractions
     of seconds are ignored.}
 
-\item{verbose}{A logical value indicates whether to print running command
-message.}
+\item{abort}{A bool indicates whether to report error if command return
+non-zero status.}
+
+\item{verbose}{A bool indicates whether to print running command message.}
 }
 \value{
 \itemize{
 \item if \code{abort=TRUE}, zero if command success, otherwise, abort error.
 \item if \code{abort=FALSE} and \code{wait=FALSE}, always return \code{0}.
-\item if \code{abort=FALSE} and \code{wait=TRUE}, exit status returned by the command.
+\item if \code{abort=FALSE} and \code{wait=TRUE}, exit status returned by the
+command.
 }
 }
 \description{

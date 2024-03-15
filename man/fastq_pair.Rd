@@ -9,20 +9,21 @@ fastq_pair(
   fq1,
   fq2,
   ...,
+  hash_table_size = NULL,
   keep_decompressed = FALSE,
   keep_unpaired = TRUE,
   compress = TRUE,
   odir = getwd(),
   envpath = NULL,
   envvar = NULL,
-  abort = TRUE,
+  help = FALSE,
   stdout = TRUE,
   stderr = TRUE,
   stdin = "",
   wait = TRUE,
   timeout = 0L,
+  abort = TRUE,
   verbose = TRUE,
-  help = FALSE,
   fastq_pair = NULL
 )
 
@@ -32,6 +33,8 @@ fastq_read_pair(fastq_files)
 \item{fq1, fq2}{A string of fastq file path.}
 
 \item{...}{Additional arguments passed to \code{fastq_pair} command. Details see: \code{fastq_pair(help = TRUE)}.}
+
+\item{hash_table_size}{Size of hash table to use.}
 
 \item{keep_decompressed}{A bool, If \code{fq1} or \code{fq2} are compressed,
 \code{fastq_pair} function will automatically decompress them, this argument
@@ -50,8 +53,7 @@ added before running command.}
 the command, all environment variables will be replaced before running
 command. Use \code{NA} to remove an environment variable.}
 
-\item{abort}{A bool indicates whether to report error if command return
-non-zero status.}
+\item{help}{If \code{TRUE}, will print the help document for this command.}
 
 \item{stdout, stderr}{Where output to ‘stdout’ or ‘stderr’ should be sent.
 Possible values are:
@@ -73,10 +75,10 @@ for the command to finish, or run it asynchronously. This will be ignored
     elapsed time running \code{command} in a separate process.   Fractions
     of seconds are ignored.}
 
-\item{verbose}{A logical value indicates whether to print running command
-message.}
+\item{abort}{A bool indicates whether to report error if command return
+non-zero status.}
 
-\item{help}{If \code{TRUE}, will print the help document for this command.}
+\item{verbose}{A bool indicates whether to print running command message.}
 
 \item{fastq_pair}{A string of path to \code{fastq_pair} command.}
 
