@@ -112,6 +112,7 @@ Sys <- R6::R6Class("Sys",
                     wait = TRUE, timeout = timeout,
                     verbose = verbose
                 )
+                invisible(status) # always return status for help = TRUE
             } else {
                 command_params <- inject2(
                     private$setup_command_params,
@@ -190,8 +191,8 @@ Sys <- R6::R6Class("Sys",
                     )
                     if (abort) cli::cli_abort(msg) else cli::cli_warn(msg)
                 }
+                private$return(status = status, command, verbose)
             }
-            private$return(status = status, command, verbose)
         }
     ),
     private = list(
