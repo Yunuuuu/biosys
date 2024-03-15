@@ -130,7 +130,7 @@ SysTrust4ImgtAnnot <- R6::R6Class(
             opath <- build_opath(odir, ofile, abs = TRUE)
             c(private$get_param("script"), shQuote(species), ">", opath)
         },
-        setup_help_params = function() c(private$get_param("script"), "--help"),
+        setup_help_params = function() c(private$get_param("script")),
         add_dots = FALSE
     )
 )
