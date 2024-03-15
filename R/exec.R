@@ -27,8 +27,7 @@
 #' @return
 #'  - if `abort=TRUE`, zero if command success, otherwise, abort error.
 #'  - if `abort=FALSE` and `wait=FALSE`, always return `0`.
-#'  - if `abort=FALSE` and `wait=TRUE`, exit status returned by the
-#'    command.
+#'  - if `abort=FALSE` and `wait=TRUE`, exit status returned by the command.
 #' @export
 exec <- function(cmd, ..., envpath = NULL, envvar = NULL, opath = NULL,
                  stdout = TRUE, stderr = TRUE, stdin = "",

@@ -64,8 +64,7 @@ non-zero status.}
 \itemize{
 \item if \code{abort=TRUE}, zero if command success, otherwise, abort error.
 \item if \code{abort=FALSE} and \code{wait=FALSE}, always return \code{0}.
-\item if \code{abort=FALSE} and \code{wait=TRUE}, exit status returned by the
-command.
+\item if \code{abort=FALSE} and \code{wait=TRUE}, exit status returned by the command.
 }
 }
 \description{
