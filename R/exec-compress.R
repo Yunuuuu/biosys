@@ -1,8 +1,7 @@
 #' Python is a programming language that lets you work quickly and integrate
 #' systems more effectively.
 #'
-#' @param cmd `r rd_cmd("compress")`. One of `gz`, `gzip`, `pigz`, `bzip2`, or
-#' `xz`.
+#' @param cmd One of `gz`, `gzip`, `pigz`, `bzip2`, or `xz`.
 #' @param file A string of input file path.
 #' @param ... `r rd_dots("compress")`. Details see: `compress(cmd, help =
 #' TRUE)`.

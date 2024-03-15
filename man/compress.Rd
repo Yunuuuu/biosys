@@ -29,8 +29,7 @@ compress(
 decompress(cmd, file, ..., ofile = NULL)
 }
 \arguments{
-\item{cmd}{A string of path to \code{compress} command. One of \code{gz}, \code{gzip}, \code{pigz}, \code{bzip2}, or
-\code{xz}.}
+\item{cmd}{One of \code{gz}, \code{gzip}, \code{pigz}, \code{bzip2}, or \code{xz}.}
 
 \item{file}{A string of input file path.}
 
