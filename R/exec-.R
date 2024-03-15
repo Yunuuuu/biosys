@@ -40,8 +40,9 @@ Sys <- R6::R6Class("Sys",
             # save current environment
             private$environment <- environment()
 
-            # prepare parameters for usage -------------
-            # often the default arguments
+            # prepare common parameters for usage -------
+            # usually the script file: see `SysKraken2Mpa` and
+            # `SysTrust4ImgtAnnot`
             sys_params <- private$setup_params(params = sys_params)
             if (!is.list(sys_params)) {
                 cli::cli_abort(c_msg(
@@ -78,7 +79,7 @@ Sys <- R6::R6Class("Sys",
             if (rlang::is_string(wd)) {
                 if (wd == "") {
                     cli::cli_abort(
-                        "{.fn {Class}$setup_wd} return a empty string"
+                        "{.fn {Class}$setup_wd} return an empty string"
                     )
                 }
                 if (!dir.exists(wd)) cli::cli_abort("No directory {.path {wd}}")
