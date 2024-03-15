@@ -3,6 +3,8 @@
 export(allele_counter)
 export(arg)
 export(cellranger)
+export(compress)
+export(decompress)
 export(exec)
 export(fastq_pair)
 export(fastq_read_pair)

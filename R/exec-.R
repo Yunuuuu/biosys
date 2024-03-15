@@ -149,9 +149,9 @@ Sys <- R6::R6Class("Sys",
                     } else {
                         note <- NULL
                     }
-                    cli::cli_abort(
-                        c("`...` must be empty for {.cls {Class}}.", note)
-                    )
+                    cli::cli_abort(c(
+                        "`...` must be empty for {.cls {Class}} object", note
+                    ))
                 }
                 status <- system3(
                     command = command,
@@ -191,7 +191,7 @@ Sys <- R6::R6Class("Sys",
                     if (abort) cli::cli_abort(msg) else cli::cli_warn(msg)
                 }
             }
-            invisible(status)
+            private$return(status = status, command, verbose)
         }
     ),
     private = list(
@@ -302,7 +302,8 @@ Sys <- R6::R6Class("Sys",
         #' - `error`: when command fail, will be run.
         final = function(status, command, verbose) NULL,
         success = function(status, command, verbose) NULL,
-        error = function(status, command, verbose) NULL
+        error = function(status, command, verbose) NULL,
+        return = function(status, command, verbose) invisible(status)
     )
 )
 

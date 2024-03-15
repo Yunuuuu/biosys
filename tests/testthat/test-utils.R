@@ -58,6 +58,21 @@ testthat::test_that("`decompress` works as expected", {
     file <- tempfile(tmpdir = tmpdir)
     write_lines(letters, path = file)
 
+    # gz decompress works
+    gz_file <- compress("gz", file, odir = tmpdir)
+    testthat::expect_no_error(
+        decompress("gz", gz_file,
+            ofile = "gz_decompressed", odir = tmpdir
+        )
+    )
+    file.remove(file.path(tmpdir, "gz_decompressed"))
+    gz_file_no_ext <- file.path(dirname(gz_file), "gz_no_ext")
+    file.rename(gz_file, gz_file_no_ext)
+    testthat::expect_no_error(
+        decompress("gz", gz_file_no_ext, odir = tmpdir)
+    )
+    file.remove(file.path(tmpdir, paste0(basename(gz_file_no_ext), ".out")))
+
     # gzip decompress works
     gzip_file <- compress("gzip", file, odir = tmpdir)
     testthat::expect_no_error(
