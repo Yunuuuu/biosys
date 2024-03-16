@@ -68,8 +68,8 @@ Possible values are:
     if \code{input} is supplied.}
 
 \item{wait}{A bool (not NA) indicating whether the R interpreter should wait
-for the command to finish, or run it asynchronously. This will be ignored
-(and the interpreter will always wait) if \code{abort = TRUE}.}
+for the command to finish, or run it asynchronously  Only used when
+\code{help=FALSE}. The asynchronous process can be managed with \link{process} tools.}
 
 \item{timeout}{timeout in seconds, ignored if 0.  This is a limit for the
     elapsed time running \code{command} in a separate process.   Fractions

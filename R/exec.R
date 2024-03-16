@@ -19,14 +19,15 @@
 #'
 #' @inheritParams base::system2
 #' @param wait A bool (not NA) indicating whether the R interpreter should wait
-#' for the command to finish, or run it asynchronously. This will be ignored
-#' (and the interpreter will always wait) if `abort = TRUE`.
+#' for the command to finish, or run it asynchronously  Only used when
+#' `help=FALSE`. The asynchronous process can be managed with [process] tools.
 #' @param abort A bool indicates whether to report error if command return
 #'  non-zero status.
 #' @param verbose A bool indicates whether to print running command message.
 #' @return
-#'  - if `abort=TRUE`, zero if command success, otherwise, abort error.
-#'  - if `abort=FALSE` and `wait=FALSE`, always return `0`.
+#'  - if `wait=FALSE`, the process ID.
+#'  - if `abort=TRUE` and `wait=TRUE`, zero if command success, otherwise, abort
+#'    error.
 #'  - if `abort=FALSE` and `wait=TRUE`, exit status returned by the command.
 #' @export
 exec <- function(cmd, ..., envpath = NULL, envvar = NULL, opath = NULL,

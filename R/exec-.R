@@ -4,7 +4,8 @@ Sys <- R6::R6Class("Sys",
         #' Invoke a the System Command
         #' @inheritParams exec
         #' @return
-        #'  - if `abort=TRUE`, zero if command success, otherwise, abort error.
+        #'  - if `abort=TRUE`, `$success()` if command success, otherwise, abort
+        #'    error.
         #'  - if `abort=FALSE` and `wait=FALSE`, always return `0`.
         #'  - if `abort=FALSE` and `wait=TRUE`, exit status returned by the
         #'    command.
@@ -17,17 +18,52 @@ Sys <- R6::R6Class("Sys",
             assert_bool(help)
             check_io(stdout)
             check_io(stderr)
-            assert_bool(wait)
+            check_wait(wait)
             assert_bool(abort)
             assert_bool(verbose)
-
-            # Used for message
-            Class <- fclass(self) # nolint
 
             # collect all parameters, we cannot evaluate it since if help =
             # TRUE, it's much possible there were some missing argument
             # we only evaluate necessary parameters
             params <- rlang::enquos(...)
+            if (help || isTRUE(wait)) {
+                o <- private$run_command(
+                    params = params,
+                    help = help,
+                    stdout = stdout,
+                    stderr = stderr,
+                    stdin = stdin,
+                    timeout = timeout,
+                    abort = abort,
+                    verbose = verbose
+                )
+            } else {
+                # starts a parallel R process
+                job <- parallel::mcparallel(
+                    private$run_command(
+                        params = params,
+                        help = help,
+                        stdout = stdout,
+                        stderr = stderr,
+                        stdin = stdin,
+                        timeout = timeout,
+                        abort = abort,
+                        verbose = FALSE
+                    )
+                )
+                o <- job$pid
+                if (rlang::is_string(wait)) name <- wait else name <- NULL
+                process_add(o, name)
+            }
+            invisible(o)
+        }
+    ),
+    private = list(
+        run_command = function(params, help = FALSE,
+                               stdout = TRUE, stderr = TRUE, stdin = "",
+                               timeout = 0L, abort = TRUE, verbose = TRUE) {
+            # Used for message
+            Class <- fclass(self) # nolint
 
             # Split up params between
             # `envpath`: params used to define running PATH environment
@@ -62,7 +98,9 @@ Sys <- R6::R6Class("Sys",
             check_envvar(envvar, "{Class}$setup_envvar")
             if (length(envvar) > 0L) {
                 if (verbose) {
-                    cli::cli_inform("Setting environment variables: {names(envvar)}")
+                    cli::cli_inform(
+                        "Setting environment variables: {names(envvar)}"
+                    )
                 }
                 old_envvar <- set_envvar(as_envvars(envvar), action = "replace")
                 on.exit(set_envvar(old_envvar), add = TRUE)
@@ -72,7 +110,9 @@ Sys <- R6::R6Class("Sys",
             envpath <- inject2(private$setup_envpath, private$params)
             check_envpath(envpath, "{Class}$setup_envpath")
             if (length(envpath) > 0L) {
-                if (verbose) cli::cli_inform("Setting {.field PATH} environment")
+                if (verbose) {
+                    cli::cli_inform("Setting {.field PATH} environment")
+                }
                 envpath <- c(PATH = parse_envpath(envpath))
                 old_envpath <- set_envvar(envpath, action = "prefix")
                 # since `PATH` may exist in `envvar`,
@@ -159,11 +199,12 @@ Sys <- R6::R6Class("Sys",
                         "`...` must be empty for {.cls {Class}} object", note
                     ))
                 }
+                command_params <- c(dots, command_params)
                 status <- system3(
                     command = command,
-                    command_params = c(dots, command_params),
+                    command_params = command_params,
                     stdout = stdout, stderr = stderr, stdin = stdin,
-                    wait = wait, timeout = timeout,
+                    wait = TRUE, timeout = timeout,
                     verbose = verbose
                 )
                 private$final(status = status, verbose = verbose)
@@ -192,10 +233,8 @@ Sys <- R6::R6Class("Sys",
                     if (abort) cli::cli_abort(msg) else cli::cli_warn(msg)
                 }
             }
-            invisible(o)
-        }
-    ),
-    private = list(
+            o
+        },
         #' @field environment A environment used to Execution command which
         #' should be the function environment of `self$exec`.
         environment = NULL,
@@ -351,8 +390,7 @@ system3 <- function(command, command_params,
         msg <- c_msg("Running command", style_field(command))
         if (length(command_params)) {
             msg <- c_msg(
-                msg,
-                style_field(paste(command_params, collapse = " "))
+                msg, style_field(paste(command_params, collapse = " "))
             )
         }
         cli::cli_inform(msg)
@@ -387,6 +425,20 @@ check_io <- function(x, arg = substitute(x), call = parent.frame()) {
             call = call
         )
     }
+}
+
+check_wait <- function(wait, arg = substitute(x), call = parent.frame()) {
+    if (rlang::is_bool(wait)) return() # styler: off
+    if (rlang::is_string(wait)) {
+        if (any(wait == process_names())) {
+            cli::cli_abort("Process {wait} already exist")
+        }
+        if (wait == "") {
+            cli::cli_abort("{.arg {arg}} cannot be an empty string")
+        }
+        return()
+    }
+    cli::cli_abort("{.arg {arg}} must be a string or a bool value")
 }
 
 check_command <- function(command, fn) {

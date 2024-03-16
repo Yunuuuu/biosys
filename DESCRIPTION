@@ -11,6 +11,7 @@ RoxygenNote: 7.3.0
 Imports: 
     cli,
     data.table,
+    parallel,
     R6,
     rlang (>= 1.1.0)
 Suggests: 
