@@ -7,7 +7,7 @@
 systems more effectively.}
 \usage{
 compress(
-  cmd,
+  mode,
   file,
   ...,
   ofile = NULL,
@@ -23,13 +23,14 @@ compress(
   wait = TRUE,
   timeout = 0L,
   abort = TRUE,
-  verbose = TRUE
+  verbose = TRUE,
+  cmd = NULL
 )
 
-decompress(cmd, file, ..., ofile = NULL)
+decompress(mode, file, ..., ofile = NULL)
 }
 \arguments{
-\item{cmd}{One of \code{gz}, \code{gzip}, \code{pigz}, \code{bzip2}, or \code{xz}.}
+\item{mode}{One of \code{gz}, \code{gzip}, \code{pigz}, \code{bzip2}, or \code{xz}.}
 
 \item{file}{A string of input file path.}
 
@@ -77,6 +78,8 @@ for the command to finish, or run it asynchronously. This will be ignored
 non-zero status.}
 
 \item{verbose}{A bool indicates whether to print running command message.}
+
+\item{cmd}{Command path to be invoked, as a character string.}
 }
 \description{
 Python is a programming language that lets you work quickly and integrate

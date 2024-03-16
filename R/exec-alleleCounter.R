@@ -31,9 +31,12 @@ allele_counter <- function(hts_file, loci_file, ofile, ..., odir = getwd(),
 
 SysAlleleCounter <- R6::R6Class(
     "SysAlleleCounter",
-    inherit = SysName,
+    inherit = Command,
     private = list(
-        name = "alleleCounter",
+        setup_params = function(params) {
+            params$name <- "alleleCounter"
+            params
+        },
         setup_command_params = function(hts_file, loci_file, ofile, odir) {
             opath <- build_opath(odir, ofile)
             private$insert_param("opath", opath)

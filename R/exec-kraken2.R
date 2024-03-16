@@ -38,7 +38,7 @@ kraken2 <- function(fq1, ..., fq2 = NULL,
 
 SysKraken2 <- R6::R6Class(
     "SysKraken2",
-    inherit = SysName,
+    inherit = Command,
     private = list(
         name = "kraken2",
         setup_command_params = function(fq1, fq2, ofile, report,

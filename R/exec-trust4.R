@@ -38,7 +38,7 @@ trust4 <- function(file1, ref_coordinate, ..., file2 = NULL, mode = NULL,
 
 SysTrust4 <- R6::R6Class(
     "SysTrust4",
-    inherit = SysName,
+    inherit = Command,
     private = list(
         name = "trust4",
         setup_command_params = function(file1, file2, mode, ref_annot,

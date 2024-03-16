@@ -1,7 +1,7 @@
 #' Python is a programming language that lets you work quickly and integrate
 #' systems more effectively.
 #'
-#' @param cmd One of `gz`, `gzip`, `pigz`, `bzip2`, or `xz`.
+#' @param mode One of `gz`, `gzip`, `pigz`, `bzip2`, or `xz`.
 #' @param file A string of input file path.
 #' @param ... `r rd_dots("compress")`. Details see: `compress(cmd, help =
 #' TRUE)`.
@@ -9,27 +9,24 @@
 #' @param override A bool, indicates whether to override ouput file if it
 #' exists.
 #' @inheritParams allele_counter
+#' @param cmd Command path to be invoked, as a character string.
 #' @seealso
 #' - <https://www.gnu.org/software/gzip/>
 #' - <https://zlib.net/pigz/>
 #' - <https://sourceware.org/bzip2/>
 #' - <https://tukaani.org/xz/>
 #' @export
-compress <- function(cmd, file, ...,
+compress <- function(mode, file, ...,
                      ofile = NULL, odir = getwd(), keep = TRUE,
                      override = FALSE,
                      envpath = NULL, envvar = NULL, help = FALSE,
                      stdout = TRUE, stderr = TRUE, stdin = "",
                      wait = TRUE, timeout = 0L, abort = TRUE,
-                     verbose = TRUE) {
-    cmd <- match.arg(cmd, c("gz", "pigz", "gzip", "bzip2", "xz"))
-    if (cmd == "gz") {
-        Sys <- SysGz$new()
-    } else {
-        Sys <- SysCompress$new(name = cmd)
-    }
-    Sys$exec(
-        cmd = NULL, ..., file = file,
+                     verbose = TRUE, cmd = NULL) {
+    mode <- match.arg(mode, c("gz", "pigz", "gzip", "bzip2", "xz"))
+    Sys <- eval(as.name(paste0("Sys", tools::toTitleCase(mode))))
+    Sys$new()$exec(
+        cmd = cmd, ..., file = file,
         ofile = ofile, odir = odir, keep = keep, override = override,
         envpath = envpath, envvar = envvar,
         help = help, stdout = stdout, stderr = stderr, stdin = stdin,
@@ -37,67 +34,14 @@ compress <- function(cmd, file, ...,
     )
 }
 
-SysCompress <- R6::R6Class(
-    "SysCompress",
-    inherit = SysName,
-    private = list(
-        setup_command_params = function(file, ofile, odir, keep, override) {
-            assert_string(file)
-            assert_bool(keep)
-            assert_bool(override)
-            if (is.null(ofile)) {
-                ext <- switch(private$name,
-                    gz = ,
-                    pigz = ,
-                    gzip = "gz",
-                    bzip2 = "bz2",
-                    xz = "xz"
-                )
-                ofile <- paste(basename(file), ext, sep = ".")
-            }
-            opath <- build_opath(odir, ofile)
-            if (!override && file.exists(opath)) {
-                cli::cli_abort(c(
-                    "Cannot (un)compress {.path {file}} into {.path {opath}}",
-                    i = "{.path {opath}} exists"
-                ))
-            }
-            private$insert_param("opath", opath)
-            c("-c", file, ">", opath)
-        },
-        setup_help_params = function() "--help",
-        success = function(status, command, verbose) {
-            if (!private$get_param("keep")) {
-                file.remove(private$get_param("file"))
-            }
-        },
-        return = function(status, command, verbose) {
-            private$get_param("opath")
-        }
-    )
-)
-
-SysGz <- R6::R6Class(
-    "SysGz",
-    inherit = SysCompress,
-    private = list(
-        name = "gz",
-        command_locate_by_name = function() {
-            gzip <- Sys.which("gzip")
-            pigz <- Sys.which("pigz")
-            if (nzchar(pigz)) pigz else gzip
-        }
-    )
-)
-
-#########################################################
 #' @export
 #' @rdname compress
-decompress <- function(cmd, file, ..., ofile = NULL) {
+decompress <- function(mode, file, ..., ofile = NULL) {
+    mode <- match.arg(mode, c("gz", "pigz", "gzip", "bzip2", "xz"))
     if (is.null(ofile)) {
         ofile <- basename(file)
         ext <- tolower(path_ext(ofile))
-        if (cmd == "bzip2") {
+        if (mode == "bzip2") {
             ofile <- switch(ext,
                 bz2 = ,
                 bz = path_ext_remove(ofile),
@@ -105,7 +49,7 @@ decompress <- function(cmd, file, ..., ofile = NULL) {
                 tbz = path_ext_set(ofile, ext = "tar"),
                 paste(ofile, "out", sep = ".")
             )
-        } else if (cmd == "gzip" || cmd == "gz" || cmd == "pigz") {
+        } else if (mode == "gzip" || mode == "gz" || mode == "pigz") {
             ofile <- switch(ext,
                 z = ,
                 gz = path_ext_remove(ofile),
@@ -123,9 +67,88 @@ decompress <- function(cmd, file, ..., ofile = NULL) {
             )
         }
     }
-    compress(cmd = cmd, file = file, "-d", ..., ofile = ofile)
+    compress(mode = mode, file = file, "-d", ..., ofile = ofile)
 }
 
+#########################################################
+SysCompress <- R6::R6Class(
+    "SysCompress",
+    inherit = Command,
+    private = list(
+        setup_command_params = function(file, ofile, odir, keep, override) {
+            assert_string(file)
+            assert_bool(keep)
+            assert_bool(override)
+            ofile <- ofile %||% paste(basename(file), private$ext, sep = ".")
+            opath <- build_opath(odir, ofile)
+            if (!override && file.exists(opath)) {
+                cli::cli_abort(c(
+                    "Cannot (de)compress {.path {file}} into {.path {opath}}",
+                    i = "{.path {opath}} already exists"
+                ))
+            }
+            private$insert_param("opath", opath)
+            c("-c", file, ">", opath)
+        },
+        setup_help_params = function() "--help",
+        success = function(status, verbose) {
+            if (!private$get_param("keep")) {
+                if (verbose) cli::cli_inform("Removing original file")
+                file.remove(private$get_param("file"))
+            }
+            private$get_param("opath")
+        }
+    )
+)
+
+SysGz <- R6::R6Class(
+    "SysGz",
+    inherit = SysCompress,
+    private = list(
+        name = "gz", ext = "gz",
+        command_locate = function(cmd) {
+            if (is.null(cmd)) {
+                gzip <- Sys.which("gzip")
+                pigz <- Sys.which("pigz")
+                command <- if (nzchar(pigz)) pigz else gzip
+                if (!nzchar(command)) {
+                    cli::cli_abort(
+                        "Cannot locate {.field gzip} or {.field pigz} command"
+                    )
+                }
+            } else {
+                command <- super$command_locate(cmd)
+            }
+            command
+        }
+    )
+)
+
+SysGzip <- R6::R6Class(
+    "SysGzip",
+    inherit = SysCompress,
+    private = list(name = "gzip", ext = "gz")
+)
+
+SysPigz <- R6::R6Class(
+    "SysGzip",
+    inherit = SysCompress,
+    private = list(name = "pigz", ext = "gz")
+)
+
+SysBzip2 <- R6::R6Class(
+    "SysBzip2",
+    inherit = SysCompress,
+    private = list(name = "bzip2", ext = "bz2")
+)
+
+SysXz <- R6::R6Class(
+    "SysXz",
+    inherit = SysCompress,
+    private = list(name = "xz", ext = "xz")
+)
+
+#' @keywords internal
 decompress_file <- function(file, exdir = tempdir()) {
     file_info <- file.info(file)
     if (is.na(file_info$size)) {

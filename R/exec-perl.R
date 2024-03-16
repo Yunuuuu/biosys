@@ -21,7 +21,7 @@ perl <- function(...,
 
 SysPerl <- R6::R6Class(
     "SysPerl",
-    inherit = SysName,
+    inherit = Command,
     private = list(
         name = "perl",
         setup_help_params = function() "--help"

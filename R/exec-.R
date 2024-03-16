@@ -3,8 +3,13 @@ Sys <- R6::R6Class("Sys",
     public = list(
         #' Invoke a the System Command
         #' @inheritParams exec
+        #' @return
+        #'  - if `abort=TRUE`, zero if command success, otherwise, abort error.
+        #'  - if `abort=FALSE` and `wait=FALSE`, always return `0`.
+        #'  - if `abort=FALSE` and `wait=TRUE`, exit status returned by the
+        #'    command.
         #' @noRd
-        exec = function(cmd, ..., help = FALSE,
+        exec = function(..., help = FALSE,
                         stdout = TRUE, stderr = TRUE, stdin = "",
                         wait = TRUE, timeout = 0L, abort = TRUE,
                         verbose = TRUE) {
@@ -27,9 +32,10 @@ Sys <- R6::R6Class("Sys",
             # Split up params between
             # `envpath`: params used to define running PATH environment
             # `envvar`: params used to define running environment variables
+            # `command_locate`: params used to locate command path.
             # `command_params`: params used by regular command:
-            #                   setup_command_params() setup_opath(), and
-            #                   extra_params
+            #                   setup_command_params(), setup_opath(),
+            #                   and extra_params.
             # `help_params`: params used by command to print help document
             #                (setup_help_params()).
             sys_params <- params[
@@ -93,7 +99,7 @@ Sys <- R6::R6Class("Sys",
             }
 
             # locate command path ------------------------------
-            command <- private$command_locate(cmd)
+            command <- inject2(private$command_locate, private$params)
             check_command(command, "{Class}$command_locate")
 
             # run command ------------------------------
@@ -105,14 +111,14 @@ Sys <- R6::R6Class("Sys",
                 help_params <- check_command_params(
                     help_params, "{Class}$setup_help_params"
                 )
-                status <- system3(
+                # always return status for help = TRUE
+                o <- system3(
                     command = command,
                     command_params = help_params,
                     stdout = stdout, stderr = stderr, stdin = stdin,
                     wait = TRUE, timeout = timeout,
                     verbose = verbose
                 )
-                invisible(status) # always return status for help = TRUE
             } else {
                 command_params <- inject2(
                     private$setup_command_params,
@@ -138,9 +144,8 @@ Sys <- R6::R6Class("Sys",
                     }
                     if (any(lengths(dots) > 1L)) {
                         cli::cli_abort(c_msg(
-                            "additional paramters passed to",
-                            style_field(command), "by", style_arg("..."),
-                            "must be each of length one"
+                            "Additional parameters passed to command by",
+                            style_arg("..."), "must be each of length one"
                         ))
                     }
                     dots <- unlist(dots, recursive = FALSE, use.names = FALSE)
@@ -161,38 +166,33 @@ Sys <- R6::R6Class("Sys",
                     wait = wait, timeout = timeout,
                     verbose = verbose
                 )
-                private$final(
-                    status = status,
-                    command = command, verbose = verbose
-                )
+                private$final(status = status, verbose = verbose)
                 if (status == 0L) {
-                    private$success(
-                        status = status,
-                        command = command, verbose = verbose
-                    )
+                    o <- private$success(status = status, verbose = verbose)
                     if (verbose) {
-                        cli::cli_inform(sprintf(
-                            "Running command %s success", style_field(command)
+                        cli::cli_inform(c(
+                            v = sprintf(
+                                "Running command %s success",
+                                style_field(command)
+                            )
                         ))
                     }
                 } else {
-                    private$error(
-                        status = status,
-                        command = command, verbose = verbose
-                    )
                     # if command run failed, we remove the output
                     opath <- inject2(private$setup_opath, private$params)
                     if (!is.null(opath)) remove_opath(as.character(opath))
+                    o <- private$error(status = status, verbose = verbose)
                     msg <- c(
-                        sprintf(
-                            "something wrong when running command {.field %s}", command
+                        c_msg(
+                            "something wrong when running command",
+                            style_field(command)
                         ),
-                        i = "error code: {.val {status}}"
+                        `x` = "error code: {.val {status}}"
                     )
                     if (abort) cli::cli_abort(msg) else cli::cli_warn(msg)
                 }
-                private$return(status = status, command, verbose)
             }
+            invisible(o)
         }
     ),
     private = list(
@@ -209,7 +209,8 @@ Sys <- R6::R6Class("Sys",
             argv <- c(
                 rlang::fn_fmls_names(.subset2(private, "setup_envpath")),
                 rlang::fn_fmls_names(.subset2(private, "setup_envvar")),
-                rlang::fn_fmls_names(.subset2(private, "setup_wd"))
+                rlang::fn_fmls_names(.subset2(private, "setup_wd")),
+                rlang::fn_fmls_names(.subset2(private, "command_locate"))
             )
             command_params <- c(
                 rlang::fn_fmls_names(.subset2(
@@ -233,23 +234,22 @@ Sys <- R6::R6Class("Sys",
 
         #' @field extra_params Additional parameters to be added into
         #' `private$params`. Usually used by `final`, `success` and `error`
-        #' function
+        #' function.
         extra_params = NULL,
         insert_param = function(name, value) {
             private$params[[name]] <- value
             invisible(self)
         },
-        get_param = function(name) .subset2(private$params, name),
+        get_param = function(name) {
+            .subset2(.subset2(private, "params"), name)
+        },
 
-        #' @description Method used to prepare parameters
+        #' @description Method used to prepare parameters, ususally the common
+        #' preparations for both `help_params` and `command_params`.
         #'
         #' @return An named list, the output list will be saved in
         #' `private$params`
         setup_params = function(params) params,
-
-        #' @field add_dots A bool indicates whether `...` should be collected
-        #' passed into command
-        add_dots = TRUE,
 
         #' @description Method used to create environment variables
         #'
@@ -269,21 +269,7 @@ Sys <- R6::R6Class("Sys",
         #' @description Method used to locate command
         #'
         #' @return An string of command path
-        command_locate = function(cmd) {
-            if (file.exists(cmd)) path.expand(cmd) else Sys.which(cmd)
-        },
-
-        #' Method used to prepare output path
-        #'
-        #' If command run failure, every existed path returned by `$setup_opath`
-        #' will be removed.
-        #'
-        #' @note All files in the directory will be removed, you must use this
-        #'  carefully.
-        #' @return An atomic character or `NULL`.
-        setup_opath = function() {
-            .subset2(.subset2(private, "params"), "opath")
-        },
+        command_locate = function(cmd) Sys.which(cmd),
 
         #' Method used to prepare parameters to print help document
         #'
@@ -295,42 +281,43 @@ Sys <- R6::R6Class("Sys",
             .subset2(.subset2(private, "params"), "command_params")
         },
 
+        #' @field add_dots A bool indicates whether `...` should be collected
+        #' passed into command
+        add_dots = TRUE,
+
         #' Function to run after execute command
         #'
         #' - `final`: No matter command success or fail, will be run.
-        #' - `success`: when command success, will be run.
-        #' - `error`: when command fail, will be run.
-        final = function(status, command, verbose) NULL,
-        success = function(status, command, verbose) NULL,
-        error = function(status, command, verbose) NULL,
-        return = function(status, command, verbose) invisible(status)
+        final = function(status, verbose) NULL,
+
+        #' What to do and to return if command run success.
+        success = function(status, verbose) status,
+
+        #' If command run failure, the output files, which will be extracted by
+        #' function `private$setup_opath()`, will be removed.
+        #'
+        #' @note All files in the directory will be removed, you must use this
+        #'  carefully.
+        #' @return An atomic character or `NULL`.
+        setup_opath = function() {
+            .subset2(.subset2(private, "params"), "opath")
+        },
+
+        #' What to do and to return if command run success.
+        error = function(status, verbose) status
     )
 )
 
-SysName <- R6::R6Class(
-    "SysName",
+#' R6 Class to define a specific command
+#' @noRd
+Command <- R6::R6Class(
+    "Command",
     inherit = Sys,
-    public = list(
-        initialize = function(name = NULL) {
-            if (is.null(name)) {
-                if (is.null(private$name)) {
-                    cli::cli_abort(c_msg(
-                        "You must provide {.arg name}",
-                        "to initialize {.cls {fclass(self)}} object"
-                    ))
-                }
-            } else if (!rlang::is_string(name) || name == "") {
-                cli::cli_abort("{.arg name} must be a non-empty string")
-            } else {
-                private$name <- name
-            }
-        }
-    ),
     private = list(
         name = NULL,
         command_locate = function(cmd) {
             if (is.null(cmd)) {
-                command <- private$command_locate_by_name()
+                command <- Sys.which(private$name)
                 if (!nzchar(command)) {
                     cli::cli_abort(
                         "Cannot locate {.field {private$name}} command"
@@ -340,9 +327,6 @@ SysName <- R6::R6Class(
                 command <- super$command_locate(cmd)
             }
             command
-        },
-        command_locate_by_name = function() {
-            Sys.which(.subset2(private, "name"))
         }
     )
 )

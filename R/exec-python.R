@@ -24,7 +24,7 @@ python <- function(...,
 
 SysPython <- R6::R6Class(
     "SysPython",
-    inherit = SysName,
+    inherit = Command,
     private = list(
         name = "python",
         setup_envvar = function(envvar, pythonpath) {

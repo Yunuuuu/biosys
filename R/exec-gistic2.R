@@ -42,7 +42,7 @@ gistic2 <- function(seg, refgene, ..., odir = getwd(),
 
 SysGistic2 <- R6::R6Class(
     "SysGistic2",
-    inherit = SysName,
+    inherit = Command,
     private = list(
         name = "gistic2",
         setup_command_params = function(seg, refgene, odir) {

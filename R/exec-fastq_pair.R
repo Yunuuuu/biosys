@@ -43,7 +43,7 @@ fastq_pair <- function(fq1, fq2, ..., hash_table_size = NULL,
 
 SysFastqPair <- R6::R6Class(
     "SysFastqPair",
-    inherit = SysName,
+    inherit = Command,
     private = list(
         name = "fastq_pair",
         setup_command_params = function(fq1, fq2, odir, hash_table_size,
@@ -105,28 +105,27 @@ SysFastqPair <- R6::R6Class(
             )
         },
         setup_help_params = function() "--help",
-        success = function(status, command, verbose) {
+        success = function(status, verbose) {
             opath <- private$get_param(opath)
             if (!private$get_param(keep_unpaired)) {
-                if (verbose) {
-                    cli::cli_inform("removing unpaired reads")
-                }
+                if (verbose) cli::cli_inform("Removing unpaired reads")
                 file.remove(opath[c(2L, 4L)])
                 opath <- opath[c(1L, 3L)]
             }
             if (private$get_param(compress)) {
+                if (verbose) cli::cli_inform("Compressing the output")
                 for (file in opath) {
                     compress("gzip", file,
-                        odir = private$get_param(odir),
+                        odir = private$get_param("odir"),
                         keep = FALSE, verbose = FALSE
                     )
                 }
             } else {
-                file.rename(
-                    opath,
-                    file_path(private$get_param(odir), basename(opath))
-                )
+                file.rename(opath, file_path(
+                    private$get_param("odir"), basename(opath)
+                ))
             }
+            status
         }
     )
 )
