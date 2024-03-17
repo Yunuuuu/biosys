@@ -25,7 +25,7 @@ compress <- function(mode, file, ...,
                      verbose = TRUE, cmd = NULL) {
     mode <- match.arg(mode, c("gz", "pigz", "gzip", "bzip2", "xz"))
     Sys <- eval(as.name(paste0("Sys", tools::toTitleCase(mode))))
-    Sys$new()$exec(
+    Sys$new()$run(
         cmd = cmd, ..., file = file,
         ofile = ofile, odir = odir, keep = keep, override = override,
         envpath = envpath, envvar = envvar,

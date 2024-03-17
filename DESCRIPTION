@@ -13,7 +13,8 @@ Imports:
     data.table,
     parallel,
     R6,
-    rlang (>= 1.1.0)
+    rlang (>= 1.1.0),
+    withr
 Suggests: 
     testthat (>= 3.0.0)
 SystemRequirements: Unix System

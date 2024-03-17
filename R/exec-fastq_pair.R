@@ -29,7 +29,7 @@ fastq_pair <- function(fq1, fq2, ..., hash_table_size = NULL,
                        stdout = TRUE, stderr = TRUE, stdin = "",
                        wait = TRUE, timeout = 0L, abort = TRUE,
                        verbose = TRUE, fastq_pair = NULL) {
-    SysFastqPair$new()$exec(
+    SysFastqPair$new()$run(
         cmd = fastq_pair,
         ...,
         fq1 = fq1, fq2 = fq2, hash_table_size = hash_table_size,

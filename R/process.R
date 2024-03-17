@@ -16,12 +16,18 @@ process_echo <- function() {
     process_refresh()
     running <- Process$running
     finished <- Process$finished
+    killed <- Process$killed
     len_running <- length(running) # nolint
     len_finished <- length(finished) # nolint
+    len_killed <- length(killed) # nolint
     cli::cli_inform(c(
-        c_msg("A total of {.val {len_running + len_finished}} process{?es}"),
+        c_msg(
+            "A total of {.val {len_running + len_finished + len_killed}}",
+            "process{?es}"
+        ),
         i = c_msg("Running:", style_pids(running)),
-        i = c_msg("Finished:", style_pids(finished))
+        i = c_msg("Finished:", style_pids(finished)),
+        i = c_msg("Killed:", style_pids(killed))
     ))
 }
 

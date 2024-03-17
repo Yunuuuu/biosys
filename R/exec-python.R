@@ -14,7 +14,7 @@ python <- function(...,
                    stdout = TRUE, stderr = TRUE, stdin = "",
                    wait = TRUE, timeout = 0L, abort = TRUE,
                    verbose = TRUE, python = NULL) {
-    SysPython$new()$exec(
+    SysPython$new()$run(
         cmd = python, ..., pythonpath = pythonpath,
         envpath = envpath, envvar = envvar,
         help = help, stdout = stdout, stderr = stderr, stdin = stdin,

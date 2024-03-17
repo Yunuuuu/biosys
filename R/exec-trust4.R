@@ -26,7 +26,7 @@ trust4 <- function(file1, ref_coordinate, ..., file2 = NULL, mode = NULL,
                    stdout = TRUE, stderr = TRUE, stdin = "",
                    wait = TRUE, timeout = 0L, abort = TRUE,
                    verbose = TRUE, perl = NULL) {
-    SysTrust4$new()$exec(
+    SysTrust4$new()$run(
         cmd = perl,
         ..., file1 = file1, ref_coordinate = ref_coordinate,
         file2 = file2, mode = mode, ref_annot = ref_annot,
@@ -102,7 +102,7 @@ trust4_imgt_annot <- function(species = "Homo_sapien", ...,
                               stdout = TRUE, stderr = TRUE, stdin = "",
                               wait = TRUE, timeout = 0L, abort = TRUE,
                               verbose = TRUE, perl = NULL) {
-    SysTrust4ImgtAnnot$new()$exec(
+    SysTrust4ImgtAnnot$new()$run(
         cmd = perl,
         ..., species = species, ofile = ofile, odir = odir,
         envpath = envpath, envvar = envvar,
@@ -124,14 +124,14 @@ SysTrust4ImgtAnnot <- R6::R6Class(
             params$script <- build_imgt_annot
             params
         },
-        setup_temporary = function() tempdir(),
+        setup_temporary = function() tempfile(fclass(self)),
         setup_command_params = function(script, species, ofile, odir) {
             assert_string(species, empty_ok = FALSE)
             opath <- build_opath(odir, ofile, abs = TRUE)
             c(script, shQuote(species), ">", opath)
         },
         setup_help_params = function(script) script,
-        add_dots = FALSE
+        collect_dots = FALSE
     )
 )
 

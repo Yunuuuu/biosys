@@ -26,11 +26,11 @@ cellranger(
 \item{...}{Additional arguments passed to \verb{cellranger subcmd} command.}
 
 \item{envpath}{A character define the environment variables \code{PATH} to be
-added before running command.}
+\code{added} before running command. See \link[withr:with_path]{withr::with_path}.}
 
 \item{envvar}{A named atomic vector define running environment variables of
-the command, all environment variables will be replaced before running
-command. Use \code{NA} to remove an environment variable.}
+the command, all environment variables will be \code{replaced} before running
+command. See \link[withr:with_envvar]{withr::with_envvar}.}
 
 \item{help}{If \code{TRUE}, will print the help document for this command.}
 
@@ -48,7 +48,8 @@ Possible values are:
 
 \item{wait}{A bool (not NA) indicating whether the R interpreter should wait
 for the command to finish, or run it asynchronously  Only used when
-\code{help=FALSE}. The asynchronous process can be managed with \link{process} tools.}
+\code{help=FALSE}. When wait is not \code{TRUE}, it can also be a string to name the
+process, the asynchronous process can be managed with \link{process} tools.}
 
 \item{timeout}{timeout in seconds, ignored if 0.  This is a limit for the
     elapsed time running \code{command} in a separate process.   Fractions

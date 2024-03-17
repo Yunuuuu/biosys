@@ -30,7 +30,7 @@ gistic2 <- function(seg, refgene, ..., odir = getwd(),
                     stdout = TRUE, stderr = TRUE, stdin = "",
                     wait = TRUE, timeout = 0L, abort = TRUE,
                     verbose = TRUE, gistic2 = NULL) {
-    SysGistic2$new()$exec(
+    SysGistic2$new()$run(
         cmd = gistic2,
         ...,
         seg = seg, refgene = refgene,

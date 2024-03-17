@@ -3,10 +3,10 @@
 #' @param cmd Command to be invoked, as a character string.
 #' @param ... <[dynamic dots][rlang::dyn-dots]> Arguments passed to `cmd`.
 #' @param envpath A character define the environment variables `PATH` to be
-#'  added before running command.
+#'  `added` before running command. See [withr::with_path].
 #' @param envvar A named atomic vector define running environment variables of
-#' the command, all environment variables will be replaced before running
-#' command. Use `NA` to remove an environment variable.
+#' the command, all environment variables will be `replaced` before running
+#' command. See [withr::with_envvar].
 #' @param opath Specifying the output file or directory to be removed if
 #'  command running error. Note: all files in the directory will be removed, you
 #'  must use this argument carefully.
@@ -20,7 +20,8 @@
 #' @inheritParams base::system2
 #' @param wait A bool (not NA) indicating whether the R interpreter should wait
 #' for the command to finish, or run it asynchronously  Only used when
-#' `help=FALSE`. The asynchronous process can be managed with [process] tools.
+#' `help=FALSE`. When wait is not `TRUE`, it can also be a string to name the
+#' process, the asynchronous process can be managed with [process] tools.
 #' @param abort A bool indicates whether to report error if command return
 #'  non-zero status.
 #' @param verbose A bool indicates whether to print running command message.
@@ -33,7 +34,7 @@
 exec <- function(cmd, ..., envpath = NULL, envvar = NULL, opath = NULL,
                  stdout = TRUE, stderr = TRUE, stdin = "",
                  wait = TRUE, timeout = 0L, abort = TRUE, verbose = TRUE) {
-    SysExec$new()$exec(
+    SysExec$new()$run(
         cmd = cmd,
         ...,
         opath = opath, envpath = envpath, envvar = envvar,

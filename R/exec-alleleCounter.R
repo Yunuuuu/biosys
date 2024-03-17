@@ -18,7 +18,7 @@ allele_counter <- function(hts_file, loci_file, ofile, ..., odir = getwd(),
                            stdout = TRUE, stderr = TRUE, stdin = "",
                            wait = TRUE, timeout = 0L, abort = TRUE,
                            verbose = TRUE, alleleCounter = NULL) {
-    SysAlleleCounter$new()$exec(
+    SysAlleleCounter$new()$run(
         cmd = alleleCounter,
         ...,
         hts_file = hts_file, loci_file = loci_file,

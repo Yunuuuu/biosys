@@ -10,7 +10,7 @@ cellranger <- function(subcmd = NULL, ...,
                        wait = TRUE, timeout = 0L, abort = TRUE,
                        verbose = TRUE, cellranger = NULL) {
     assert_string(subcmd, empty_ok = FALSE, null_ok = TRUE)
-    SysCellranger$new()$exec(
+    SysCellranger$new()$run(
         cmd = cellranger,
         ..., subcmd = subcmd, envpath = envpath, envvar = envvar,
         help = help, stdout = stdout, stderr = stderr, stdin = stdin,

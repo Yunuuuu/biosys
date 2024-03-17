@@ -11,7 +11,7 @@ perl <- function(...,
                  stdout = TRUE, stderr = TRUE, stdin = "",
                  wait = TRUE, timeout = 0L, abort = TRUE,
                  verbose = TRUE, perl = NULL) {
-    SysPerl$new()$exec(
+    SysPerl$new()$run(
         cmd = perl, ...,
         envpath = envpath, envvar = envvar,
         help = help, stdout = stdout, stderr = stderr, stdin = stdin,

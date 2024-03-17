@@ -25,7 +25,7 @@ kraken2 <- function(fq1, ..., fq2 = NULL,
                     stdout = TRUE, stderr = TRUE, stdin = "",
                     wait = TRUE, timeout = 0L, abort = TRUE,
                     verbose = TRUE, kraken2 = NULL) {
-    SysKraken2$new()$exec(
+    SysKraken2$new()$run(
         cmd = kraken2,
         ...,
         fq1 = fq1, fq2 = fq2, ofile = ofile, report = report,
@@ -97,7 +97,7 @@ kraken2_mpa <- function(report, ..., ofile = NULL, odir = getwd(),
                         stdout = TRUE, stderr = TRUE, stdin = "",
                         wait = TRUE, timeout = 0L, abort = TRUE,
                         verbose = TRUE, python = NULL) {
-    SysKraken2Mpa$new()$exec(
+    SysKraken2Mpa$new()$run(
         cmd = python,
         ..., report = report, odir = odir, pythonpath = pythonpath,
         envpath = envpath, envvar = envvar,
