@@ -150,7 +150,7 @@ Sys <- R6::R6Class("Sys",
             private$params <- private$setup_params(.subset2(private, "params"))
 
             # set working directory ---------------------
-            wd <- inject2(
+            wd <- do_call(
                 .subset2(private, "setup_wd"),
                 .subset2(private, "params"),
                 "setup_wd"
@@ -168,7 +168,7 @@ Sys <- R6::R6Class("Sys",
             }
 
             # setting environment variables -------------
-            envvar <- inject2(
+            envvar <- do_call(
                 .subset2(private, "setup_envvar"),
                 .subset2(private, "params"),
                 "setup_envvar"
@@ -176,7 +176,7 @@ Sys <- R6::R6Class("Sys",
             envvar_msg <- "Setting environment variables: {names(envvar)}"
 
             # setting PATH environment variables -------
-            envpath <- inject2(
+            envpath <- do_call(
                 .subset2(private, "setup_envpath"),
                 .subset2(private, "params"),
                 "setup_envpath"
@@ -215,7 +215,7 @@ Sys <- R6::R6Class("Sys",
             private$environment <- environment()
 
             # locate command path ------------------------------
-            command <- inject2(
+            command <- do_call(
                 .subset2(private, "command_locate"),
                 .subset2(private, "params"),
                 "command_locate"
@@ -226,7 +226,7 @@ Sys <- R6::R6Class("Sys",
 
             # run command ------------------------------
             if (help) {
-                help_params <- inject2(
+                help_params <- do_call(
                     .subset2(private, "setup_help_params"),
                     .subset2(private, "params"),
                     "setup_help_params"
@@ -245,7 +245,7 @@ Sys <- R6::R6Class("Sys",
                 o <- .subset2(private, "status")
             } else {
                 # compute command params
-                command_params <- inject2(
+                command_params <- do_call(
                     .subset2(private, "setup_command_params"),
                     .subset2(private, "params"),
                     "setup_command_params"
@@ -254,7 +254,7 @@ Sys <- R6::R6Class("Sys",
                 command_params <- c(.subset2(private, "dots"), command_params)
 
                 # set temporaty working directory -------------
-                tmp <- inject2(
+                tmp <- do_call(
                     .subset2(private, "setup_temporary"),
                     .subset2(private, "params"),
                     "setup_temporary"
@@ -280,14 +280,14 @@ Sys <- R6::R6Class("Sys",
                 if (!is.null(tmp)) setwd(old_wd2)
 
                 ############################################
-                inject2(
+                do_call(
                     .subset2(private, "final"),
                     .subset2(private, "params"),
                     "final"
                 )
                 if (.subset2(private, "status") == 0L) {
                     # if command run success, we run function `$success`
-                    o <- inject2(
+                    o <- do_call(
                         .subset2(private, "success"),
                         .subset2(private, "params"),
                         "success"
@@ -302,7 +302,7 @@ Sys <- R6::R6Class("Sys",
                     }
                 } else {
                     # if command run failed, we remove the output
-                    opath <- inject2(
+                    opath <- do_call(
                         .subset2(private, "setup_opath"),
                         .subset2(private, "params"),
                         "setup_opath"
@@ -310,7 +310,7 @@ Sys <- R6::R6Class("Sys",
                     if (!is.null(opath)) remove_opath(as.character(opath))
 
                     # then we run function `$error`
-                    o <- inject2(
+                    o <- do_call(
                         .subset2(private, "error"),
                         .subset2(private, "params"),
                         "error"
@@ -499,15 +499,13 @@ Command <- R6::R6Class(
     )
 )
 
-inject2 <- function(fn, params, name) {
+do_call <- function(fn, params, name) {
     args <- rlang::fn_fmls_names(fn)
     params <- params[intersect(args, names(params))]
-    call <- substitute(
-        rlang::inject(name(!!!params)),
-        list(name = as.name(name))
-    )
+    # we rebuild function name, 
+    # in this way, error message can indicates the call
     assign(name, value = fn)
-    eval(call)
+    do.call(name, params)
 }
 
 system3 <- function(command, command_params,
