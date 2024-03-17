@@ -103,3 +103,7 @@ write_lines <- function(text, path, eol = "\n", compress = "auto") {
     )
     invisible(text)
 }
+
+file_equal <- function(x, y) {
+    normalizePath(x, "/", FALSE) == normalizePath(y, "/", FALSE)
+}

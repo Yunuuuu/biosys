@@ -71,10 +71,10 @@ SysFastqPair <- R6::R6Class(
             opath <- c(opath1, opath2)
             private$insert_param("opath", opath)
             if (!keep_decompressed) {
-                if (!identical(fq1, new_fq1)) {
+                if (!file_equal(fq1, new_fq1)) {
                     private$setup_exit(file.remove(new_fq1))
                 }
-                if (!identical(fq2, new_fq2)) {
+                if (!file_equal(fq2, new_fq2)) {
                     private$setup_exit(file.remove(new_fq2))
                 }
             }
