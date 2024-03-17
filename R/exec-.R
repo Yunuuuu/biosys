@@ -4,9 +4,9 @@ Sys <- R6::R6Class("Sys",
         #' Invoke a the System Command
         #' @inheritParams exec
         #' @return
-        #'  - if `abort=TRUE`, `$success()` if command success, otherwise, abort
-        #'    error.
-        #'  - if `abort=FALSE` and `wait=FALSE`, always return `0`.
+        #'  - if `wait=FALSE`, the process ID.
+        #'  - if `abort=TRUE` and `wait=TRUE`, zero if command success,
+        #'    otherwise, abort error.
         #'  - if `abort=FALSE` and `wait=TRUE`, exit status returned by the
         #'    command.
         #' @noRd
@@ -26,6 +26,7 @@ Sys <- R6::R6Class("Sys",
             # TRUE, it's much possible there were some missing argument
             # we only evaluate necessary parameters
             params <- rlang::enquos(...)
+            # for help `TRUE`, always use current session
             if (help || isTRUE(wait)) {
                 o <- private$run_command(
                     params = params,
@@ -38,7 +39,8 @@ Sys <- R6::R6Class("Sys",
                     verbose = verbose
                 )
             } else {
-                # starts a parallel R process
+                # if help = FALSE, wait is not TRUE, we starts a parallel R
+                # process to conduct Asynchronous operations
                 job <- parallel::mcparallel(
                     private$run_command(
                         params = params,
@@ -52,7 +54,7 @@ Sys <- R6::R6Class("Sys",
                     )
                 )
                 o <- job$pid
-                if (rlang::is_string(wait)) name <- wait else name <- NULL
+                if (isFALSE(wait)) name <- NULL else name <- wait
                 process_add(o, name)
             }
             invisible(o)
@@ -65,7 +67,7 @@ Sys <- R6::R6Class("Sys",
             # Used for message
             Class <- fclass(self) # nolint
 
-            # Split up params between
+            # Extract params used by `Sys` object internal
             # `envpath`: params used to define running PATH environment
             # `envvar`: params used to define running environment variables
             # `command_locate`: params used to locate command path.
@@ -77,14 +79,18 @@ Sys <- R6::R6Class("Sys",
             sys_params <- params[
                 intersect(names(params), private$parameters(help = help))
             ]
+
+            # we evaluate params since all params have been defused
             sys_params <- lapply(sys_params, rlang::eval_tidy)
 
             # save current environment
+            # some function will pull expression in this environment
+            # usually the `on.exit` expresssion.
             private$environment <- environment()
 
             # prepare common parameters for usage -------
-            # usually insert the script file: see `SysKraken2Mpa` and
-            # `SysTrust4ImgtAnnot`
+            # usually insert the script file:
+            # see `SysKraken2Mpa` and `SysTrust4ImgtAnnot`
             sys_params <- private$setup_params(params = sys_params)
             if (!is.list(sys_params)) {
                 cli::cli_abort(c_msg(
@@ -160,6 +166,7 @@ Sys <- R6::R6Class("Sys",
                     verbose = verbose
                 )
             } else {
+                # compute command params
                 command_params <- inject2(
                     private$setup_command_params,
                     private$params
@@ -168,9 +175,9 @@ Sys <- R6::R6Class("Sys",
                     command_params, "{Class}$setup_command_params"
                 )
 
-                # `dots` is used to pass the additional arguments for the
-                # command, they must be un-named and each element must be of
-                # length one
+                # for regular command, there were usually additional arguments
+                # passed into command by `...`, they must be un-named and each
+                # element must be of length one
                 dots <- params[
                     !rlang::names2(params) %in% private$parameters(all = TRUE)
                 ]
@@ -191,7 +198,10 @@ Sys <- R6::R6Class("Sys",
                     dots <- unlist(dots, recursive = FALSE, use.names = FALSE)
                 } else if (length(dots)) {
                     if (rlang::is_named(dots)) {
-                        note <- c(i = "Did you forget to name an argument?")
+                        note <- c(i = c_msg(
+                            "Did you misname argument{?s}",
+                            "({.arg {names(dots)}})?"
+                        ))
                     } else {
                         note <- NULL
                     }
@@ -209,6 +219,7 @@ Sys <- R6::R6Class("Sys",
                 )
                 private$final(status = status, verbose = verbose)
                 if (status == 0L) {
+                    # if command run success, we run function `$success`
                     o <- private$success(status = status, verbose = verbose)
                     if (verbose) {
                         cli::cli_inform(c(
@@ -222,6 +233,8 @@ Sys <- R6::R6Class("Sys",
                     # if command run failed, we remove the output
                     opath <- inject2(private$setup_opath, private$params)
                     if (!is.null(opath)) remove_opath(as.character(opath))
+
+                    # then we run function `$error`
                     o <- private$error(status = status, verbose = verbose)
                     msg <- c(
                         c_msg(
@@ -236,7 +249,7 @@ Sys <- R6::R6Class("Sys",
             o
         },
         #' @field environment A environment used to Execution command which
-        #' should be the function environment of `self$exec`.
+        #' should be the function environment of `private$run_command`.
         environment = NULL,
 
         #' @field params A list of parameters used in the internal of object.
@@ -342,7 +355,7 @@ Sys <- R6::R6Class("Sys",
             .subset2(.subset2(private, "params"), "opath")
         },
 
-        #' What to do and to return if command run success.
+        #' What to do and to return if command run failure
         error = function(status, verbose) status
     )
 )
