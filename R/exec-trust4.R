@@ -40,7 +40,7 @@ SysTrust4 <- R6::R6Class(
     "SysTrust4",
     inherit = Command,
     private = list(
-        name = "trust4",
+        name = "run-trust4",
         setup_command_params = function(file1, file2, mode, ref_annot,
                                         ofile, odir) {
             assert_string(file1, empty_ok = FALSE)
