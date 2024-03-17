@@ -26,168 +26,46 @@ Sys <- R6::R6Class("Sys",
             # TRUE, it's much possible there were some missing argument
             # we only evaluate necessary parameters
             params <- rlang::enquos(...)
-            # for help `TRUE`, always use current session
-            if (help || isTRUE(wait)) {
-                o <- private$run_command(
-                    params = params,
-                    help = help,
-                    stdout = stdout,
-                    stderr = stderr,
-                    stdin = stdin,
-                    timeout = timeout,
-                    abort = abort,
-                    verbose = verbose
-                )
-            } else {
-                # if help = FALSE, wait is not TRUE, we starts a parallel R
-                # process to conduct Asynchronous operations
-                job <- parallel::mcparallel(
-                    private$run_command(
-                        params = params,
-                        help = help,
-                        stdout = stdout,
-                        stderr = stderr,
-                        stdin = stdin,
-                        timeout = timeout,
-                        abort = abort,
-                        verbose = FALSE
-                    )
-                )
-                o <- job$pid
-                if (isFALSE(wait)) name <- NULL else name <- wait
-                process_add(o, name)
-            }
-            invisible(o)
-        }
-    ),
-    private = list(
-        run_command = function(params, help = FALSE,
-                               stdout = TRUE, stderr = TRUE, stdin = "",
-                               timeout = 0L, abort = TRUE, verbose = TRUE) {
-            # Used for message
-            Class <- fclass(self) # nolint
 
             # Extract params used by `Sys` object internal
             # `envpath`: params used to define running PATH environment
             # `envvar`: params used to define running environment variables
             # `command_locate`: params used to locate command path.
             # `command_params`: params used by regular command:
-            #                   setup_command_params(), setup_opath(),
+            #                   setup_command_params(), 
+            #                   setup_temporary(), setup_opath(),
             #                   and extra_params.
             # `help_params`: params used by command to print help document
             #                (setup_help_params()).
-            sys_params <- params[
-                intersect(names(params), private$parameters(help = help))
-            ]
+            param_names <- private$parameters(help = help)
+            # here: we check if all necessary parameters have been provided by
+            #       external function. (in case from myself missing provide the
+            #       parameters in external function)
+            missing <- setdiff(param_names, names(params))
+            if (length(missing)) {
+                cli::cli_abort("Missing parameters: {.arg {missing}}")
+            }
+            sys_params <- params[intersect(names(params), param_names)]
 
             # we evaluate params since all params have been defused
             sys_params <- lapply(sys_params, rlang::eval_tidy)
 
-            # save current environment
-            # some function will pull expression in this environment
-            # usually the `on.exit` expresssion.
-            private$environment <- environment()
-
-            # prepare common parameters for usage -------
-            # usually insert the script file:
-            # see `SysKraken2Mpa` and `SysTrust4ImgtAnnot`
-            sys_params <- private$setup_params(params = sys_params)
-            if (!is.list(sys_params)) {
-                cli::cli_abort(c_msg(
-                    style_fn("{Class}$setup_params"), "must be a {.cls list}"
-                ))
-            }
-            private$params <- sys_params
-
-            # setting environment variables -------------
-            envvar <- inject2(private$setup_envvar, private$params)
-            check_envvar(envvar, "{Class}$setup_envvar")
-            if (length(envvar) > 0L) {
-                if (verbose) {
-                    cli::cli_inform(
-                        "Setting environment variables: {names(envvar)}"
-                    )
-                }
-                old_envvar <- set_envvar(as_envvars(envvar), action = "replace")
-                on.exit(set_envvar(old_envvar), add = TRUE)
-            }
-
-            # setting PATH environment variables -------
-            envpath <- inject2(private$setup_envpath, private$params)
-            check_envpath(envpath, "{Class}$setup_envpath")
-            if (length(envpath) > 0L) {
-                if (verbose) {
-                    cli::cli_inform("Setting {.field PATH} environment")
-                }
-                envpath <- c(PATH = parse_envpath(envpath))
-                old_envpath <- set_envvar(envpath, action = "prefix")
-                # since `PATH` may exist in `envvar`,
-                # so we must set `old_envpath` before `envvar`
-                on.exit(set_envvar(old_envpath), add = TRUE, after = FALSE)
-            }
-
-            # set working directory -------------
-            wd <- inject2(private$setup_wd, private$params)
-            if (rlang::is_string(wd)) {
-                if (wd == "") {
-                    cli::cli_abort(
-                        "{.fn {Class}$setup_wd} return an empty string"
-                    )
-                }
-                if (!dir.exists(wd)) cli::cli_abort("No directory {.path {wd}}")
-                old_wd <- getwd()
-                setwd(wd)
-                on.exit(setwd(old_wd), add = TRUE)
-            } else if (!is.null(wd)) {
-                cli::cli_abort(
-                    "{.fn {Class}$setup_wd} must return a string of path"
-                )
-            }
-
-            # locate command path ------------------------------
-            command <- inject2(private$command_locate, private$params)
-            check_command(command, "{Class}$command_locate")
-
-            # run command ------------------------------
-            if (help) {
-                help_params <- inject2(
-                    private$setup_help_params,
-                    private$params
-                )
-                help_params <- check_command_params(
-                    help_params, "{Class}$setup_help_params"
-                )
-                # always return status for help = TRUE
-                o <- system3(
-                    command = command,
-                    command_params = help_params,
-                    stdout = stdout, stderr = stderr, stdin = stdin,
-                    wait = TRUE, timeout = timeout,
-                    verbose = verbose
-                )
-            } else {
-                # compute command params
-                command_params <- inject2(
-                    private$setup_command_params,
-                    private$params
-                )
-                command_params <- check_command_params(
-                    command_params, "{Class}$setup_command_params"
-                )
-
-                # for regular command, there were usually additional arguments
-                # passed into command by `...`, they must be un-named and each
-                # element must be of length one
+            if (!help) {
+                # for regular command (not help document), there were usually
+                # additional arguments passed into command by `...`, they must
+                # be un-named and each element must be of length one
                 dots <- params[
                     !rlang::names2(params) %in% private$parameters(all = TRUE)
                 ]
                 dots <- lapply(dots, rlang::eval_tidy)
                 # remove empty items
                 dots <- dots[lengths(dots) > 0L]
-                if (isTRUE(private$add_dots)) {
+                if (isTRUE(.subset2(private, "add_dots"))) {
                     named <- dots[rlang::have_name(dots)]
                     if (any(named)) {
-                        cli::cli_abort("Unknown argument{?s}: {names(named)}")
+                        cli::cli_abort(
+                            "Unknown parameter{?s}: {.arg {names(named)}}"
+                        )
                     }
                     if (any(lengths(dots) > 1L)) {
                         cli::cli_abort(c_msg(
@@ -209,7 +87,173 @@ Sys <- R6::R6Class("Sys",
                         "`...` must be empty for {.cls {Class}} object", note
                     ))
                 }
+            } else {
+                dots <- NULL
+            }
+
+            # for help `TRUE`, always use current session
+            if (help || isTRUE(wait)) {
+                o <- private$run_command(
+                    params = sys_params,
+                    dots = dots,
+                    help = help,
+                    stdout = stdout,
+                    stderr = stderr,
+                    stdin = stdin,
+                    timeout = timeout,
+                    abort = abort,
+                    verbose = verbose
+                )
+            } else {
+                # to implement wait function, we starts a parallel R
+                # process to conduct Asynchronous operations
+                job <- parallel::mcparallel(
+                    private$run_command(
+                        params = sys_params,
+                        dots = dots,
+                        help = help,
+                        stdout = stdout,
+                        stderr = stderr,
+                        stdin = stdin,
+                        timeout = timeout,
+                        abort = abort,
+                        verbose = FALSE
+                    )
+                )
+                o <- job$pid
+                if (isFALSE(wait)) name <- NULL else name <- wait
+                process_add(o, name)
+            }
+            invisible(o)
+        }
+    ),
+    private = list(
+        run_command = function(params, dots = NULL, help = FALSE,
+                               stdout = TRUE, stderr = TRUE, stdin = "",
+                               timeout = 0L, abort = TRUE, verbose = TRUE) {
+            # Used for message
+            Class <- fclass(self) # nolint
+
+            # save current environment
+            # some function will pull expression in this environment
+            # usually the `on.exit` expresssion.
+            private$environment <- environment()
+
+            # prepare common parameters for usage -------
+            # usually insert the script file:
+            # see `SysKraken2Mpa` and `SysTrust4ImgtAnnot`
+            private$params <- private$setup_params(params = params)
+            if (!is.list(.subset2(private, "params"))) {
+                cli::cli_abort(c_msg(
+                    style_fn("{Class}$setup_params"), "must be a {.cls list}"
+                ))
+            }
+
+            # set working directory -------------
+            # wd <- inject2(private$setup_wd, .subset2(private, "params"))
+            # if (rlang::is_string(wd)) {
+            #     if (wd == "") {
+            #         cli::cli_abort(
+            #             "{.fn {Class}$setup_wd} return an empty string"
+            #         )
+            #     }
+            #     if (!dir.exists(wd)) {
+            #         cli::cli_abort("No directory {.path {wd}}")
+            #     }
+            #     old_wd <- getwd()
+            #     setwd(wd)
+            #     on.exit(setwd(old_wd), add = TRUE)
+            # } else if (!is.null(wd)) {
+            #     cli::cli_abort(
+            #         "{.fn {Class}$setup_wd} must return a string of path"
+            #     )
+            # }
+
+            # setting environment variables -------------
+            envvar <- inject2(
+                .subset2(private, "setup_envvar"),
+                .subset2(private, "params")
+            )
+            check_envvar(envvar, "{Class}$setup_envvar")
+            if (length(envvar) > 0L) {
+                if (verbose) {
+                    cli::cli_inform(
+                        "Setting environment variables: {names(envvar)}"
+                    )
+                }
+                old_envvar <- set_envvar(as_envvars(envvar), action = "replace")
+                on.exit(set_envvar(old_envvar), add = TRUE)
+            }
+
+            # setting PATH environment variables -------
+            envpath <- inject2(
+                .subset2(private, "setup_envpath"),
+                .subset2(private, "params")
+            )
+            check_envpath(envpath, "{Class}$setup_envpath")
+            if (length(envpath) > 0L) {
+                if (verbose) {
+                    cli::cli_inform("Setting {.field PATH} environment")
+                }
+                envpath <- c(PATH = parse_envpath(envpath))
+                old_envpath <- set_envvar(envpath, action = "prefix")
+                # since `PATH` may exist in `envvar`,
+                # so we restore `old_envpath` before `envvar`
+                on.exit(set_envvar(old_envpath), add = TRUE, after = FALSE)
+            }
+
+            # locate command path ------------------------------
+            # command should be located in current working directory.
+            # we should run `command_locate` before `setup_temporary`
+            command <- inject2(
+                .subset2(private, "command_locate"),
+                .subset2(private, "params")
+            )
+            check_command(command, "{Class}$command_locate")
+
+            # run command ------------------------------
+            if (help) {
+                help_params <- inject2(
+                    .subset2(private, "setup_help_params"),
+                    .subset2(private, "params")
+                )
+                help_params <- check_command_params(
+                    help_params, "{Class}$setup_help_params"
+                )
+                # always return status for help = TRUE
+                o <- system3(
+                    command = command,
+                    command_params = help_params,
+                    stdout = stdout, stderr = stderr, stdin = stdin,
+                    wait = TRUE, timeout = timeout,
+                    verbose = verbose
+                )
+            } else {
+                # compute command params
+                command_params <- inject2(
+                    .subset2(private, "setup_command_params"),
+                    .subset2(private, "params")
+                )
+                command_params <- check_command_params(
+                    command_params, "{Class}$setup_command_params"
+                )
+
                 command_params <- c(dots, command_params)
+
+                # set temporaty working directory -------------
+                temporary <- inject2(
+                    .subset2(private, "setup_temporary"),
+                    .subset2(private, "params")
+                )
+                if (rlang::is_string(temporary)) {
+                    if (!dir.exists(temporary)) {
+                        cli::cli_abort("No directory {.path {temporary}}")
+                    }
+                    old_wd2 <- getwd()
+                    setwd(temporary)
+                }
+
+                # run command --------------------------------
                 status <- system3(
                     command = command,
                     command_params = command_params,
@@ -217,6 +261,11 @@ Sys <- R6::R6Class("Sys",
                     wait = TRUE, timeout = timeout,
                     verbose = verbose
                 )
+
+                # restore original working directory --------
+                if (rlang::is_string(temporary)) setwd(old_wd2)
+
+                ############################################
                 private$final(status = status, verbose = verbose)
                 if (status == 0L) {
                     # if command run success, we run function `$success`
@@ -231,7 +280,10 @@ Sys <- R6::R6Class("Sys",
                     }
                 } else {
                     # if command run failed, we remove the output
-                    opath <- inject2(private$setup_opath, private$params)
+                    opath <- inject2(
+                        .subset2(private, "setup_opath"),
+                        .subset2(private, "params")
+                    )
                     if (!is.null(opath)) remove_opath(as.character(opath))
 
                     # then we run function `$error`
@@ -248,9 +300,18 @@ Sys <- R6::R6Class("Sys",
             }
             o
         },
+
         #' @field environment A environment used to Execution command which
         #' should be the function environment of `private$run_command`.
         environment = NULL,
+
+        #' @description Used to attach an expression to be evaluated when
+        #' exiting `private$run_command`.
+        setup_exit = function(expr, after = TRUE, add = TRUE) {
+            on_exit({{ expr }}, add = add, after = after, # styler: off
+                envir = private$environment
+            )
+        },
 
         #' @field params A list of parameters used in the internal of object.
         params = list(),
@@ -259,15 +320,16 @@ Sys <- R6::R6Class("Sys",
         #' @return A character of the used parameter of this object.
         parameters = function(help, all = FALSE) {
             argv <- c(
+                # rlang::fn_fmls_names(.subset2(private, "setup_wd")),
                 rlang::fn_fmls_names(.subset2(private, "setup_envpath")),
                 rlang::fn_fmls_names(.subset2(private, "setup_envvar")),
-                rlang::fn_fmls_names(.subset2(private, "setup_wd")),
                 rlang::fn_fmls_names(.subset2(private, "command_locate"))
             )
             command_params <- c(
                 rlang::fn_fmls_names(.subset2(
                     private, "setup_command_params"
                 )),
+                rlang::fn_fmls_names(.subset2(private, "setup_temporary")),
                 rlang::fn_fmls_names(.subset2(private, "setup_opath")),
                 .subset2(private, "extra_params")
             )
@@ -281,13 +343,10 @@ Sys <- R6::R6Class("Sys",
             } else {
                 argv <- c(argv, command_params)
             }
-            argv
+            setdiff(argv, .subset2(private, "internal_params"))
         },
 
-        #' @field extra_params Additional parameters to be added into
-        #' `private$params`. Usually used by `final`, `success` and `error`
-        #' function.
-        extra_params = NULL,
+        # methods to insert into or get parameters from `private$params`
         insert_param = function(name, value) {
             private$params[[name]] <- value
             invisible(self)
@@ -296,12 +355,35 @@ Sys <- R6::R6Class("Sys",
             .subset2(.subset2(private, "params"), name)
         },
 
+        # Following fields or methods should be overrided by sub-class.
+        #' @field add_dots A bool indicates whether `...` should be collected
+        #' passed into command
+        add_dots = TRUE,
+
+        #' @field extra_params Additional parameters to be collected into
+        #' `private$params`. Usually used by `setup_params`, `final`, `success`
+        #' and `error` function.
+        extra_params = NULL,
+
+        #' @field internal_params Additional parameters used by `Sys` object but
+        #' shouldn't collected from user input.
+        internal_params = NULL,
+
         #' @description Method used to prepare parameters, ususally the common
         #' preparations for both `help_params` and `command_params`.
+        #'
+        #' * Parameters in `private$internal_params` should be added in this
+        #'   function.
         #'
         #' @return An named list, the output list will be saved in
         #' `private$params`
         setup_params = function(params) params,
+
+        #' Not implemented currently.
+        #' @description Method used to change working directory
+        #'
+        #' @return A string of path or `NULL`.
+        # setup_wd = function() NULL,
 
         #' @description Method used to create environment variables
         #'
@@ -313,15 +395,33 @@ Sys <- R6::R6Class("Sys",
         #' @return An atomic character
         setup_envpath = function(envpath) envpath,
 
-        #' @description Method used to change working directory
-        #'
-        #' @return A string of path or `NULL`.
-        setup_wd = function() NULL,
-
         #' @description Method used to locate command
         #'
         #' @return An string of command path
         command_locate = function(cmd) Sys.which(cmd),
+
+        #' @description Method used to change command temporary directory.
+        #'
+        #' This function was only used by specific command, which will write a
+        #' temp file, for these commands, we create a `setup_temporary` method
+        #' to write the temporaty file into R-level temporaty directory.
+        #'
+        #' See `trust4_imgt_annot` function for usage.
+        #'
+        #' Note: we shouldn't rely on this method to changing user-level working
+        #' directory (wd), since user will expect to locate command from their
+        #' `wd`, but `setup_temporary` was run after `command_locate`, so
+        #' command will only located from user current woking directory.
+        #'
+        #' You must use absolute path in `command_params` if you'll change the
+        #' temporary directory.
+        #'
+        #' if you want to provide an argument for user to changing the `wd`,
+        #' it's expected to changing wd in the beginning of `run_command`
+        #' function. So defining a specific `setup_wd` method would be better.
+        #'
+        #' @return A string of path or `NULL`.
+        setup_temporary = function() NULL,
 
         #' Method used to prepare parameters to print help document
         #'
@@ -332,10 +432,6 @@ Sys <- R6::R6Class("Sys",
         setup_command_params = function() {
             .subset2(.subset2(private, "params"), "command_params")
         },
-
-        #' @field add_dots A bool indicates whether `...` should be collected
-        #' passed into command
-        add_dots = TRUE,
 
         #' Function to run after execute command
         #'
@@ -369,11 +465,10 @@ Command <- R6::R6Class(
         name = NULL,
         command_locate = function(cmd) {
             if (is.null(cmd)) {
-                command <- Sys.which(private$name)
+                name <- .subset2(private, "name")
+                command <- Sys.which(name)
                 if (!nzchar(command)) {
-                    cli::cli_abort(
-                        "Cannot locate {.field {private$name}} command"
-                    )
+                    cli::cli_abort("Cannot locate {.field {name}} command")
                 }
             } else {
                 command <- super$command_locate(cmd)
@@ -387,12 +482,6 @@ inject2 <- function(fn, params) {
     args <- rlang::fn_fmls_names(fn)
     params <- params[intersect(args, names(params))]
     rlang::inject(fn(!!!params))
-}
-
-on_exit <- function(expr, add = FALSE, after = TRUE, envir = parent.frame()) {
-    expr <- rlang::enquo(expr)
-    expr <- rlang::expr(on.exit(expr = !!expr, add = !!add, after = !!after))
-    rlang::eval_tidy(expr, env = envir)
 }
 
 system3 <- function(command, command_params,
@@ -540,7 +629,7 @@ parse_envpath <- function(envpath, sep = .Platform$path.sep) {
 
 remove_opath <- function(opath) {
     # remove trailing backslash or slash
-    opath <- sub("(\\\\+|/+)$", "", opath, perl = TRUE)
+    opath <- path_trim(opath)
     opath <- opath[file.exists(opath)] # can also check directory
     if (length(opath) == 0L) return(NULL) # styler: off
     failed <- vapply(opath, unlink, integer(1L),

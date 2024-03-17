@@ -118,17 +118,18 @@ SysKraken2Mpa <- R6::R6Class(
             params$script <- kreport2mpa
             params
         },
-        setup_command_params = function(report, ofile, odir) {
+        internal_params = "script",
+        setup_command_params = function(script, report, ofile, odir) {
             assert_string(report)
             assert_string(ofile, null_ok = TRUE)
             ofile <- ofile %||% paste0(basename(report), ".mpa")
             opath <- build_opath(odir, ofile)
             c(
-                private$get_param("script"),
+                script,
                 arg_internal("-r", report),
                 arg_internal("-o", opath)
             )
         },
-        setup_help_params = function() c(private$get_param("script"), "--help")
+        setup_help_params = function(script) c(script, "--help")
     )
 )

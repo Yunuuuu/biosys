@@ -115,6 +115,7 @@ SysTrust4ImgtAnnot <- R6::R6Class(
     "SysTrust4ImgtAnnot",
     inherit = SysPerl,
     private = list(
+        internal_params = "script",
         setup_params = function(params) {
             build_imgt_annot <- internal_file("TRUST4", "BuildImgtAnnot.pl")
             if (file.access(build_imgt_annot, mode = 1L) != 0L) {
@@ -123,13 +124,13 @@ SysTrust4ImgtAnnot <- R6::R6Class(
             params$script <- build_imgt_annot
             params
         },
-        setup_wd = function() tempdir(),
-        setup_command_params = function(species, ofile, odir) {
+        setup_temporary = function() tempdir(),
+        setup_command_params = function(script, species, ofile, odir) {
             assert_string(species, empty_ok = FALSE)
             opath <- build_opath(odir, ofile, abs = TRUE)
-            c(private$get_param("script"), shQuote(species), ">", opath)
+            c(script, shQuote(species), ">", opath)
         },
-        setup_help_params = function() private$get_param("script"),
+        setup_help_params = function(script) script,
         add_dots = FALSE
     )
 )

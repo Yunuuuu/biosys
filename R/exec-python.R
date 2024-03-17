@@ -30,7 +30,7 @@ SysPython <- R6::R6Class(
         setup_envvar = function(envvar, pythonpath) {
             envvar_parse_path(envvar, name = "PYTHONPATH", pythonpath)
         },
-        command_locate_by_name = function() {
+        command_locate = function() {
             python2 <- Sys.which("python2")
             python3 <- Sys.which("python3")
             if (nzchar(python2) && !nzchar(python3)) {

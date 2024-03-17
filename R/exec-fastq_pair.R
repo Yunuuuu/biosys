@@ -71,14 +71,10 @@ SysFastqPair <- R6::R6Class(
             private$insert_param("opath", opath)
             if (!keep_decompressed) {
                 if (!identical(fq1, new_fq1)) {
-                    on_exit(file.remove(new_fq1),
-                        add = TRUE, envir = private$environment
-                    )
+                    private$setup_exit(file.remove(new_fq1))
                 }
                 if (!identical(fq2, new_fq2)) {
-                    on_exit(file.remove(new_fq2),
-                        add = TRUE, envir = private$environment
-                    )
+                    private$setup_exit(file.remove(new_fq2))
                 }
             }
             if (is.null(hash_table_size)) {

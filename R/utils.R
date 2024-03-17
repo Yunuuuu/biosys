@@ -28,3 +28,9 @@ exprs <- function(...) {
 }
 
 fclass <- function(x) class(x)[1L]
+
+on_exit <- function(expr, add = FALSE, after = TRUE, envir = parent.frame()) {
+    expr <- rlang::enquo(expr)
+    expr <- rlang::expr(on.exit(expr = !!expr, add = !!add, after = !!after))
+    rlang::eval_tidy(expr, env = envir)
+}
