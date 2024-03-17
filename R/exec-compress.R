@@ -75,6 +75,7 @@ SysCompress <- R6::R6Class(
     "SysCompress",
     inherit = Command,
     private = list(
+        internal_params = "opath",
         setup_command_params = function(file, ofile, odir, keep, override) {
             assert_string(file)
             assert_bool(keep)
@@ -91,12 +92,12 @@ SysCompress <- R6::R6Class(
             c("-c", file, ">", opath)
         },
         setup_help_params = function() "--help",
-        success = function(status, verbose) {
-            if (!private$get_param("keep")) {
+        success = function(keep, file, opath, verbose) {
+            if (!keep) {
                 if (verbose) cli::cli_inform("Removing original file")
-                file.remove(private$get_param("file"))
+                file.remove(file)
             }
-            private$get_param("opath")
+            opath
         }
     )
 )
