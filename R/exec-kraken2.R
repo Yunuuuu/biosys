@@ -99,8 +99,8 @@ kraken2_mpa <- function(report, ..., ofile = NULL, odir = getwd(),
                         verbose = TRUE, python = NULL) {
     SysKraken2Mpa$new()$run(
         cmd = python,
-        ..., report = report, odir = odir, pythonpath = pythonpath,
-        envpath = envpath, envvar = envvar,
+        ..., report = report, ofile = ofile, odir = odir,
+        pythonpath = pythonpath, envpath = envpath, envvar = envvar,
         help = help, stdout = stdout, stderr = stderr, stdin = stdin,
         wait = wait, timeout = timeout, abort = abort, verbose = verbose
     )
