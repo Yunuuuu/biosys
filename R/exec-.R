@@ -45,8 +45,7 @@ Sys <- R6::R6Class("Sys",
                             "Unknown parameter{?s}: {.arg {names(named)}}"
                         )
                     }
-                    dots <- unlist(dots, recursive = TRUE, use.names = FALSE)
-                    private$dots <- dots
+                    private$dots <- unlist(dots, use.names = FALSE)
                 } else if (length(dots)) {
                     if (rlang::is_named(dots)) {
                         note <- c(i = c_msg(
@@ -118,8 +117,8 @@ Sys <- R6::R6Class("Sys",
     ),
     private = list(
 
-        #' @field params A list of parameters used by command.
-        dots = list(),
+        #' @field params A character of parameters used by command.
+        dots = character(),
 
         #' @field system2_params A list of parameters used by system2.
         system2_params = list(),
@@ -314,7 +313,10 @@ Sys <- R6::R6Class("Sys",
                             "something wrong when running command",
                             style_field(command)
                         ),
-                        `x` = "error code: {.val {.subset2(private, 'status')}}"
+                        `x` = sprintf(
+                            "error code: %s",
+                            style_val(.subset2(private, "status"))
+                        )
                     )
                     if (abort) cli::cli_abort(msg) else cli::cli_warn(msg)
                 }
@@ -496,7 +498,7 @@ Command <- R6::R6Class(
 do_call <- function(fn, params, name) {
     args <- rlang::fn_fmls_names(fn)
     params <- params[intersect(args, names(params))]
-    # we rebuild function name, 
+    # we rebuild function name,
     # in this way, error message can indicates the call
     assign(name, value = fn)
     do.call(name, params)
@@ -589,9 +591,7 @@ build_opath <- function(odir, ofile = NULL, abs = FALSE,
 build_command_params <- function(params) {
     if (is.null(params)) return(character()) # styler: off
     if (is.character(params)) return(params) # styler: off
-    if (is.list(params)) {
-        return(unlist(params, recursive = TRUE, use.names = FALSE))
-    }
+    if (is.list(params)) return(unlist(params, use.names = FALSE)) # styler: off
     cli::cli_abort("Unsupported command parameters")
 }
 
