@@ -123,7 +123,7 @@ SysFastqPair <- R6::R6Class(
             } else {
                 file.rename(opath, file_path(odir, basename(opath)))
             }
-            .subset2(private, "status")
+            super$success()
         }
     )
 )
