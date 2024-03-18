@@ -1,3 +1,5 @@
+rd_format_code <- function(x) sprintf("`%s`", x)
+
 rd_cmd <- function(cmd) {
     sprintf("A string of path to `%s` command", cmd)
 }
