@@ -25,7 +25,7 @@ python(
 \item{...}{<\link[rlang:dyn-dots]{dynamic dots}> Additional arguments passed to \code{python} command, empty arguments are automatically trimed. Details see: \code{python(help = TRUE)}}
 
 \item{pythonpath}{A character define the environment variables \code{PYTHONPATH}
-to be added before running command.}
+to be \code{added} before running command.}
 
 \item{envpath}{A character define the environment variables \code{PATH} to be
 \code{added} before running command. See \link[withr:with_path]{withr::with_path}.}

@@ -3,7 +3,7 @@
 #'
 #' @param ... `r rd_dots("python")`. Details see: `python(help = TRUE)`
 #' @param pythonpath A character define the environment variables `PYTHONPATH`
-#'  to be added before running command.
+#'  to be `added` before running command.
 #' @inheritParams allele_counter
 #' @param python `r rd_cmd("python")`.
 #' @seealso <https://www.python.org/>
