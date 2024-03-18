@@ -28,8 +28,7 @@ gistic2(
 \item{refgene}{Path to reference genome data input file (REQUIRED, see below
 for file description).}
 
-\item{...}{<\link[rlang:dyn-dots]{dynamic dots}> Additional arguments passed to \code{gistic2} command, empty arguments are automatically trimed. Details see:
-\url{https://broadinstitute.github.io/gistic2/}.}
+\item{...}{<\link[rlang:dyn-dots]{dynamic dots}> Additional arguments passed to \code{gistic2} command, empty arguments are automatically trimed. Details see: \code{gistic2(help = TRUE)}.}
 
 \item{odir}{A string of path to the output directory.}
 

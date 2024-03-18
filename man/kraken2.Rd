@@ -101,7 +101,7 @@ non-zero status.}
 \item{kraken2}{A string of path to \code{kraken2} command.}
 
 \item{pythonpath}{A character define the environment variables \code{PYTHONPATH}
-to be added before running command.}
+to be \code{added} before running command.}
 
 \item{python}{A string of path to \code{python} command.}
 }

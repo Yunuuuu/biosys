@@ -14,8 +14,7 @@
 #'  - `trust4`: Prefix of output files. (default: inferred from file prefix).
 #'  - `trust4_imgt_annot`: Output file name.
 #'  - `trust4_gene_names`: Output file name.
-#' @param ... `r rd_dots("run-trust4")`. Details see:
-#' <https://github.com/liulab-dfci/TRUST4>.
+#' @param ... `r rd_dots("run-trust4")`. Details see: `trust4(help = TRUE)`
 #' @inheritParams allele_counter
 #' @param trust4 `r rd_cmd("run-trust4")`.
 #' @seealso <https://github.com/liulab-dfci/TRUST4>
