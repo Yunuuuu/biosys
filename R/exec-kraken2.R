@@ -119,6 +119,7 @@ SysKraken2Mpa <- R6::R6Class(
             params
         },
         internal_params = "script",
+        setup_help_params = function(script) c(script, "--help"),
         setup_command_params = function(script, report, ofile, odir) {
             assert_string(report)
             assert_string(ofile, null_ok = TRUE)
@@ -130,6 +131,6 @@ SysKraken2Mpa <- R6::R6Class(
                 arg_internal("-o", opath)
             )
         },
-        setup_help_params = function(script) c(script, "--help")
+        combine_params = function(dots, params) c(params, dots)
     )
 )

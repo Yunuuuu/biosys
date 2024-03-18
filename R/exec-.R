@@ -238,8 +238,9 @@ Sys <- R6::R6Class("Sys",
                     .subset2(private, "params"),
                     "setup_command_params"
                 )
-                command_params <- c(
-                    build_command_params(.subset2(private, "dots")), build_command_params(command_params)
+                command_params <- private$combine_params(
+                    dots = build_command_params(.subset2(private, "dots")),
+                    params = build_command_params(command_params)
                 )
 
                 # set temporaty working directory -------------
@@ -445,6 +446,11 @@ Sys <- R6::R6Class("Sys",
         setup_command_params = function() {
             .subset2(.subset2(private, "params"), "command_params")
         },
+
+        #' Method used to combine `dots` and `params`
+        #'
+        #' @return An atomic character, or `NULL`.
+        combine_params = function(dots, params) c(dots, params),
 
         #' Function to run after execute command
         #'
