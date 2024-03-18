@@ -17,7 +17,7 @@ kraken_tools <- function(script, ..., pythonpath = NULL,
                          wait = TRUE, timeout = 0L, abort = TRUE,
                          verbose = TRUE, python = NULL) {
     script <- match.arg(script, KrakenToolsScripts)
-    SysKraken2Mpa$new()$run(
+    SysKrakenTools$new()$run(
         cmd = python, ..., pythonpath = pythonpath,
         envpath = envpath, envvar = envvar,
         help = help, stdout = stdout, stderr = stderr, stdin = stdin,
