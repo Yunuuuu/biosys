@@ -475,7 +475,8 @@ Sys <- R6::R6Class("Sys",
     )
 )
 
-#' R6 Class to define a specific command
+#' R6 Class to define a specific command, which is bound to the command name. In
+#' this way, we won't always need to provide the command.
 #' @noRd
 Command <- R6::R6Class(
     "Command",
