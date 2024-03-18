@@ -4,10 +4,10 @@
 #' @description These scripts are designed to help Kraken users with downstream
 #' analysis of Kraken results.
 #'
-#' @param script Name of the kraken2 script. One of 
+#' @param script Name of the kraken2 script. One of
 #' `r oxford_comma(rd_format_code(KrakenToolsScripts))`
 #' @param ... `r rd_dots("script")`. Details see: `kraken_tools(script, help =
-#' TRUE)`. 
+#' TRUE)`.
 #' @inheritParams python
 #' @seealso <https://github.com/jenniferlu717/KrakenTools>
 #' @export
@@ -18,8 +18,8 @@ kraken_tools <- function(script, ..., pythonpath = NULL,
                          verbose = TRUE, python = NULL) {
     script <- match.arg(script, KrakenToolsScripts)
     SysKrakenTools$new()$run(
-        cmd = python, ..., pythonpath = pythonpath,
-        envpath = envpath, envvar = envvar,
+        cmd = python, ..., script = script,
+        pythonpath = pythonpath, envpath = envpath, envvar = envvar,
         help = help, stdout = stdout, stderr = stderr, stdin = stdin,
         wait = wait, timeout = timeout, abort = abort, verbose = verbose
     )
