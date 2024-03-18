@@ -30,11 +30,12 @@ SysKrakenTools <- R6::R6Class(
     inherit = SysPython,
     private = list(
         setup_params = function(params) {
-            script <- internal_file("KrakenTools", paste0(script, ".py"))
+            script <- internal_file("KrakenTools", paste0(params$script, ".py"))
             if (file.access(script, mode = 1L) != 0L) {
                 Sys.chmod(script, "555")
             }
-            private$insert_param("script", script)
+            params$script <- script
+            params
         },
         setup_help_params = function(script) c(script, "--help"),
         setup_command_params = function(script) script,
