@@ -10,6 +10,7 @@ fastq_pair(
   fq2,
   ...,
   hash_table_size = NULL,
+  max_hash_table_size = NULL,
   keep_decompressed = FALSE,
   keep_unpaired = TRUE,
   compress = TRUE,
@@ -35,6 +36,8 @@ fastq_read_pair(fastq_files)
 \item{...}{<\link[rlang:dyn-dots]{dynamic dots}> Additional arguments passed to \code{fastq_pair} command, empty arguments are automatically trimed. Details see: \code{fastq_pair(help = TRUE)}.}
 
 \item{hash_table_size}{Size of hash table to use.}
+
+\item{max_hash_table_size}{Maximal hash table size to use.}
 
 \item{keep_decompressed}{A bool, If \code{fq1} or \code{fq2} are compressed,
 \code{fastq_pair} function will automatically decompress them, this argument

@@ -14,6 +14,7 @@
 #' @param fq1,fq2 A string of fastq file path.
 #' @param ... `r rd_dots("fastq_pair")`. Details see: `fastq_pair(help = TRUE)`.
 #' @param hash_table_size Size of hash table to use.
+#' @param max_hash_table_size Maximal hash table size to use.
 #' @param keep_decompressed A bool, If `fq1` or `fq2` are compressed,
 #' `fastq_pair` function will automatically decompress them, this argument
 #' controls whether we should remove the decompressed temporary files.
@@ -23,7 +24,9 @@
 #' @param fastq_pair `r rd_cmd("fastq_pair")`.
 #' @seealso <https://github.com/linsalrob/fastq-pair>
 #' @export
-fastq_pair <- function(fq1, fq2, ..., hash_table_size = NULL,
+fastq_pair <- function(fq1, fq2, ...,
+                       hash_table_size = NULL,
+                       max_hash_table_size = NULL,
                        keep_decompressed = FALSE, keep_unpaired = TRUE, compress = TRUE, odir = getwd(),
                        envpath = NULL, envvar = NULL, help = FALSE,
                        stdout = TRUE, stderr = TRUE, stdin = "",
@@ -32,7 +35,9 @@ fastq_pair <- function(fq1, fq2, ..., hash_table_size = NULL,
     SysFastqPair$new()$run(
         cmd = fastq_pair,
         ...,
-        fq1 = fq1, fq2 = fq2, hash_table_size = hash_table_size,
+        fq1 = fq1, fq2 = fq2, 
+        hash_table_size = hash_table_size,
+        max_hash_table_size = max_hash_table_size,
         keep_decompressed = keep_decompressed,
         keep_unpaired = keep_unpaired, compress = compress,
         odir = odir, envpath = envpath, envvar = envvar,
@@ -48,6 +53,7 @@ SysFastqPair <- R6::R6Class(
         names = "fastq_pair",
         internal_params = "opath",
         setup_command_params = function(fq1, fq2, odir, hash_table_size,
+                                        max_hash_table_size,
                                         keep_decompressed, keep_unpaired,
                                         compress, verbose) {
             assert_string(fq1, empty_ok = FALSE)
@@ -95,6 +101,9 @@ SysFastqPair <- R6::R6Class(
                 if (verbose) {
                     cli::cli_inform("Using -t {.val {hash_table_size}}")
                 }
+            }
+            if (!is.null(max_hash_table_size)) {
+                hash_table_size <- min(hash_table_size, max_hash_table_size)
             }
             c(
                 arg_internal("-t", hash_table_size, format = "%d"),
