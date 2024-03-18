@@ -30,7 +30,7 @@ Sys <- R6::R6Class("Sys",
             if (!help) {
                 # for regular command (not help document), there were usually
                 # additional arguments passed into command by `...`, they must
-                # be un-named and each element must be of length one
+                # be un-named
                 dots <- params[
                     !rlang::names2(params) %in% private$parameters(all = TRUE)
                 ]
@@ -44,12 +44,6 @@ Sys <- R6::R6Class("Sys",
                         cli::cli_abort(
                             "Unknown parameter{?s}: {.arg {names(named)}}"
                         )
-                    }
-                    if (any(lengths(dots) > 1L)) {
-                        cli::cli_abort(c_msg(
-                            "Additional parameters passed to command by",
-                            style_arg("..."), "must be each of length one"
-                        ))
                     }
                     dots <- unlist(dots, recursive = TRUE, use.names = FALSE)
                     private$dots <- dots
