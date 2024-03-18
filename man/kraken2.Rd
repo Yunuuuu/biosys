@@ -49,7 +49,7 @@ kraken2_mpa(
 \arguments{
 \item{fq1, fq2}{A string of fastq file path.}
 
-\item{...}{Additional arguments passed to \code{kraken2} command. Details see: \code{kraken2(help = TRUE)}}
+\item{...}{<\link[rlang:dyn-dots]{dynamic dots}> Additional arguments passed to \code{kraken2} command, empty arguments are automatically trimed. Details see: \code{kraken2(help = TRUE)}}
 
 \item{ofile}{A string of path to save kraken2 output.}
 

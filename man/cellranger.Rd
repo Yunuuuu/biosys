@@ -23,7 +23,7 @@ cellranger(
 \arguments{
 \item{subcmd}{Sub-Command of cellranger.}
 
-\item{...}{Additional arguments passed to \verb{cellranger subcmd} command.}
+\item{...}{<\link[rlang:dyn-dots]{dynamic dots}> Additional arguments passed to \verb{cellranger subcmd} command, empty arguments are automatically trimed.}
 
 \item{envpath}{A character define the environment variables \code{PATH} to be
 \code{added} before running command. See \link[withr:with_path]{withr::with_path}.}

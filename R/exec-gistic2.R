@@ -44,7 +44,7 @@ SysGistic2 <- R6::R6Class(
     "SysGistic2",
     inherit = Command,
     private = list(
-        name = "gistic2",
+        names = "gistic2",
         setup_command_params = function(seg, refgene, odir) {
             assert_data_frame(seg)
             odir <- build_opath(odir)

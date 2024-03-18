@@ -26,18 +26,9 @@ SysPython <- R6::R6Class(
     "SysPython",
     inherit = Command,
     private = list(
-        name = "python",
+        names = c("python3", "python2"),
         setup_envvar = function(envvar, pythonpath) {
             envvar_parse_path(envvar, name = "PYTHONPATH", pythonpath)
-        },
-        command_locate = function() {
-            python2 <- Sys.which("python2")
-            python3 <- Sys.which("python3")
-            if (nzchar(python2) && !nzchar(python3)) {
-                python2
-            } else {
-                python3
-            }
         },
         setup_help_params = function() "--help"
     )

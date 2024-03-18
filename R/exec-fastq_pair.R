@@ -45,7 +45,7 @@ SysFastqPair <- R6::R6Class(
     "SysFastqPair",
     inherit = Command,
     private = list(
-        name = "fastq_pair",
+        names = "fastq_pair",
         internal_params = "opath",
         setup_command_params = function(fq1, fq2, odir, hash_table_size,
                                         keep_decompressed, keep_unpaired,

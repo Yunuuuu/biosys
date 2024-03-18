@@ -40,7 +40,7 @@ SysKraken2 <- R6::R6Class(
     "SysKraken2",
     inherit = Command,
     private = list(
-        name = "kraken2",
+        names = "kraken2",
         setup_command_params = function(fq1, fq2, ofile, report,
                                         classified_out, unclassified_out,
                                         odir) {
@@ -107,7 +107,7 @@ kraken2_mpa <- function(report, ..., ofile = NULL, odir = getwd(),
 }
 
 SysKraken2Mpa <- R6::R6Class(
-    "SysKraken2",
+    "SysKraken2Mpa",
     inherit = SysPython,
     private = list(
         setup_params = function(params) {

@@ -22,7 +22,7 @@ exec(
 \arguments{
 \item{cmd}{Command to be invoked, as a character string.}
 
-\item{...}{<\link[rlang:dyn-dots]{dynamic dots}> Arguments passed to \code{cmd}.}
+\item{...}{<\link[rlang:dyn-dots]{dynamic dots}> Additional arguments passed to \code{cmd} command, empty arguments are automatically trimed.}
 
 \item{envpath}{A character define the environment variables \code{PATH} to be
 \code{added} before running command. See \link[withr:with_path]{withr::with_path}.}

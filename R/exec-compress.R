@@ -105,48 +105,31 @@ SysCompress <- R6::R6Class(
 SysGz <- R6::R6Class(
     "SysGz",
     inherit = SysCompress,
-    private = list(
-        name = "gz", ext = "gz",
-        command_locate = function(cmd) {
-            if (is.null(cmd)) {
-                gzip <- Sys.which("gzip")
-                pigz <- Sys.which("pigz")
-                command <- if (nzchar(pigz)) pigz else gzip
-                if (!nzchar(command)) {
-                    cli::cli_abort(
-                        "Cannot locate {.field gzip} or {.field pigz} command"
-                    )
-                }
-            } else {
-                command <- super$command_locate(cmd)
-            }
-            command
-        }
-    )
+    private = list(names = c("pigz", "gzip"), ext = "gz")
 )
 
 SysGzip <- R6::R6Class(
     "SysGzip",
     inherit = SysCompress,
-    private = list(name = "gzip", ext = "gz")
+    private = list(names = "gzip", ext = "gz")
 )
 
 SysPigz <- R6::R6Class(
-    "SysGzip",
+    "SysPigz",
     inherit = SysCompress,
-    private = list(name = "pigz", ext = "gz")
+    private = list(names = "pigz", ext = "gz")
 )
 
 SysBzip2 <- R6::R6Class(
     "SysBzip2",
     inherit = SysCompress,
-    private = list(name = "bzip2", ext = "bz2")
+    private = list(names = "bzip2", ext = "bz2")
 )
 
 SysXz <- R6::R6Class(
     "SysXz",
     inherit = SysCompress,
-    private = list(name = "xz", ext = "xz")
+    private = list(names = "xz", ext = "xz")
 )
 
 #' @keywords internal

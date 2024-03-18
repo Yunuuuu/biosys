@@ -25,7 +25,7 @@ Sys <- R6::R6Class("Sys",
             # collect all parameters, we cannot evaluate it since if help =
             # TRUE, it's much possible there were some missing argument
             # we only evaluate necessary parameters
-            params <- rlang::enquos(...)
+            params <- rlang::enquos(..., .ignore_empty = "all")
 
             if (!help) {
                 # for regular command (not help document), there were usually
@@ -35,12 +35,10 @@ Sys <- R6::R6Class("Sys",
                     !rlang::names2(params) %in% private$parameters(all = TRUE)
                 ]
                 dots <- lapply(dots, rlang::eval_tidy)
-                # remove empty items
-                dots <- dots[lengths(dots) > 0L]
                 if (.subset2(private, "collect_dots")) {
                     # we collect and check dots
                     named <- dots[rlang::have_name(dots)]
-                    if (any(named)) {
+                    if (length(named)) {
                         cli::cli_abort(
                             "Unknown parameter{?s}: {.arg {names(named)}}"
                         )
@@ -478,13 +476,21 @@ Command <- R6::R6Class(
     "Command",
     inherit = Sys,
     private = list(
-        name = NULL,
+        #' @field names Command names
+        names = NULL,
         command_locate = function(cmd) {
             if (is.null(cmd)) {
-                name <- .subset2(private, "name")
-                command <- Sys.which(name)
+                names <- .subset2(private, "names")
+                for (name in names) {
+                    if (nzchar(command <- Sys.which(name))) {
+                        break
+                    }
+                }
                 if (!nzchar(command)) {
-                    cli::cli_abort("Cannot locate {.field {name}} command")
+                    cli::cli_abort(sprintf(
+                        "Cannot locate %s command",
+                        oxford_comma(style_field(names), final = "or")
+                    ))
                 }
             } else {
                 command <- super$command_locate(cmd)

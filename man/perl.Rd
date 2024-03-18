@@ -21,7 +21,7 @@ perl(
 )
 }
 \arguments{
-\item{...}{Additional arguments passed to \code{perl} command. Details see: \code{perl(help = TRUE)}}
+\item{...}{<\link[rlang:dyn-dots]{dynamic dots}> Additional arguments passed to \code{perl} command, empty arguments are automatically trimed. Details see: \code{perl(help = TRUE)}}
 
 \item{envpath}{A character define the environment variables \code{PATH} to be
 \code{added} before running command. See \link[withr:with_path]{withr::with_path}.}

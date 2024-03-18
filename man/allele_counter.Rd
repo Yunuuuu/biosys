@@ -30,7 +30,7 @@ allele_counter(
 
 \item{ofile}{A string of path to the output file.}
 
-\item{...}{Additional arguments passed to \code{alleleCounter} command.}
+\item{...}{<\link[rlang:dyn-dots]{dynamic dots}> Additional arguments passed to \code{alleleCounter} command, empty arguments are automatically trimed.}
 
 \item{odir}{A string of path to the output directory.}
 

@@ -22,7 +22,7 @@ SysCellranger <- R6::R6Class(
     "SysCellranger",
     inherit = Command,
     private = list(
-        name = "cellranger",
+        names = "cellranger",
         setup_command_params = function(subcmd) subcmd,
         setup_help_params = function(subcmd) c(subcmd, "--help")
     )

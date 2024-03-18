@@ -22,7 +22,7 @@ python(
 )
 }
 \arguments{
-\item{...}{Additional arguments passed to \code{python} command. Details see: \code{python(help = TRUE)}}
+\item{...}{<\link[rlang:dyn-dots]{dynamic dots}> Additional arguments passed to \code{python} command, empty arguments are automatically trimed. Details see: \code{python(help = TRUE)}}
 
 \item{pythonpath}{A character define the environment variables \code{PYTHONPATH}
 to be added before running command.}

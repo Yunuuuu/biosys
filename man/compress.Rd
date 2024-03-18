@@ -34,7 +34,7 @@ decompress(mode, file, ..., ofile = NULL)
 
 \item{file}{A string of input file path.}
 
-\item{...}{Additional arguments passed to \code{compress} command. Details see: \code{compress(cmd, help = TRUE)}.}
+\item{...}{<\link[rlang:dyn-dots]{dynamic dots}> Additional arguments passed to \code{compress} command, empty arguments are automatically trimed. Details see: \code{compress(cmd, help = TRUE)}.}
 
 \item{ofile}{A string of path to the output file.}
 

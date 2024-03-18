@@ -1,7 +1,7 @@
 #' Invoke a System Command
 #'
 #' @param cmd Command to be invoked, as a character string.
-#' @param ... <[dynamic dots][rlang::dyn-dots]> Arguments passed to `cmd`.
+#' @param ... `r rd_dots("cmd")`.
 #' @param envpath A character define the environment variables `PATH` to be
 #'  `added` before running command. See [withr::with_path].
 #' @param envvar A named atomic vector define running environment variables of
