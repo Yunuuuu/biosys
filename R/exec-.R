@@ -48,17 +48,14 @@ Sys <- R6::R6Class("Sys",
                     private$dots <- dots
                 } else if (length(dots)) {
                     if (rlang::is_named(dots)) {
-                        note <- c(i = c_msg(
+                        note <- c_msg(
                             "Did you misname argument{?s}",
                             "({.arg {names(dots)}})?"
-                        ))
+                        )
                     } else {
-                        note <- NULL
+                        note <- "Did you forget to name an argument?"
                     }
-                    cli::cli_abort(c(
-                        "`...` must be empty for {.cls {fclass(self)}} object",
-                        note
-                    ))
+                    cli::cli_abort(c("`...` must be empty", i = note))
                 }
             }
 
@@ -243,9 +240,8 @@ Sys <- R6::R6Class("Sys",
                     .subset2(private, "params"),
                     "setup_command_params"
                 )
-                command_params <- build_command_params(command_params)
                 command_params <- c(
-                    build_command_params(.subset2(private, "dots")), command_params
+                    build_command_params(.subset2(private, "dots")), build_command_params(command_params)
                 )
 
                 # set temporaty working directory -------------
@@ -578,7 +574,7 @@ remove_opath <- function(opath) {
 }
 
 build_opath <- function(odir, ofile = NULL, abs = FALSE,
-                        call = rlang::caller_env()) {
+                        call = parent.frame()) {
     assert_string(odir, empty_ok = FALSE, arg = substitute(odir), call = call)
     assert_string(ofile,
         empty_ok = FALSE, null_ok = TRUE,
