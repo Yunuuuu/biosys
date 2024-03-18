@@ -28,3 +28,57 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "update kraken2: kreport2mpa.py"
+
+      - run: ./.github/sync.sh jenniferlu717/KrakenTools combine_kreports.py inst/extdata/KrakenTools/
+      
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "update KrakenTools: combine_kreports.py"
+
+      - run: ./.github/sync.sh jenniferlu717/KrakenTools combine_mpa.py inst/extdata/KrakenTools/
+      
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "update KrakenTools: combine_mpa.py"
+
+      - run: ./.github/sync.sh jenniferlu717/KrakenTools extract_kraken_reads.py inst/extdata/KrakenTools/
+      
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "update KrakenTools: extract_kraken_reads.py"
+
+      - run: ./.github/sync.sh jenniferlu717/KrakenTools filter_bracken.out.py inst/extdata/KrakenTools/filter_bracken_out.py
+      
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "update KrakenTools: filter_bracken.out.py"
+
+      - run: ./.github/sync.sh jenniferlu717/KrakenTools fix_unmapped.py inst/extdata/KrakenTools/
+      
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "update KrakenTools: fix_unmapped.py"
+
+      - run: ./.github/sync.sh jenniferlu717/KrakenTools kreport2krona.py inst/extdata/KrakenTools/
+      
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "update KrakenTools: kreport2krona.py"
+
+      - run: ./.github/sync.sh jenniferlu717/KrakenTools kreport2mpa.py inst/extdata/KrakenTools/
+      
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "update KrakenTools: kreport2mpa.py"
+
+      - run: ./.github/sync.sh jenniferlu717/KrakenTools make_kreport.py inst/extdata/KrakenTools/
+      
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "update KrakenTools: make_kreport.py"
+
+      - run: ./.github/sync.sh jenniferlu717/KrakenTools make_ktaxonomy.py inst/extdata/KrakenTools/
+      
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "update KrakenTools: make_ktaxonomy.py"
