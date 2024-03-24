@@ -21,13 +21,13 @@ process_echo <- function() {
     len_finished <- length(finished) # nolint
     len_killed <- length(killed) # nolint
     cli::cli_inform(c(
-        c_msg(
+        paste(
             "A total of {.val {len_running + len_finished + len_killed}}",
             "process{?es}"
         ),
-        i = c_msg("Running:", style_pids(running)),
-        i = c_msg("Finished:", style_pids(finished)),
-        i = c_msg("Killed:", style_pids(killed))
+        i = paste("Running:", style_pids(running)),
+        i = paste("Finished:", style_pids(finished)),
+        i = paste("Killed:", style_pids(killed))
     ))
 }
 
@@ -61,14 +61,14 @@ process_kill <- function(x) {
     o <- rep_len(NA, length(pids))
     finished <- pids %in% Process$finished
     if (length(finished)) {
-        cli::cli_inform(c_msg(
+        cli::cli_inform(paste(
             "Process already finished:", style_pids(pids[finished])
         ))
         o[finished] <- TRUE
     }
     killing <- pids %in% Process$running
     if (length(killing)) {
-        cli::cli_inform(c_msg("Killing Process:", style_pids(pids[killing])))
+        cli::cli_inform(paste("Killing Process:", style_pids(pids[killing])))
         o[killing] <- tools::pskill(pids[killing])
         killed_pids <- pids[killing][o[killing]]
         killed_pids <- killed_pids[!duplicated(killed_pids)]
@@ -88,11 +88,11 @@ process_value <- function(x, clean = TRUE) {
     pid <- setup_pids(x)
     if (is.na(pid)) return(NA) # styler: off
     if (pid %in% Process$running) {
-        cli::cli_warn(c_msg("Process", style_pids(x), "is still running"))
+        cli::cli_warn(paste("Process", style_pids(x), "is still running"))
         return(NULL)
     }
     if (pid %in% Process$killed) {
-        cli::cli_warn(c_msg("Process", style_pids(x), "has been killed"))
+        cli::cli_warn(paste("Process", style_pids(x), "has been killed"))
         return(NULL)
     }
     nm <- as.character(pid)
@@ -101,7 +101,7 @@ process_value <- function(x, clean = TRUE) {
         if (clean) rm(envir = Process$collects, list = nm)
         return(o)
     } else {
-        cli::cli_warn(c_msg(
+        cli::cli_warn(paste(
             "Collected value of process", style_pids(pid), "has been removed"
         ))
     }
@@ -147,7 +147,7 @@ setup_pids <- function(x, arg = rlang::caller_arg(),
     values <- c(full[!named], named_value, named_value)
     pids <- values[match(x, matches)]
     if (anyNA(pids)) {
-        cli::cli_warn(c_msg(
+        cli::cli_warn(paste(
             "Don't know process:", style_pids(unname(x[is.na(pids)]))
         ))
     }

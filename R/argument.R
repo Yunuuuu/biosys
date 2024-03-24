@@ -50,7 +50,7 @@ arg_internal <- function(
         assert_string(format, empty_ok = FALSE, call = call)
         if (format == "%d") {
             assert_(value, is_number,
-                c_msg("scalar", style_cls("numeric")),
+                paste("scalar", style_cls("numeric")),
                 arg = arg, call = call
             )
         } else {

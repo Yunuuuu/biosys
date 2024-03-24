@@ -46,7 +46,7 @@ Sys <- R6::R6Class("Sys",
                     private$dots <- dots
                 } else if (length(dots)) {
                     if (rlang::is_named(dots)) {
-                        note <- c_msg(
+                        note <- paste(
                             "Did you misname argument{?s}",
                             "({.arg {names(dots)}})?"
                         )
@@ -306,7 +306,7 @@ Sys <- R6::R6Class("Sys",
                         "error"
                     )
                     msg <- c(
-                        c_msg(
+                        paste(
                             "something wrong when running command",
                             style_field(command)
                         ),
@@ -520,9 +520,9 @@ system3 <- function(command, command_params,
                     wait = TRUE, timeout = 0L,
                     verbose) {
     if (verbose) {
-        msg <- c_msg("Running command", style_field(command))
+        msg <- paste("Running command", style_field(command))
         if (length(command_params)) {
-            msg <- c_msg(
+            msg <- paste(
                 msg, style_field(paste(command_params, collapse = " "))
             )
         }

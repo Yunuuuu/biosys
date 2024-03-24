@@ -171,7 +171,7 @@ decompress_file <- function(file, exdir = tempdir()) {
     fnames <- FUN(file, list = TRUE)
     if (inherits(fnames, "data.frame")) fnames <- fnames[[1L]]
     if (length(fnames) > 1L) {
-        cli::cli_abort(c_msg(
+        cli::cli_abort(paste(
             "Compressed files containing more than 1 file",
             "are currently not supported."
         ))

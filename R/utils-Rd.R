@@ -5,7 +5,7 @@ rd_cmd <- function(cmd) {
 }
 
 rd_dots <- function(cmd) {
-    sprintf(c_msg(
+    sprintf(paste(
         "<[dynamic dots][rlang::dyn-dots]>",
         "Additional arguments passed to `%s` command,",
         "empty arguments are automatically trimed"

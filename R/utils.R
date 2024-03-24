@@ -16,8 +16,6 @@ pkg_nm <- function() {
     utils::packageName(topenv(environment()))
 }
 
-c_msg <- function(..., sep = " ") paste(..., sep = sep)
-
 # mimic rlang::exprs, but will omit `{`
 exprs <- function(...) {
     dots <- rlang::exprs(...)
