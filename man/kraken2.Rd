@@ -2,7 +2,6 @@
 % Please edit documentation in R/exec-kraken2.R
 \name{kraken2}
 \alias{kraken2}
-\alias{kraken2_mpa}
 \title{Running Kraken2}
 \usage{
 kraken2(
@@ -26,25 +25,6 @@ kraken2(
   verbose = TRUE,
   kraken2 = NULL
 )
-
-kraken2_mpa(
-  report,
-  ...,
-  ofile = NULL,
-  odir = getwd(),
-  pythonpath = NULL,
-  envpath = NULL,
-  envvar = NULL,
-  help = FALSE,
-  stdout = TRUE,
-  stderr = TRUE,
-  stdin = "",
-  wait = TRUE,
-  timeout = 0L,
-  abort = TRUE,
-  verbose = TRUE,
-  python = NULL
-)
 }
 \arguments{
 \item{fq1, fq2}{A string of fastq file path.}
@@ -53,7 +33,7 @@ kraken2_mpa(
 
 \item{ofile}{A string of path to save kraken2 output.}
 
-\item{report}{A string of path or the report file returned by \code{kraken2}.}
+\item{report}{A string of path to save kraken2 report.}
 
 \item{classified_out}{A string of path to save classified sequences, which
 should be a fastq file.}
@@ -99,11 +79,6 @@ non-zero status.}
 \item{verbose}{A bool indicates whether to print running command message.}
 
 \item{kraken2}{A string of path to \code{kraken2} command.}
-
-\item{pythonpath}{A character define the environment variables \code{PYTHONPATH}
-to be \code{added} before running command.}
-
-\item{python}{A string of path to \code{python} command.}
 }
 \description{
 Kraken is a taxonomic sequence classifier that assigns taxonomic labels to
