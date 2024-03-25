@@ -12,6 +12,9 @@ perl(..., perl = NULL)
 
 \item{perl}{A string of path to \code{perl} command.}
 }
+\value{
+A \link{Execute} object.
+}
 \description{
 Perl is a highly capable, feature-rich programming language with over 36
 years of development.

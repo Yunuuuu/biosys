@@ -12,7 +12,7 @@ exec(cmd, ...)
 \item{...}{<\link[rlang:dyn-dots]{dynamic dots}> Additional arguments passed to \code{cmd} command, empty arguments are automatically trimed.}
 }
 \value{
-A \link{Command} object.
+A \link{Execute} object.
 }
 \description{
 Invoke a System Command

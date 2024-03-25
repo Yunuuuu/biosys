@@ -15,6 +15,9 @@ kraken_tools(script, ..., python = NULL)
 
 \item{python}{A string of path to \code{python} command.}
 }
+\value{
+A \link{Execute} object.
+}
 \description{
 These scripts are designed to help Kraken users with downstream
 analysis of Kraken results.

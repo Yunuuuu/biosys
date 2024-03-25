@@ -10,6 +10,7 @@
 #' @param ... `r rd_dots("alleleCounter")`.
 #' @param alleleCounter `r rd_cmd("alleleCounter")`.
 #' @seealso <https://github.com/cancerit/alleleCount>
+#' @inherit exec return
 #' @export
 allele_counter <- function(hts_file, loci_file, ofile, ..., odir = getwd(),
                            alleleCounter = NULL) {

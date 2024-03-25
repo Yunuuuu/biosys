@@ -4,6 +4,7 @@
 #' @param ... `r rd_dots("perl")`. Details see: `perl(help = TRUE)`
 #' @param perl `r rd_cmd("perl")`.
 #' @seealso <https://www.perl.org/>
+#' @inherit exec return
 #' @export
 perl <- function(..., perl = NULL) {
     Execute$new(SysPerl$new(cmd = perl, ...))

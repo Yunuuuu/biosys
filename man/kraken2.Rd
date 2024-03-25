@@ -35,6 +35,9 @@ which should be a fastq file.}
 
 \item{kraken2}{A string of path to \code{kraken2} command.}
 }
+\value{
+A \link{Execute} object.
+}
 \description{
 Kraken is a taxonomic sequence classifier that assigns taxonomic labels to
 DNA sequences. Kraken examines the k-mers within a query sequence and uses

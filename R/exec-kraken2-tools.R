@@ -10,6 +10,7 @@
 #' TRUE)`.
 #' @inheritParams python
 #' @seealso <https://github.com/jenniferlu717/KrakenTools>
+#' @inherit exec return
 #' @export
 kraken_tools <- function(script, ..., python = NULL) {
     script <- match.arg(script, KrakenToolsScripts)

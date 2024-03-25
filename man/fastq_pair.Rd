@@ -29,6 +29,9 @@ fastq_read_pair(fastq_files)
 
 \item{fastq_files}{A character of the fastq file paths.}
 }
+\value{
+A \link{Execute} object.
+}
 \description{
 Rewrite paired end fastq files to make sure that all reads have a mate and to
 separate out singletons.

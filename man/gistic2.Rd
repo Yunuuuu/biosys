@@ -18,6 +18,9 @@ for file description).}
 
 \item{gistic2}{A string of path to \code{gistic2} command.}
 }
+\value{
+A \link{Execute} object.
+}
 \description{
 The GISTIC module identifies regions of the genome that are
 significantly amplified or deleted across a set of samples. Each aberration

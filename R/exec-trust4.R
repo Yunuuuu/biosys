@@ -18,6 +18,7 @@
 #' @inheritParams allele_counter
 #' @param trust4 `r rd_cmd("run-trust4")`.
 #' @seealso <https://github.com/liulab-dfci/TRUST4>
+#' @inherit exec return
 #' @export
 trust4 <- function(file1, ref_coordinate, ..., file2 = NULL, mode = NULL,
                    ref_annot = NULL, ofile = NULL, odir = getwd(),

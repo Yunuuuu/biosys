@@ -26,6 +26,9 @@ allele_counter(
 
 \item{alleleCounter}{A string of path to \code{alleleCounter} command.}
 }
+\value{
+A \link{Execute} object.
+}
 \description{
 The alleleCount package primarily exists to prevent code duplication between
 some other projects, specifically AscatNGS and Battenberg.

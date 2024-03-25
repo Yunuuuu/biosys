@@ -13,6 +13,9 @@ cellranger(subcmd = NULL, ..., cellranger = NULL)
 
 \item{cellranger}{A string of path to \code{cellranger} command.}
 }
+\value{
+A \link{Execute} object.
+}
 \description{
 Run cellranger
 }

@@ -64,6 +64,9 @@ IMGT database. (default: not used). (recommended).}
 \item{imgt_annot}{Path of IMGT annotation file, created via
 \code{trust4_imgt_annot}.}
 }
+\value{
+A \link{Execute} object.
+}
 \description{
 TRUST4: immune repertoire reconstruction from bulk and single-cell RNA-seq
 data

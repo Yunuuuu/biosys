@@ -13,6 +13,9 @@ seqkit(subcmd = NULL, ..., seqkit = NULL)
 
 \item{seqkit}{A string of path to \code{seqkit} command.}
 }
+\value{
+A \link{Execute} object.
+}
 \description{
 Run seqkit
 }

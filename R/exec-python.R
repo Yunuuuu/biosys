@@ -4,6 +4,7 @@
 #' @param ... `r rd_dots("python")`. Details see: `python(help = TRUE)`
 #' @param python `r rd_cmd("python")`.
 #' @seealso <https://www.python.org/>
+#' @inherit exec return
 #' @export
 python <- function(..., python = NULL) {
     Execute$new(SysPython$new(cmd = python, ...))

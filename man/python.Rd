@@ -12,6 +12,9 @@ python(..., python = NULL)
 
 \item{python}{A string of path to \code{python} command.}
 }
+\value{
+A \link{Execute} object.
+}
 \description{
 Python is a programming language that lets you work quickly and integrate
 systems more effectively.

@@ -23,6 +23,7 @@
 #' @inheritParams allele_counter
 #' @param gistic2 `r rd_cmd("gistic2")`.
 #' @seealso <https://broadinstitute.github.io/gistic2/>
+#' @inherit exec return
 #' @export
 gistic2 <- function(seg, refgene, ..., odir = getwd(), gistic2 = NULL) {
     Execute$new(SysGistic2$new(

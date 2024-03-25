@@ -3,6 +3,7 @@
 #' @param ... `r rd_dots("seqkit subcmd")`.
 #' @param seqkit `r rd_cmd("seqkit")`.
 #' @seealso <https://bioinf.shenwei.me/seqkit/>
+#' @inherit exec return
 #' @export
 seqkit <- function(subcmd = NULL, ..., seqkit = NULL) {
     assert_string(subcmd, empty_ok = FALSE, null_ok = TRUE)

@@ -17,6 +17,7 @@
 #' @param max_hash_table_size Maximal hash table size to use.
 #' @param fastq_pair `r rd_cmd("fastq_pair")`.
 #' @seealso <https://github.com/linsalrob/fastq-pair>
+#' @inherit exec return
 #' @export
 fastq_pair <- function(fq1, fq2, ...,
                        hash_table_size = NULL,

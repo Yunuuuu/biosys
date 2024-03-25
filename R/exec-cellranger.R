@@ -2,6 +2,7 @@
 #' @param subcmd Sub-Command of cellranger.
 #' @param ... `r rd_dots("cellranger subcmd")`.
 #' @param cellranger `r rd_cmd("cellranger")`.
+#' @inherit exec return
 #' @export
 cellranger <- function(subcmd = NULL, ..., cellranger = NULL) {
     assert_string(subcmd, empty_ok = FALSE, null_ok = TRUE)

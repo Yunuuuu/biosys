@@ -2,7 +2,7 @@
 #'
 #' @param cmd Command to be invoked, as a character string.
 #' @param ... `r rd_dots("cmd")`.
-#' @return A [Command] object.
+#' @return A [Execute] object.
 #' @export
 exec <- function(cmd, ...) {
     assert_string(cmd, empty_ok = FALSE)

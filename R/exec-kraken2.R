@@ -17,6 +17,7 @@
 #' @inheritParams allele_counter
 #' @param kraken2 `r rd_cmd("kraken2")`.
 #' @seealso <https://github.com/DerrickWood/kraken2/wiki/Manual>
+#' @inherit exec return
 #' @export
 kraken2 <- function(fq1, ..., fq2 = NULL,
                     ofile = "kraken_output.txt", report = "kraken_report.txt",
