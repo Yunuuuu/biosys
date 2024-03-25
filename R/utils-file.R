@@ -107,3 +107,52 @@ write_lines <- function(text, path, eol = "\n", compress = "auto") {
 file_equal <- function(x, y) {
     normalizePath(x, "/", FALSE) == normalizePath(y, "/", FALSE)
 }
+
+# https://github.com/Rdatatable/data.table/blob/15c127e99f8d6aab599c590d4aec346a850f1334/R/fread.R#L90
+is_tar <- function(file) endsWith(file, ".tar")
+
+is_gzip_suffix <- function(file, tar = FALSE) {
+    if (endsWith(file, ".z") || endsWith(file, ".gz")) {
+        return(TRUE)
+    } else if (tar && (endsWith(file, ".tgz") || endsWith(file, ".taz"))) {
+        return(TRUE)
+    }
+    FALSE
+}
+
+is_gzip_signature <- function(file, file_signature = NULL) {
+    match_file_signature(file, file_signature, as.raw(c(0x1F, 0x8B)))
+}
+
+is_bz2_suffix <- function(file, tar = FALSE) {
+    if (endsWith(file, ".bz2") || endsWith(file, ".bz")) {
+        return(TRUE)
+    } else if (tar && (endsWith(file, ".tbz2") || endsWith(file, ".tbz"))) {
+        return(TRUE)
+    }
+    FALSE
+}
+
+is_bz2_signature <- function(file, file_signature = NULL) {
+    match_file_signature(file, file_signature, as.raw(c(0x42, 0x5A, 0x68)))
+}
+
+is_xz_suffix <- function(file, tar = FALSE) {
+    if (endsWith(file, ".xz") || endsWith(file, ".lzma")) {
+        return(TRUE)
+    } else if (tar && (endsWith(file, ".txz") || endsWith(file, ".tlz"))) {
+        return(TRUE)
+    }
+    FALSE
+}
+
+is_zip <- function(file, file_signature = NULL) {
+    endsWith(file, ".zip") ||
+        match_file_signature(file, file_signature, charToRaw("PK\x03\x04"))
+}
+
+match_file_signature <- function(file, file_signature, match) {
+    n <- length(match)
+    file_signature <- file_signature %||% readBin(file, raw(), n)
+    identical(file_signature[seq_len(n)], match)
+}

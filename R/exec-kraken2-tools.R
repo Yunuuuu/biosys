@@ -11,35 +11,22 @@
 #' @inheritParams python
 #' @seealso <https://github.com/jenniferlu717/KrakenTools>
 #' @export
-kraken_tools <- function(script, ..., pythonpath = NULL,
-                         envpath = NULL, envvar = NULL, help = FALSE,
-                         stdout = TRUE, stderr = TRUE, stdin = "",
-                         wait = TRUE, timeout = 0L, abort = TRUE,
-                         verbose = TRUE, python = NULL) {
+kraken_tools <- function(script, ..., python = NULL) {
     script <- match.arg(script, KrakenToolsScripts)
-    SysKrakenTools$new()$run(
-        cmd = python, ..., script = script,
-        pythonpath = pythonpath, envpath = envpath, envvar = envvar,
-        help = help, stdout = stdout, stderr = stderr, stdin = stdin,
-        wait = wait, timeout = timeout, abort = abort, verbose = verbose
-    )
+    Execute$new(SysKrakenTools$new(cmd = python, ..., script = script))
 }
 
 SysKrakenTools <- R6::R6Class(
     "SysKrakenTools",
     inherit = SysPython,
     private = list(
-        setup_params = function(params) {
-            script <- internal_file("KrakenTools", paste0(params$script, ".py"))
+        combine_params = function(script) {
+            script <- internal_file("KrakenTools", paste0(script, ".py"))
             if (file.access(script, mode = 1L) != 0L) {
                 Sys.chmod(script, "555")
             }
-            params$script <- script
-            params
-        },
-        setup_help_params = function(script) c(script, "--help"),
-        setup_command_params = function(script) script,
-        combine_params = function(dots, params) c(params, dots)
+            c(script, super$combine_params())
+        }
     )
 )
 

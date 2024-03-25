@@ -11,10 +11,8 @@ RoxygenNote: 7.3.1
 Imports: 
     cli,
     data.table,
-    parallel,
     R6,
-    rlang (>= 1.1.0),
-    withr
+    rlang (>= 1.1.0)
 Suggests: 
     testthat (>= 3.0.0)
 SystemRequirements: Unix System

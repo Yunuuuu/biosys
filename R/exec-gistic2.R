@@ -24,38 +24,28 @@
 #' @param gistic2 `r rd_cmd("gistic2")`.
 #' @seealso <https://broadinstitute.github.io/gistic2/>
 #' @export
-gistic2 <- function(seg, refgene, ..., odir = getwd(),
-                    envpath = NULL, envvar = NULL, help = FALSE,
-                    stdout = TRUE, stderr = TRUE, stdin = "",
-                    wait = TRUE, timeout = 0L, abort = TRUE,
-                    verbose = TRUE, gistic2 = NULL) {
-    SysGistic2$new()$run(
-        cmd = gistic2,
-        ...,
-        seg = seg, refgene = refgene,
-        odir = odir, envpath = envpath, envvar = envvar,
-        help = help, stdout = stdout, stderr = stderr, stdin = stdin,
-        wait = wait, timeout = timeout, abort = abort, verbose = verbose
-    )
+gistic2 <- function(seg, refgene, ..., odir = getwd(), gistic2 = NULL) {
+    Execute$new(SysGistic2$new(
+        cmd = gistic2, ..., seg = seg, refgene = refgene
+    ))
 }
 
 SysGistic2 <- R6::R6Class(
     "SysGistic2",
     inherit = Command,
     private = list(
-        names = "gistic2",
+        name = "gistic2", help = NULL,
         setup_command_params = function(seg, refgene, odir) {
             assert_data_frame(seg)
             odir <- build_opath(odir)
             seg_file <- tempfile("gistic2")
             data.table::fwrite(seg, file = seg_file, sep = "\t")
             private$setup_exit(file.remove(seg_file))
-            params <- c(
+            c(
                 arg_internal("-seg", seg_file),
                 arg_internal("-refgene", refgene),
                 arg_internal("-b", odir)
             )
-        },
-        setup_help_params = function() NULL
+        }
     )
 )

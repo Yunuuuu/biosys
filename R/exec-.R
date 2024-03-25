@@ -1,73 +1,60 @@
-#' R6 Class to invoke a system command
-Sys <- R6::R6Class("Sys",
-    public = list(
-        #' Invoke a the System Command
-        #' @inheritParams exec
-        #' @return
-        #'  - if `wait=FALSE`, the process ID.
-        #'  - if `abort=TRUE` and `wait=TRUE`, zero if command success,
-        #'    otherwise, abort error.
-        #'  - if `abort=FALSE` and `wait=TRUE`, exit status returned by the
-        #'    command.
-        #' @noRd
-        run = function(..., help = FALSE,
-                       stdout = TRUE, stderr = TRUE, stdin = "",
-                       wait = TRUE, timeout = 0L, abort = TRUE,
-                       verbose = TRUE) {
-            # check arguments
-            assert_bool(help)
-            check_io(stdout)
-            check_io(stderr)
-            check_wait(wait)
-            assert_bool(abort)
-            assert_bool(verbose)
+#' Invoke a System Command
+#'
+#' @param cmd Command to be invoked, as a character string.
+#' @param ... `r rd_dots("cmd")`.
+#' @return A [Command] object.
+exec <- function(cmd, ...) {
+    assert_string(cmd, empty_ok = FALSE)
+    Execute$new(Command$new(cmd = cmd, ...))
+}
 
-            # collect all parameters, we cannot evaluate it since if help =
-            # TRUE, it's much possible there were some missing argument
-            # we only evaluate necessary parameters
+#' R6 Class to prepare command parameters
+#'
+#' @export
+Command <- R6::R6Class("Command",
+    public = list(
+
+        #' @description
+        #' Create a new `Command` object. User shouln't call this function
+        #' directly.
+        #' @param ... Additional argument passed into command.
+        initialize = function(...) {
+            # collect all parameters, we cannot evaluate it since if we want to
+            # print help document, it's much possible there were some missing
+            # argument we only evaluate necessary parameters
             params <- rlang::enquos(..., .ignore_empty = "all")
 
-            if (!help) {
-                # for regular command (not help document), there were usually
-                # additional arguments passed into command by `...`, they must
-                # be un-named
-                dots <- params[
-                    !rlang::names2(params) %in% private$parameters(all = TRUE)
-                ]
-                dots <- lapply(dots, rlang::eval_tidy)
-                if (.subset2(private, "collect_dots")) {
-                    # we collect and check dots
-                    named <- dots[rlang::have_name(dots)]
-                    if (length(named)) {
-                        cli::cli_abort(
-                            "Unknown parameter{?s}: {.arg {names(named)}}"
-                        )
-                    }
-                    private$dots <- dots
-                } else if (length(dots)) {
-                    if (rlang::is_named(dots)) {
-                        note <- paste(
-                            "Did you misname argument{?s}",
-                            "({.arg {names(dots)}})?"
-                        )
-                    } else {
-                        note <- "Did you forget to name an argument?"
-                    }
-                    cli::cli_abort(c("`...` must be empty", i = note))
+            # Extract params used by `Command` object internal
+            # `command_locate`: params used to locate command path.
+            # `setup_command_params`: params used by regular command
+            # `combine_params`: combine combine dots and params or other global
+            # params (both help and regular params)
+            param_names <- private$parameters()
+
+            # there were usually additional arguments passed into command by
+            # `...`, they must be un-named
+            dots <- params[!rlang::names2(params) %in% param_names]
+            if (.subset2(private, "collect_dots")) {
+                # we collect and check dots
+                named <- dots[rlang::have_name(dots)]
+                if (length(named)) {
+                    cli::cli_abort(
+                        "Unknown parameter{?s}: {.arg {names(named)}}"
+                    )
                 }
+                private$dots <- dots
+            } else if (length(dots)) {
+                if (rlang::is_named(dots)) {
+                    note <- paste(
+                        "Did you misname argument{?s}",
+                        "({.arg {names(dots)}})?"
+                    )
+                } else {
+                    note <- "Did you forget to name an argument?"
+                }
+                cli::cli_abort(c("`...` must be empty", i = note))
             }
 
-            # Extract params used by `Sys` object internal
-            # `envpath`: params used to define running PATH environment
-            # `envvar`: params used to define running environment variables
-            # `command_locate`: params used to locate command path.
-            # `command_params`: params used by regular command:
-            #                   setup_command_params(),
-            #                   setup_temporary(), setup_opath(),
-            #                   final(), success(), and error()
-            # `help_params`: params used by command to print help document
-            #                (setup_help_params()).
-            param_names <- private$parameters(help = help)
             # here: we check if all necessary parameters have been provided by
             #       external function. (in case from myself missing provide the
             #       parameters in external function)
@@ -75,254 +62,76 @@ Sys <- R6::R6Class("Sys",
             if (length(missing)) {
                 cli::cli_abort("Missing parameters: {.arg {missing}}")
             }
-            params <- params[intersect(names(params), param_names)]
-
-            # we collect and evaluate params since all params have been defused
-            private$params <- lapply(params, rlang::eval_tidy)
-
-            # Some function will use the verbose parameters
-            # final(), success()
-            # attach verbose
-            private$params$verbose <- verbose
-
-            # we collect params for system2
-            private$system2_params <- list(
-                stdout = stdout,
-                stderr = stderr,
-                stdin = stdin,
-                timeout = timeout
-            )
-
-            # for help `TRUE`, always use current session
-            if (help || isTRUE(wait)) {
-                o <- private$exec(help = help, abort = abort)
-            } else {
-                # to implement wait function, we starts a parallel R
-                # process to conduct Asynchronous operations
-                job <- parallel::mcparallel(
-                    private$exec(help = help, abort = abort),
-                    silent = TRUE
-                )
-                o <- job$pid
-                if (isFALSE(wait)) name <- NULL else name <- wait
-                process_add(o, name)
-            }
-            invisible(o)
-        }
-    ),
-    private = list(
-
-        #' @field params A list of parameters used by command.
-        dots = list(),
-
-        #' @field system2_params A list of parameters used by system2.
-        system2_params = list(),
-
-        #' @field params A list of parameters used by `Sys` object methods.
-        params = list(),
-
-        #' @field environment A environment used to Execution command which
-        #' should be the function environment of `private$exec_command`.
-        environment = NULL,
-
-        #' @field status Exit code of command.
-        status = NULL,
-
-        #' @description Used to prepare command environment including
-        #' working directory, and environment variables, then this method call
-        #' `private$exec_command` to invoke a system command.
-        exec = function(help, abort) {
-            # prepare common parameters for usage -------
-            # usually insert the script file:
-            # see `SysKraken2Mpa` and `SysTrust4ImgtAnnot`
-            private$params <- private$setup_params(.subset2(private, "params"))
-
-            # set working directory ---------------------
-            wd <- do_call(
-                .subset2(private, "setup_wd"),
-                .subset2(private, "params"),
-                "setup_wd"
-            )
-            if (!is.null(wd)) {
-                if (!dir.exists(wd)) {
-                    cli::cli_abort(c(
-                        "Cannot set working directory",
-                        i = "No such path {.path {wd}}"
-                    ))
-                }
-                old_wd <- getwd()
-                setwd(wd)
-                on.exit(setwd(old_wd), add = TRUE)
-            }
-
-            # setting environment variables -------------
-            envvar <- do_call(
-                .subset2(private, "setup_envvar"),
-                .subset2(private, "params"),
-                "setup_envvar"
-            )
-            envvar_msg <- "Setting environment variables: {names(envvar)}"
-
-            # setting PATH environment variables -------
-            envpath <- do_call(
-                .subset2(private, "setup_envpath"),
-                .subset2(private, "params"),
-                "setup_envpath"
-            )
-            envpath_msg <- "Setting {.field PATH} environment"
-            if (length(envvar) > 0L && length(envpath) > 0L) {
-                if (private$get_param("verbose")) {
-                    cli::cli_inform(envvar)
-                    cli::cli_inform(envpath)
-                }
-                withr::with_envvar(envvar, withr::with_path(
-                    envpath,
-                    private$exec_command(help, abort)
-                ))
-            } else if (length(envpath) > 0L) {
-                if (private$get_param("verbose")) cli::cli_inform(envpath)
-                withr::with_path(
-                    envpath,
-                    private$exec_command(help, abort)
-                )
-            } else if (length(envvar) > 0L) {
-                if (private$get_param("verbose")) cli::cli_inform(envvar)
-                withr::with_envvar(
-                    envvar,
-                    private$exec_command(help, abort)
-                )
-            } else {
-                private$exec_command(help, abort)
-            }
+            private$params <- params[intersect(names(params), param_names)]
         },
 
-        #' @description The exact method to execute a system command.
-        exec_command = function(help, abort) {
-            # save current environment -------------------------
-            # `setup_exit` will push expression into this environment
-            private$environment <- environment()
+        #' @description Build parameters to run command.
+        #' @param help A bool, indicates whether to build parameters for help
+        #' document a not.
+        #' @param envir An environment used to Execute command.
+        build = function(help = FALSE, envir = NULL) {
+            private$environment <- envir
+            necessary_params <- .subset(
+                .subset2(private, "params"),
+                private$parameters(help = help)
+            )
+
+            # weevaluate params since all params have been defused
+            necessary_params <- lapply(necessary_params, rlang::eval_tidy)
 
             # locate command path ------------------------------
             command <- do_call(
                 .subset2(private, "command_locate"),
-                .subset2(private, "params"),
-                "command_locate"
+                necessary_params, "command_locate"
             )
             if (is.null(command) || !nzchar(command)) {
-                cli::cli_abort("cannot locate command")
+                cli::cli_abort("cannot locate command {.field {private$name}}")
             }
 
             # run command ------------------------------
             if (help) {
-                help_params <- do_call(
-                    .subset2(private, "setup_help_params"),
-                    .subset2(private, "params"),
-                    "setup_help_params"
-                )
-                help_params <- build_command_params(help_params)
-
-                private$status <- do.call(system3, c(
-                    list(
-                        command = command,
-                        command_params = help_params,
-                        verbose = private$get_param("verbose")
-                    ),
-                    private$system2_params
-                ))
-                # always return status for help = TRUE
-                o <- .subset2(private, "status")
+                private$.params <- build_command_params(private$help)
             } else {
                 # compute command params
-                command_params <- do_call(
+                private$.params <- build_command_params(do_call(
                     .subset2(private, "setup_command_params"),
-                    .subset2(private, "params"),
+                    necessary_params,
                     "setup_command_params"
-                )
-                command_params <- private$combine_params(
-                    dots = build_command_params(.subset2(private, "dots")),
-                    params = build_command_params(command_params)
-                )
-
-                # set temporaty working directory -------------
-                tmp <- do_call(
-                    .subset2(private, "setup_temporary"),
-                    .subset2(private, "params"),
-                    "setup_temporary"
-                )
-                if (!is.null(tmp)) {
-                    dir_create(tmp)
-                    old_wd2 <- getwd()
-                    setwd(tmp)
-                    on.exit(unlink(tmp, recursive = TRUE), add = TRUE)
-                }
-
-                # run command --------------------------------
-                private$status <- do.call(system3, c(
-                    list(
-                        command = command,
-                        command_params = command_params,
-                        verbose = private$get_param("verbose")
-                    ),
-                    private$system2_params
                 ))
 
-                # restore original working directory --------
-                if (!is.null(tmp)) setwd(old_wd2)
-
-                ############################################
-                do_call(
-                    .subset2(private, "final"),
-                    .subset2(private, "params"),
-                    "final"
+                private$.dots <- build_command_params(
+                    lapply(.subset2(private, "dots"), rlang::eval_tidy)
                 )
-                if (.subset2(private, "status") == 0L) {
-                    # if command run success, we run function `$success`
-                    o <- do_call(
-                        .subset2(private, "success"),
-                        .subset2(private, "params"),
-                        "success"
-                    )
-                    if (private$get_param("verbose")) {
-                        cli::cli_inform(c(
-                            v = sprintf(
-                                "Running command %s success",
-                                style_field(command)
-                            )
-                        ))
-                    }
-                } else {
-                    # if command run failed, we remove the output
-                    opath <- do_call(
-                        .subset2(private, "setup_opath"),
-                        .subset2(private, "params"),
-                        "setup_opath"
-                    )
-                    if (!is.null(opath)) remove_opath(as.character(opath))
-
-                    # then we run function `$error`
-                    o <- do_call(
-                        .subset2(private, "error"),
-                        .subset2(private, "params"),
-                        "error"
-                    )
-                    msg <- c(
-                        paste(
-                            "something wrong when running command",
-                            style_field(command)
-                        ),
-                        `x` = sprintf(
-                            "error code: %s",
-                            style_val(.subset2(private, "status"))
-                        )
-                    )
-                    if (abort) cli::cli_abort(msg) else cli::cli_warn(msg)
-                }
             }
-            o
-        },
+            command_params <- do_call(
+                .subset2(private, "combine_params"),
+                necessary_params,
+                "combine_params"
+            )
+            c(command, command_params)
+        }
+    ),
+    private = list(
+        name = NULL,
+        alias = NULL,
+        help = NULL,
 
-        #' @description Used to attach an expression to be evaluated when
-        #' exiting `private$exec_command`.
+        # @field environment An environment used to Execute command which
+        # should be the function environment of `private$exec_command`.
+        environment = NULL,
+
+        # @field params A list of parameters used by command.
+        dots = list(),
+
+        # @field params A list of parameters used by `Command` object methods.
+        params = list(),
+
+        # These two fields carry state throughout rendering but will always be
+        # calculated before use
+        .dots = character(), .params = character(),
+
+        # @description Used to attach an expression to be evaluated when
+        # exiting `private$exec_command`.
         setup_exit = function(expr, after = TRUE, add = TRUE) {
             on_exit(!!rlang::enquo(expr),
                 add = add, after = after,
@@ -330,36 +139,19 @@ Sys <- R6::R6Class("Sys",
             )
         },
 
-        #' @description Extract parameters used by this object.
-        #' @return A character of the used parameter of this object.
-        parameters = function(help, all = FALSE) {
+        # @description Extract parameters used by this object.
+        # @return A character of the used parameter of this object.
+        parameters = function(help = FALSE) {
             argv <- c(
-                rlang::fn_fmls_names(.subset2(private, "setup_wd")),
-                rlang::fn_fmls_names(.subset2(private, "setup_envpath")),
-                rlang::fn_fmls_names(.subset2(private, "setup_envvar")),
-                rlang::fn_fmls_names(.subset2(private, "command_locate"))
+                rlang::fn_fmls_names(.subset2(private, "command_locate")),
+                rlang::fn_fmls_names(.subset2(private, "combine_params"))
             )
-            command_params <- c(
-                rlang::fn_fmls_names(.subset2(
+            if (!help) {
+                argv <- c(argv, rlang::fn_fmls_names(.subset2(
                     private, "setup_command_params"
-                )),
-                rlang::fn_fmls_names(.subset2(private, "setup_temporary")),
-                rlang::fn_fmls_names(.subset2(private, "setup_opath")),
-                rlang::fn_fmls_names(.subset2(private, "final")),
-                rlang::fn_fmls_names(.subset2(private, "success")),
-                rlang::fn_fmls_names(.subset2(private, "error"))
-            )
-            help_params <- rlang::fn_fmls_names(.subset2(
-                private, "setup_help_params"
-            ))
-            if (all) {
-                argv <- c(argv, command_params, help_params)
-            } else if (help) {
-                argv <- c(argv, help_params)
-            } else {
-                argv <- c(argv, command_params)
+                )))
             }
-            setdiff(argv, c(.subset2(private, "internal_params"), "verbose"))
+            setdiff(argv, c(.subset2(private, "internal_params")))
         },
 
         # methods to insert into or get parameters from `private$params`
@@ -373,138 +165,322 @@ Sys <- R6::R6Class("Sys",
 
         ##############################################################
         # Following fields or methods should be overrided by sub-class.
-        #' @field collect_dots A bool indicates whether `...` should be
-        #' collected passed into command
+        # @field collect_dots A bool indicates whether `...` should be
+        # collected passed into command
         collect_dots = TRUE,
 
-        #' @field internal_params Additional parameters used by `Sys` object but
+        # @field internal_params Additional parameters used by `Command` object
+        # but
         #' shouldn't collected from user input.
         internal_params = NULL,
 
-        #' @description Method used to prepare parameters, ususally the common
-        #' preparations for both `help_params` and `command_params`.
-        #'
-        #' * Parameters in `private$internal_params` should be added in this
-        #'   function.
-        #'
-        #' Note: we shouln't convert relative path into absolute path in this
-        #' mehtod, as we'll changing working directory after `setup_params`.
-        #'
-        #' @return An named list, the output list will be saved in
-        #' `private$params`
-        setup_params = function(params) params,
-
-        #' @description Method used to change working directory
-        #'
-        #' @return A string of path or `NULL`.
-        setup_wd = function() NULL,
-
-        #' @description Method used to create environment variables
-        #'
-        #' @return An named character
-        setup_envvar = function(envvar) envvar,
-
-        #' @description Method used to create PATH environment character
-        #'
-        #' @return An atomic character
-        setup_envpath = function(envpath) envpath,
-
-        #' @description Method used to locate command
-        #'
-        #' @return An string of command path
-        command_locate = function(cmd) Sys.which(cmd),
-
-        #' Method used to prepare parameters to print help document
-        #'
-        #' @return An atomic character, or `NULL`.
-        setup_help_params = function() {
-            .subset2(.subset2(private, "params"), "help_params")
-        },
-
-        #' @description Method used to change command temporary directory.
-        #'
-        #' This function was only used by specific command, which will write a
-        #' temp file, for these commands, we create a `setup_temporary` method
-        #' to write the temporaty file into R-level temporaty directory.
-        #'
-        #' See `trust4_imgt_annot` function for usage.
-        #'
-        #' Note:
-        #' 1. we shouldn't rely on this method to changing user-level working
-        #' directory (wd), since user will expect to locate command from their
-        #' `wd`, but `setup_temporary` was run after `command_locate`.
-        #'
-        #' 2. You must use absolute path in `command_params` if you'll change
-        #' the temporary directory.
-        #'
-        #' @return A string of path or `NULL`.
-        setup_temporary = function() NULL,
-
-        #' Method used to prepare parameters to run regular command
-        #'
-        #' @return An atomic character, or `NULL`.
-        setup_command_params = function() {
-            .subset2(.subset2(private, "params"), "command_params")
-        },
-
-        #' Method used to combine `dots` and `params`
-        #'
-        #' @return An atomic character, or `NULL`.
-        combine_params = function(dots, params) c(dots, params),
-
-        #' Function to run after execute command
-        #'
-        #' - `final`: No matter command success or fail, will be run.
-        final = function() NULL,
-
-        #' What to do and to return if command run success.
-        success = function() .subset2(private, "status"),
-
-        #' If command run failure, the output files, which will be extracted by
-        #' function `private$setup_opath()`, will be removed.
-        #'
-        #' @note All files in the directory will be removed, you must use this
-        #'  carefully.
-        #' @return An atomic character or `NULL`.
-        setup_opath = function() {
-            .subset2(.subset2(private, "params"), "opath")
-        },
-
-        #' What to do and to return if command run failure
-        error = function() .subset2(private, "status")
-    )
-)
-
-#' R6 Class to define a specific command, which is bound to the command name. In
-#' this way, we won't always need to provide the command.
-#' @noRd
-Command <- R6::R6Class(
-    "Command",
-    inherit = Sys,
-    private = list(
-        #' @field names Command names
-        names = NULL,
+        # @description Method used to locate command
+        #
+        # @return An string of command path
         command_locate = function(cmd) {
             if (is.null(cmd)) {
-                names <- .subset2(private, "names")
-                for (name in names) {
-                    if (nzchar(command <- Sys.which(name))) {
+                commands <- c(
+                    .subset2(private, "name"),
+                    .subset2(private, "alias")
+                )
+                for (cmd in commands) {
+                    if (nzchar(command <- Sys.which(cmd))) {
                         break
                     }
                 }
                 if (!nzchar(command)) {
                     cli::cli_abort(sprintf(
                         "Cannot locate %s command",
-                        oxford_comma(style_field(names), final = "or")
+                        oxford_comma(style_field(commands), final = "or")
                     ))
                 }
             } else {
-                command <- super$command_locate(cmd)
+                command <- Sys.which(cmd)
             }
             command
+        },
+
+        # Method used to prepare parameters to run regular command
+        #
+        # @return An atomic character, or `NULL`.
+        setup_command_params = function() NULL,
+
+        # Method used to combine `dots` and `params`
+        #
+        # @return An atomic character, or `NULL`.
+        combine_params = function() {
+            c(.subset2(private, ".dots"), .subset2(private, ".params"))
         }
     )
 )
+
+#' R6 Class to invoke a series of system command
+#'
+#' @export
+Execute <- R6::R6Class(
+    "Execute",
+    public = list(
+
+        #' @description
+        #' Create a new `Execute` object. User shouln't call this function
+        #' directly, just call other command function which should return a
+        #' `Execute` object.
+        #' @param command A [Command] object.
+        #' @return A new `Execute` object.
+        initialize = function(command) private$.commands <- list(command),
+
+        #' @description Use `|` to connect two command
+        #' @param command A [Command] or `Execute` object to stream `stdout`
+        #' into. Note: the associated environment variables and working
+        #' directory will be loss.
+        #' @return The `Execute` object self with command list updated.
+        pipe = function(command) {
+            msg <- paste(
+                "{.arg command} must be a {.cls Command}",
+                "or {.cls Execute} object"
+            )
+            if (R6::is.R6(command)) {
+                if (inherits(command, "Command")) {
+                    private$.commands <- c(
+                        .subset2(private, ".commands"),
+                        list(command)
+                    )
+                } else if (inherits(command, "Execute")) {
+                    private$.commands <- c(
+                        .subset2(private, ".commands"),
+                        command$commands
+                    )
+                } else {
+                    cli::cli_abort(msg)
+                }
+            } else {
+                cli::cli_abort(msg)
+            }
+            invisible(self)
+        },
+
+        #' @description Print the help document for this command.
+        #' @param verbose `r rd_verbose()`.
+        #' @return Exit status.
+        help = function(verbose = TRUE) {
+            if (length(.subset2(self, "commands")) > 1L) {
+                cli::cli_abort("Cannot get help document for multiple commands")
+            }
+            assert_bool(verbose)
+            status <- private$exec_command2(
+                help = TRUE,
+                stdout = TRUE, stderr = TRUE, stdin = "",
+                timeout = 0L, verbose = verbose
+            )
+            # always return status for help = TRUE
+            invisible(status)
+        },
+
+        #' @description Execute command
+        #' @param stdout,stderr Where output to ‘stdout’ or ‘stderr’ should be
+        #' sent. Possible values are:
+        #'
+        #'  - `TRUE`: print child output in R console
+        #'  - `FALSE`: suppress output stream
+        #'  - **string**: name or path of file to redirect output
+        #'
+        #' @param stdin should input be diverted? `""` means the default,
+        #' alternatively a character string naming a file. Ignored if input is
+        #' supplied.
+        #' @param timeout Timeout in seconds, ignored if 0. This is a limit for
+        #' the elapsed time running command in a separate process. Fractions of
+        #' seconds are ignored.
+        #' @param verbose `r rd_verbose()`.
+        #' @return Exit status.
+        run = function(stdout = TRUE, stderr = TRUE, stdin = "",
+                       timeout = 0L, verbose = TRUE) {
+            check_io(stdout)
+            check_io(stderr)
+            assert_bool(verbose)
+            status <- private$exec_command(
+                help = FALSE,
+                stdout = stdout, stderr = stderr,
+                stdin = stdin, timeout = timeout,
+                verbose = verbose
+            )
+            # let last `Command` object to define the output
+            invisible(status)
+        },
+
+        #' @description Method used to change working directory
+        #' @param wd A string or NULL define the working directory of the
+        #' command.
+        #' @return The `Execute` object self with working directory updated.
+        setup_wd = function(wd) {
+            assert_string(wd, empty_ok = FALSE, null_ok = TRUE)
+            private$wd <- wd
+            invisible(self)
+        },
+
+        #' @description Method used to create environment variables
+        #' @param ... Named character define the environment variables.
+        #' @param action Should new values "replace", "prefix" or "suffix"
+        #' existing variables with the same name?
+        #' @param sep A string to separate new and old value.
+        #' @return The `Execute` object self with running environment variable
+        #' updated.
+        setup_envvar = function(..., action = "replace", sep = " ") {
+            dots <- rlang::dots_list(..., .ignore_empty = "all")
+            if (!rlang::is_named2(dots)) {
+                cli::cli_abort("All elements in {.arg ...} must be named")
+            }
+            dots[vapply(dots, is.null, logical(1L))] <- NA_character_
+            if (any(lengths(dots) != 1L)) {
+                cli::cli_abort(paste(
+                    "all value in {.arg ...} must be of length 1",
+                    "or {.val NULL}"
+                ))
+            }
+            action <- match.arg(action, c("replace", "prefix", "suffix"))
+            for (nm in names(dots)) {
+                private$envvar[[nm]] <- parse_envvar(
+                    name = nm, new = dots[[nm]],
+                    old = private$envvar[[nm]],
+                    action = action,
+                    sep = sep
+                )
+            }
+            invisible(self)
+        },
+
+        #' @description Method used to create PATH environment character
+        #' @param ... Unnaed character to define the `PATH-like` environment
+        #' variables `name`.
+        #' @param action Should new values "replace", "prefix" or "suffix"
+        #' existing variables with the same name?
+        #' @param name A string define the PATH environment variable name. YOu
+        #' can use this to define other `PATH-like` environment variable such as
+        #' `PYTHONPATH`.
+        #' @return The `Execute` object self with running environment variable
+        #' `name` updated.
+        setup_envpath = function(..., action = "prefix", name = "PATH") {
+            rlang::check_dots_unnamed()
+            assert_string(name, empty_ok = FALSE)
+            envpath <- rlang::dots_list(..., .ignore_empty = "all")
+            envpath <- unlist(envpath, use.names = FALSE)
+            if (anyNA(envpath)) {
+                if (length(envpath) > 1L) {
+                    cli::cli_warn(paste(
+                        "Found {.val NA}",
+                        "other {.field envpath} will be ignored",
+                        sep = ", "
+                    ))
+                }
+                envpath <- NA_character_
+            } else {
+                envpath <- as.character(envpath)
+                envpath <- normalizePath(envpath, "/", mustWork = FALSE)
+                envpath <- paste0(envpath, collapse = .Platform$path.sep)
+            }
+            self$setup_envvar(
+                !!name := envpath,
+                action = action,
+                sep = .Platform$path.sep
+            )
+        }
+    ),
+    private = list(
+        envvar = list(),
+
+        # @field commands A list of [Command] object.
+        .commands = list(),
+
+        # @description Used to prepare command environment including
+        # working directory, and environment variables, then this method call
+        # `private$exec_command2` to invoke a system command.
+        exec_command = function(help, stdout, stderr, stdin, timeout, verbose) {
+            # set working directory ---------------------
+            if (!is.null(private$wd)) {
+                if (!dir.exists(private$wd)) {
+                    cli::cli_abort(c(
+                        "Cannot set working directory",
+                        i = "No such path {.path {private$wd}}"
+                    ))
+                }
+                if (verbose) {
+                    cli::cli_inform("Setting working directory: {private$wd}")
+                }
+                old_wd <- getwd()
+                setwd(private$wd)
+                on.exit(setwd(old_wd), add = TRUE)
+            }
+
+            # setting environment variables -------------
+            if (length(private$envvar) > 0L) {
+                if (verbose) {
+                    cli::cli_inform(
+                        "Setting environment variables: {names(private$envvar)}"
+                    )
+                }
+                old <- Sys.getenv(names(private$envvar),
+                    names = TRUE, unset = NA_character_
+                )
+                on.exit(set_envvar(old), add = TRUE)
+                set_envvar(private$envvar)
+            }
+            private$exec_command2(
+                help = help, stdout = stdout, stderr = stderr, stdin = stdin,
+                timeout = timeout, verbose = verbose
+            )
+        },
+
+        # @description The exact method to execute a system command.
+        exec_command2 = function(help, ...) {
+            # save current environment -------------------------
+            # `setup_exit` in Command object will push expression into this
+            # environment
+            envir <- environment()
+            # use Command object to prepare commnad parameters -----
+            commands <- .subset2(self, "commands")
+            params <- lapply(commands, function(command) {
+                command$build(help = help, envir = envir)
+            })
+            # combine command parameters -----------------------
+            params <- Reduce(function(x, y) c(x, "|", y), params)
+            system3(command = params[1L], command_params = params[-1L], ...)
+        }
+    ),
+    active = list(
+
+        #' @field commands A list of [Command] object.
+        commands = function(value) {
+            if (missing(value)) {
+                .subset2(private, ".commands")
+            } else {
+                cli::cli_abort("Cannot modify {.field .commands}")
+            }
+        }
+    )
+)
+
+set_envvar <- function(envs) {
+    unset <- vapply(envs, is.na, logical(1L))
+    if (any(!unset)) {
+        do.call("Sys.setenv", envs[!unset])
+    }
+    if (any(unset)) {
+        Sys.unsetenv(names(envs)[unset])
+    }
+}
+
+parse_envvar <- function(name, new, old, action, sep) {
+    if (is.null(old)) {
+        old <- Sys.getenv(name, unset = NA_character_, names = FALSE)
+    }
+    if (!is.na(new) && !is.na(old)) {
+        if (action == "prefix") {
+            new <- paste(new, old, sep = sep)
+        } else if (action == "suffix") {
+            new <- paste(old, new, sep = sep)
+        }
+    }
+    new
+}
 
 do_call <- function(fn, params, name) {
     args <- rlang::fn_fmls_names(fn)
@@ -560,18 +536,15 @@ check_io <- function(x, arg = substitute(x), call = parent.frame()) {
     }
 }
 
-check_wait <- function(wait, arg = substitute(x), call = parent.frame()) {
-    if (rlang::is_bool(wait)) return() # styler: off
-    if (rlang::is_string(wait)) {
-        if (any(wait == process_names())) {
-            cli::cli_abort("Process {wait} already exist")
-        }
-        if (wait == "") {
-            cli::cli_abort("{.arg {arg}} cannot be an empty string")
-        }
-        return()
+#' @return Always return a character.
+#' @noRd
+build_command_params <- function(params) {
+    if (is.character(params)) return(params) # styler: off
+    if (is.null(params)) return(character()) # styler: off
+    if (is.list(params)) {
+        return(as.character(unlist(params, use.names = FALSE)))
     }
-    cli::cli_abort("{.arg {arg}} must be a string or a bool value")
+    cli::cli_abort("Unsupported command parameters")
 }
 
 remove_opath <- function(opath) {
@@ -597,33 +570,4 @@ build_opath <- function(odir, ofile = NULL, abs = FALSE,
     # whether to use absolute path
     if (abs) odir <- normalizePath(odir, winslash = "/", mustWork = TRUE)
     if (!is.null(ofile)) file_path(odir, ofile) else odir
-}
-
-build_command_params <- function(params) {
-    if (is.character(params)) return(params) # styler: off
-    if (is.null(params)) return(character()) # styler: off
-    if (is.list(params)) {
-        return(as.character(unlist(params, use.names = FALSE)))
-    }
-    cli::cli_abort("Unsupported command parameters")
-}
-
-envvar_parse_path <- function(envvar, name, value) {
-    if (!is.null(value)) {
-        value <- envpath_add(name, value)
-        names(value) <- name
-        envvar <- c(envvar, value)
-    }
-    envvar
-}
-
-envpath_add <- function(name, value, sep = .Platform$path.sep) {
-    value <- parse_envpath(value, sep = sep)
-    old_value <- Sys.getenv(name, unset = NA_character_)
-    if (is.na(old_value)) value else paste(value, old_value, sep = sep)
-}
-
-parse_envpath <- function(envpath, sep = .Platform$path.sep) {
-    envpath <- as.character(envpath)
-    paste0(normalizePath(envpath, "/", mustWork = FALSE), collapse = sep)
 }

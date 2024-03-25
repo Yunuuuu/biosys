@@ -13,16 +13,6 @@ kraken2(
   classified_out = NULL,
   unclassified_out = NULL,
   odir = getwd(),
-  envpath = NULL,
-  envvar = NULL,
-  help = FALSE,
-  stdout = TRUE,
-  stderr = TRUE,
-  stdin = "",
-  wait = TRUE,
-  timeout = 0L,
-  abort = TRUE,
-  verbose = TRUE,
   kraken2 = NULL
 )
 }
@@ -42,41 +32,6 @@ should be a fastq file.}
 which should be a fastq file.}
 
 \item{odir}{A string of path to the output directory.}
-
-\item{envpath}{A character define the environment variables \code{PATH} to be
-\code{added} before running command. See \link[withr:with_path]{withr::with_path}.}
-
-\item{envvar}{A named atomic vector define running environment variables of
-the command, all environment variables will be \code{replaced} before running
-command. See \link[withr:with_envvar]{withr::with_envvar}.}
-
-\item{help}{If \code{TRUE}, will print the help document for this command.}
-
-\item{stdout, stderr}{Where output to ‘stdout’ or ‘stderr’ should be sent.
-Possible values are:
-\itemize{
-\item \code{TRUE}: print child output in R console
-\item \code{FALSE}: suppress output stream
-\item \strong{string}: name or path of file to redirect output
-}}
-
-\item{stdin}{should input be diverted?  \code{""} means the default,
-    alternatively a character string naming a file.  Ignored
-    if \code{input} is supplied.}
-
-\item{wait}{A bool (not NA) indicating whether the R interpreter should wait
-for the command to finish, or run it asynchronously  Only used when
-\code{help=FALSE}. When wait is not \code{TRUE}, it can also be a string to name the
-process, the asynchronous process can be managed with \link{process} tools.}
-
-\item{timeout}{timeout in seconds, ignored if 0.  This is a limit for the
-    elapsed time running \code{command} in a separate process.   Fractions
-    of seconds are ignored.}
-
-\item{abort}{A bool indicates whether to report error if command return
-non-zero status.}
-
-\item{verbose}{A bool indicates whether to print running command message.}
 
 \item{kraken2}{A string of path to \code{kraken2} command.}
 }

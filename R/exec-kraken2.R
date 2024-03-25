@@ -21,26 +21,21 @@
 kraken2 <- function(fq1, ..., fq2 = NULL,
                     ofile = "kraken_output.txt", report = "kraken_report.txt",
                     classified_out = NULL, unclassified_out = NULL,
-                    odir = getwd(), envpath = NULL, envvar = NULL, help = FALSE,
-                    stdout = TRUE, stderr = TRUE, stdin = "",
-                    wait = TRUE, timeout = 0L, abort = TRUE,
-                    verbose = TRUE, kraken2 = NULL) {
-    SysKraken2$new()$run(
+                    odir = getwd(), kraken2 = NULL) {
+    Execute$new(SysKraken2$new(
         cmd = kraken2,
         ...,
         fq1 = fq1, fq2 = fq2, ofile = ofile, report = report,
         classified_out = classified_out, unclassified_out = unclassified_out,
-        odir = odir, envpath = envpath, envvar = envvar,
-        help = help, stdout = stdout, stderr = stderr, stdin = stdin,
-        wait = wait, timeout = timeout, abort = abort, verbose = verbose
-    )
+        odir = odir,
+    ))
 }
 
 SysKraken2 <- R6::R6Class(
     "SysKraken2",
     inherit = Command,
     private = list(
-        names = "kraken2",
+        name = "kraken2", help = "--help",
         setup_command_params = function(fq1, fq2, ofile, report,
                                         classified_out, unclassified_out,
                                         odir) {

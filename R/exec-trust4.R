@@ -21,17 +21,14 @@
 #' @export
 trust4 <- function(file1, ref_coordinate, ..., file2 = NULL, mode = NULL,
                    ref_annot = NULL, ofile = NULL, odir = getwd(),
-                   envpath = NULL, envvar = NULL, help = FALSE,
-                   stdout = TRUE, stderr = TRUE, stdin = "",
-                   wait = TRUE, timeout = 0L, abort = TRUE,
-                   verbose = TRUE, perl = NULL) {
-    SysTrust4$new()$run(
-        cmd = perl,
-        ..., file1 = file1, ref_coordinate = ref_coordinate,
-        file2 = file2, mode = mode, ref_annot = ref_annot,
-        ofile = ofile, odir = odir, envpath = envpath, envvar = envvar,
-        help = help, stdout = stdout, stderr = stderr, stdin = stdin,
-        wait = wait, timeout = timeout, abort = abort, verbose = verbose
+                   trust4 = NULL) {
+    Execute$new(
+        SysTrust4$new(
+            cmd = perl,
+            ..., file1 = file1, ref_coordinate = ref_coordinate,
+            file2 = file2, mode = mode, ref_annot = ref_annot,
+            ofile = ofile, odir = odir
+        )
     )
 }
 
@@ -39,9 +36,9 @@ SysTrust4 <- R6::R6Class(
     "SysTrust4",
     inherit = Command,
     private = list(
-        names = "run-trust4",
+        name = "run-trust4", help = NULL,
         setup_command_params = function(file1, file2, mode, ref_annot,
-                                        ofile, odir) {
+                                        ref_coordinate, ofile, odir) {
             assert_string(file1, empty_ok = FALSE)
             if (is.null(mode)) {
                 if (grepl("(fastq|fq)(\\.gz)?$", file1, perl = TRUE)) {
@@ -82,8 +79,7 @@ SysTrust4 <- R6::R6Class(
                 arg_internal("-o", ofile, null_ok = TRUE),
                 arg_internal("--od", odir)
             )
-        },
-        setup_help_params = function() NULL
+        }
     )
 )
 
@@ -97,39 +93,29 @@ SysTrust4 <- R6::R6Class(
 #' @rdname trust4
 trust4_imgt_annot <- function(species = "Homo_sapien", ...,
                               ofile = "IMGT+C.fa", odir = getwd(),
-                              envpath = NULL, envvar = NULL, help = FALSE,
-                              stdout = TRUE, stderr = TRUE, stdin = "",
-                              wait = TRUE, timeout = 0L, abort = TRUE,
-                              verbose = TRUE, perl = NULL) {
-    SysTrust4ImgtAnnot$new()$run(
-        cmd = perl,
-        ..., species = species, ofile = ofile, odir = odir,
-        envpath = envpath, envvar = envvar,
-        help = help, stdout = stdout, stderr = stderr, stdin = stdin,
-        wait = wait, timeout = timeout, abort = abort, verbose = verbose
-    )
+                              perl = NULL) {
+    Execute$new(SysTrust4ImgtAnnot$new(
+        cmd = perl, ..., species = species, ofile = ofile, odir = odir
+    ))
 }
 
 SysTrust4ImgtAnnot <- R6::R6Class(
     "SysTrust4ImgtAnnot",
     inherit = SysPerl,
     private = list(
-        internal_params = "script",
-        setup_params = function(params) {
+        internal_params = "script", help = NULL,
+        setup_command_params = function(species, ofile, odir) {
+            assert_string(species, empty_ok = FALSE)
+            opath <- build_opath(odir, ofile, abs = TRUE)
+            c(shQuote(species), ">", opath)
+        },
+        combine_params = function() {
             build_imgt_annot <- internal_file("TRUST4", "BuildImgtAnnot.pl")
             if (file.access(build_imgt_annot, mode = 1L) != 0L) {
                 Sys.chmod(build_imgt_annot, "555")
             }
-            params$script <- build_imgt_annot
-            params
+            c(script, super$combine_params())
         },
-        setup_temporary = function() tempfile(fclass(self)),
-        setup_command_params = function(script, species, ofile, odir) {
-            assert_string(species, empty_ok = FALSE)
-            opath <- build_opath(odir, ofile, abs = TRUE)
-            c(script, shQuote(species), ">", opath)
-        },
-        setup_help_params = function(script) script,
         collect_dots = FALSE
     )
 )

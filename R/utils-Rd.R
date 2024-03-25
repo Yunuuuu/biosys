@@ -11,3 +11,7 @@ rd_dots <- function(cmd) {
         "empty arguments are automatically trimed"
     ), cmd)
 }
+
+rd_verbose <- function() {
+    "A bool indicates whether to print running command message"
+}
