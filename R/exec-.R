@@ -118,7 +118,7 @@ Command <- R6::R6Class("Command",
         help = NULL,
 
         # @field environment An environment used to Execute command which
-        # should be the function environment of `private$exec_command`.
+        # should be the function environment of `private$exec_command2`.
         environment = NULL,
 
         # @field params A list of parameters used by command.
@@ -132,7 +132,7 @@ Command <- R6::R6Class("Command",
         .dots = character(), .params = character(),
 
         # @description Used to attach an expression to be evaluated when
-        # exiting `private$exec_command`.
+        # exiting `private$exec_command2`.
         setup_exit = function(expr, after = TRUE, add = TRUE) {
             on_exit(!!rlang::enquo(expr),
                 add = add, after = after,
@@ -264,11 +264,11 @@ Execute <- R6::R6Class(
         #' @param verbose `r rd_verbose()`.
         #' @return Exit status.
         help = function(verbose = TRUE) {
+            assert_bool(verbose)
             if (length(.subset2(self, "commands")) > 1L) {
                 cli::cli_abort("Cannot get help document for multiple commands")
             }
-            assert_bool(verbose)
-            status <- private$exec_command2(
+            status <- private$exec_command(
                 help = TRUE,
                 stdout = TRUE, stderr = TRUE, stdin = "",
                 timeout = 0L, verbose = verbose
