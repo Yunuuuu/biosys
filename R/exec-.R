@@ -350,7 +350,7 @@ Execute <- R6::R6Class(
         },
 
         #' @description Method used to create PATH environment character
-        #' @param ... Unnaed character to define the `PATH-like` environment
+        #' @param ... Unnamed character to define the `PATH-like` environment
         #' variables `name`.
         #' @param action Should new values "replace", "prefix" or "suffix"
         #' existing variables with the same name?
@@ -418,9 +418,9 @@ Execute <- R6::R6Class(
                         "Setting environment variables: {names(private$envvar)}"
                     )
                 }
-                old <- Sys.getenv(names(private$envvar),
+                old <- as.list(Sys.getenv(names(private$envvar),
                     names = TRUE, unset = NA_character_
-                )
+                ))
                 on.exit(set_envvar(old), add = TRUE)
                 set_envvar(private$envvar)
             }
