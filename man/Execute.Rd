@@ -193,7 +193,7 @@ Method used to create PATH environment character
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Unnaed character to define the \code{PATH-like} environment
+\item{\code{...}}{Unnamed character to define the \code{PATH-like} environment
 variables \code{name}.}
 
 \item{\code{action}}{Should new values "replace", "prefix" or "suffix"

@@ -388,6 +388,9 @@ Execute <- R6::R6Class(
     private = list(
         envvar = list(),
 
+        # @field A string of the working directory.
+        wd = NULL,
+
         # @field commands A list of [Command] object.
         .commands = list(),
 
@@ -397,11 +400,11 @@ Execute <- R6::R6Class(
         exec_command = function(help, stdout, stderr, stdin, timeout, verbose) {
             # set working directory ---------------------
             if (!is.null(private$wd)) {
-                if (!dir.exists(private$wd)) {
-                    cli::cli_abort(c(
-                        "Cannot set working directory",
-                        i = "No such path {.path {private$wd}}"
-                    ))
+                if (!dir.exists(private$wd) &&
+                    !dir.create(private$wd, showWarnings = FALSE)) {
+                    cli::cli_abort(
+                        "Cannot create working directory {.path {private$wd}"
+                    )
                 }
                 if (verbose) {
                     cli::cli_inform("Setting working directory: {private$wd}")
