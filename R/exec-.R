@@ -398,34 +398,18 @@ Execute <- R6::R6Class(
         # working directory, and environment variables, then this method call
         # `private$exec_command2` to invoke a system command.
         exec_command = function(help, stdout, stderr, stdin, timeout, verbose) {
-            # set working directory ---------------------
-            if (!is.null(private$wd)) {
-                if (!dir.exists(private$wd) &&
-                    !dir.create(private$wd, showWarnings = FALSE)) {
-                    cli::cli_abort(
-                        "Cannot create working directory {.path {private$wd}"
-                    )
-                }
-                if (verbose) {
-                    cli::cli_inform("Setting working directory: {private$wd}")
-                }
-                old_wd <- getwd()
-                setwd(private$wd)
-                on.exit(setwd(old_wd), add = TRUE)
-            }
-
             # setting environment variables -------------
-            if (length(private$envvar) > 0L) {
+            if (length(.subset2(private, "envvar")) > 0L) {
                 if (verbose) {
                     cli::cli_inform(
                         "Setting environment variables: {names(private$envvar)}"
                     )
                 }
-                old <- as.list(Sys.getenv(names(private$envvar),
+                old <- as.list(Sys.getenv(names(.subset2(private, "envvar")),
                     names = TRUE, unset = NA_character_
                 ))
                 on.exit(set_envvar(old), add = TRUE)
-                set_envvar(private$envvar)
+                set_envvar(.subset2(private, "envvar"))
             }
             private$exec_command2(
                 help = help, stdout = stdout, stderr = stderr, stdin = stdin,
@@ -439,14 +423,21 @@ Execute <- R6::R6Class(
             # `setup_exit` in Command object will push expression into this
             # environment
             envir <- environment()
+
             # use Command object to prepare commnad parameters -----
             commands <- .subset2(self, "commands")
             params <- lapply(commands, function(command) {
                 command$build(help = help, envir = envir)
             })
+
             # combine command parameters -----------------------
             params <- Reduce(function(x, y) c(x, "|", y), params)
-            system3(command = params[1L], command_params = params[-1L], ...)
+
+            # run command ---------------------------------------
+            system3(
+                command = params[1L], command_params = params[-1L],
+                wd = .subset2(private, "wd"), ...
+            )
         }
     ),
     active = list(
@@ -495,10 +486,25 @@ do_call <- function(fn, params, name) {
     do.call(name, params)
 }
 
-system3 <- function(command, command_params,
+system3 <- function(command, command_params, wd = NULL,
                     stdout = TRUE, stderr = TRUE, stdin = "",
                     wait = TRUE, timeout = 0L,
                     verbose) {
+    # set working directory ---------------------
+    if (!is.null(wd)) {
+        if (!dir.exists(wd) &&
+            !dir.create(wd, showWarnings = FALSE)) {
+            cli::cli_abort(
+                "Cannot create working directory {.path {wd}"
+            )
+        }
+        if (verbose) {
+            cli::cli_inform("Setting working directory: {wd}")
+        }
+        old_wd <- getwd()
+        setwd(wd)
+        on.exit(setwd(old_wd), add = TRUE)
+    }
     if (verbose) {
         msg <- paste("Running command", style_field(command))
         if (length(command_params)) {
