@@ -46,5 +46,8 @@ k-mers to the lowest common ancestor (LCA) of all genomes known to contain a
 given k-mer.
 }
 \seealso{
-\url{https://github.com/DerrickWood/kraken2/wiki/Manual}
+\itemize{
+\item \url{https://github.com/DerrickWood/kraken2/wiki/Manual}
+\item \url{https://benlangmead.github.io/aws-indexes/k2}
+}
 }

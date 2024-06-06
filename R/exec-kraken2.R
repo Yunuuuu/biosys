@@ -16,7 +16,9 @@
 #' which should be a fastq file.
 #' @inheritParams allele_counter
 #' @param kraken2 `r rd_cmd("kraken2")`.
-#' @seealso <https://github.com/DerrickWood/kraken2/wiki/Manual>
+#' @seealso 
+#'  - <https://github.com/DerrickWood/kraken2/wiki/Manual>
+#'  - <https://benlangmead.github.io/aws-indexes/k2>
 #' @inherit exec return
 #' @export
 kraken2 <- function(fq1, ..., fq2 = NULL,
