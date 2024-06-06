@@ -69,7 +69,7 @@ environment variables and working directory will be loss.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-The \code{Execute} object self with command list updated.
+The \code{Execute} object self, with command list updated.
 }
 }
 \if{html}{\out{<hr>}}
@@ -177,7 +177,7 @@ existing variables with the same name?}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-The \code{Execute} object self with running environment variable
+The \code{Execute} object self, with running environment variable
 updated.
 }
 }
@@ -206,7 +206,7 @@ can use this to define other \code{PATH-like} environment variable such as
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-The \code{Execute} object self with running environment variable
+The \code{Execute} object self, with running environment variable
 \code{name} updated.
 }
 }
