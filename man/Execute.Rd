@@ -63,8 +63,8 @@ Use \code{|} to connect two command
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{command}}{A \link{Command} or \code{Execute} object to stream \code{stdout}
-into. Note: the associated environment variables and working
-directory will be loss.}
+into. Note: If \code{command} is a \code{Execute} object, the associated
+environment variables and working directory will be loss.}
 }
 \if{html}{\out{</div>}}
 }
@@ -152,7 +152,7 @@ command.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-The \code{Execute} object self with working directory updated.
+The \code{Execute} object self, with working directory updated.
 }
 }
 \if{html}{\out{<hr>}}

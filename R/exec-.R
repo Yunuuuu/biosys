@@ -232,9 +232,9 @@ Execute <- R6::R6Class(
 
         #' @description Use `|` to connect two command
         #' @param command A [Command] or `Execute` object to stream `stdout`
-        #' into. Note: the associated environment variables and working
-        #' directory will be loss.
-        #' @return The `Execute` object self with command list updated.
+        #' into. Note: If `command` is a `Execute` object, the associated
+        #' environment variables and working directory will be loss.
+        #' @return The `Execute` object self, with command list updated.
         pipe = function(command) {
             msg <- paste(
                 "{.arg command} must be a {.cls Command}",
@@ -311,7 +311,7 @@ Execute <- R6::R6Class(
         #' @description Method used to change working directory
         #' @param wd A string or NULL define the working directory of the
         #' command.
-        #' @return The `Execute` object self with working directory updated.
+        #' @return The `Execute` object self, with working directory updated.
         setup_wd = function(wd) {
             assert_string(wd, empty_ok = FALSE, null_ok = TRUE)
             private$wd <- wd
@@ -323,7 +323,7 @@ Execute <- R6::R6Class(
         #' @param action Should new values "replace", "prefix" or "suffix"
         #' existing variables with the same name?
         #' @param sep A string to separate new and old value.
-        #' @return The `Execute` object self with running environment variable
+        #' @return The `Execute` object self, with running environment variable
         #' updated.
         setup_envvar = function(..., action = "replace", sep = " ") {
             dots <- rlang::dots_list(..., .ignore_empty = "all")
@@ -357,7 +357,7 @@ Execute <- R6::R6Class(
         #' @param name A string define the PATH environment variable name. YOu
         #' can use this to define other `PATH-like` environment variable such as
         #' `PYTHONPATH`.
-        #' @return The `Execute` object self with running environment variable
+        #' @return The `Execute` object self, with running environment variable
         #' `name` updated.
         setup_envpath = function(..., action = "prefix", name = "PATH") {
             rlang::check_dots_unnamed()
