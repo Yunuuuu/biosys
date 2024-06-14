@@ -27,7 +27,8 @@
 #' @export
 gistic2 <- function(seg, refgene, ..., odir = getwd(), gistic2 = NULL) {
     Execute$new(SysGistic2$new(
-        cmd = gistic2, ..., seg = seg, refgene = refgene
+        cmd = gistic2, ..., odir = odir,
+        seg = seg, refgene = refgene
     ))
 }
 
