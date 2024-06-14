@@ -31,13 +31,13 @@ on_exit <- function(expr, add = FALSE, after = TRUE, envir = parent.frame()) {
     rlang::eval_tidy(expr, env = envir)
 }
 
-set_seed <- function(seed = NULL, envir = parent.frame()) {
+set_seed <- function(seed = NULL, add = FALSE, envir = parent.frame()) {
     if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
         oseed <- get(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
     } else {
         oseed <- NULL
     }
-    on_exit(restore_rng(oseed), envir = envir)
+    on_exit(restore_rng(oseed), add = add, envir = envir)
     seed <- seed %||% random_seed(1L)
     set.seed(seed)
 }

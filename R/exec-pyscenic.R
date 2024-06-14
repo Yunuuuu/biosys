@@ -72,7 +72,7 @@ SysPyscenic <- R6::R6Class(
 #' only relevant when `ctx_ofile` is supplied as json format.
 #' @param counts_ofile Output file (must endsWith `.loom`) of the counts matrix.
 #' If `NULL`, a temporary file will be used and removed when function exit. If
-#' you want to save this file, just specify this argument. 
+#' you want to save this file, just specify this argument.
 #' @param grn_ofile Output file of the TF-target genes (CSV).
 #' @param ctx_ofile Output file of the enriched motifs and target genes (csv,
 #' tsv) or collection of regulons (yaml, gmt, dat, json).
@@ -132,6 +132,50 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
         mode,
         c("custom_multiprocessing", "dask_multiprocessing", "dask_cluster")
     )
+    assert_bool(pruning)
+    assert_bool(all_modules)
+    assert_(chunk_size, function(x) is_number(x) && x >= 0, "a number (>= 0)")
+    assert_(
+        min_orthologous_identity,
+        function(x) is_number(x) && x >= 0, "a number (>= 0)"
+    )
+    assert_(
+        max_similarity_fdr,
+        function(x) is_number(x) && x >= 0 && x <= 1, "a number ([0, 1])"
+    )
+    assert_(
+        top_n_targets,
+        function(x) is_number(x) && x >= 0, "a number (>= 0)"
+    )
+    assert_(
+        min_genes,
+        function(x) is_number(x) && x >= 0, "a number (>= 0)"
+    )
+    assert_bool(mask_dropouts)
+    assert_bool(weights)
+    assert_(
+        rank_threshold,
+        function(x) is_number(x) && x >= 0, "a number (>= 0)"
+    )
+    assert_(
+        auc_threshold,
+        function(x) is_number(x) && x >= 0, "a number (>= 0)"
+    )
+    assert_(
+        nes_threshold,
+        function(x) is_number(x) && x >= 0, "a number (>= 0)"
+    )
+    assert_string(grn_ofile)
+    assert_string(ctx_ofile)
+    assert_string(aucell_ofile)
+    assert_bool(transpose)
+    assert_string(gene_atrr)
+    assert_string(cell_atrr)
+    assert_(
+        threads,
+        function(x) is_number(x) && x >= 0, "a number (>= 0)"
+    )
+    threads <- as.integer(threads)
     if (inherits(counts, what = c("matrix", "Matrix"))) {
         assert_pkg("loomR")
         assert_(counts_ofile, function(x) {
@@ -169,13 +213,14 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
     # prepare seed -------------------------------------
     seed <- as.integer(seed)
     if (is_scalar(seed)) {
-        set_seed(seed)
+        set_seed(seed, TRUE)
         seed <- random_seed(2L)
     } else if (length(seed) > 2L) {
         seed <- seed[seq_len(2L)]
     } else if (anyNA(seed)) {
         cli::cli_abort("{.arg seed} cannot be `NA`")
     } else if (length(seed) == 0L) {
+        set_seed(random_seed(1L), TRUE)
         seed <- random_seed(2L)
     }
     # GRN inference using the GRNBoost2 algorithm -----------
@@ -186,7 +231,7 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
         "--seed", seed[1L],
         "--num_workers", threads,
         if (transpose) "--transpose",
-        arg("-m", method),
+        "-m", method,
         # output file ----------------------------------------
         "--output", grn_ofile,
         # expression matrix file -----------------------------
@@ -205,8 +250,8 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
         "--output", ctx_ofile,
         "--num_workers", threads,
         if (!pruning) "--no_pruning",
-        arg("--chunk_size", chunk_size),
-        arg("--mode", mode),
+        "--chunk_size", chunk_size,
+        "--mode", mode,
         if (all_modules) "--all_modules",
         if (transpose) "--transpose",
         # motif enrichment arguments -----------------------
