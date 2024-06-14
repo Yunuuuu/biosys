@@ -109,7 +109,7 @@ finding enriched features (default: \code{3.0}).}
 
 \item{counts_ofile}{Output file (must endsWith \code{.loom}) of the counts matrix.
 If \code{NULL}, a temporary file will be used and removed when function exit. If
-you want to save this file, please specify this argument.}
+you want to save this file, just specify this argument.}
 
 \item{grn_ofile}{Output file of the TF-target genes (CSV).}
 

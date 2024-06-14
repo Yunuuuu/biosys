@@ -138,7 +138,7 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
             rlang::is_string(x) && endsWith(x, ".loom")
         }, "a string ends with `.loom`", null_ok = TRUE)
         if (is.null(counts_ofile)) {
-            counts_mat_file <- tempfile("pyscenic")
+            counts_mat_file <- tempfile("pyscenic", fileext = ".loom")
             on.exit(file.remove(counts_mat_file))
         } else {
             counts_mat_file <- counts_ofile
