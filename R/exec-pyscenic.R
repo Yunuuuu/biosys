@@ -165,12 +165,12 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
         nes_threshold,
         function(x) is_number(x) && x >= 0, "a number (>= 0)"
     )
-    assert_string(grn_ofile)
-    assert_string(ctx_ofile)
-    assert_string(aucell_ofile)
+    assert_string(grn_ofile, empty_ok = FALSE)
+    assert_string(ctx_ofile, empty_ok = FALSE)
+    assert_string(aucell_ofile, empty_ok = FALSE)
     assert_bool(transpose)
-    assert_string(gene_atrr)
-    assert_string(cell_atrr)
+    assert_string(gene_atrr, empty_ok = FALSE)
+    assert_string(cell_atrr, empty_ok = FALSE)
     assert_(
         threads,
         function(x) is_number(x) && x >= 0, "a number (>= 0)"
