@@ -70,6 +70,7 @@ Command <- R6::R6Class("Command",
         #' @param help A bool, indicates whether to build parameters for help
         #' document a not.
         #' @param envir An environment used to Execute command.
+        #' @return An atomic character combine the command and parameters.
         build = function(help = FALSE, envir = NULL) {
             private$environment <- envir
             necessary_params <- .subset(
@@ -91,7 +92,9 @@ Command <- R6::R6Class("Command",
 
             # run command ------------------------------
             if (help) {
-                private$.params <- build_command_params(private$help)
+                private$.params <- build_command_params(
+                    .subset2(private, "help")
+                )
             } else {
                 # compute command params
                 private$.params <- build_command_params(do_call(
@@ -118,7 +121,7 @@ Command <- R6::R6Class("Command",
         help = NULL,
 
         # @field environment An environment used to Execute command which
-        # should be the function environment of `private$exec_command2`.
+        # should be the function environment of `Execute$exec_command2`.
         environment = NULL,
 
         # @field params A list of parameters used by command.
@@ -132,7 +135,7 @@ Command <- R6::R6Class("Command",
         .dots = character(), .params = character(),
 
         # @description Used to attach an expression to be evaluated when
-        # exiting `private$exec_command2`.
+        # exiting `Execute$exec_command2`.
         setup_exit = function(expr, after = TRUE, add = TRUE) {
             on_exit(!!rlang::enquo(expr),
                 add = add, after = after,
@@ -167,12 +170,11 @@ Command <- R6::R6Class("Command",
         ##############################################################
         # Following fields or methods should be overrided by sub-class.
         # @field collect_dots A bool indicates whether `...` should be
-        # collected passed into command
+        # collected and passed into command
         collect_dots = TRUE,
 
         # @field internal_params Additional parameters used by `Command` object
-        # but
-        #' shouldn't collected from user input.
+        # but shouldn't collected from user input.
         internal_params = NULL,
 
         # @description Method used to locate command
@@ -228,7 +230,11 @@ Execute <- R6::R6Class(
         #' `Execute` object.
         #' @param command A [Command] object.
         #' @return A new `Execute` object.
-        initialize = function(command) private$.commands <- list(command),
+        initialize = function(command) private$commands <- list(command),
+
+        #' @description Get the list of [Command] object.
+        #' @return A list of [Command] object.
+        get_commands = function() .subset2(private, "commands"),
 
         #' @description Use `|` to connect two command
         #' @param command A [Command] or `Execute` object to stream `stdout`
@@ -242,14 +248,14 @@ Execute <- R6::R6Class(
             )
             if (R6::is.R6(command)) {
                 if (inherits(command, "Command")) {
-                    private$.commands <- c(
-                        .subset2(private, ".commands"),
+                    private$commands <- c(
+                        .subset2(private, "commands"),
                         list(command)
                     )
                 } else if (inherits(command, "Execute")) {
-                    private$.commands <- c(
-                        .subset2(private, ".commands"),
-                        command$commands
+                    private$commands <- c(
+                        .subset2(private, "commands"),
+                        command$get_commands()
                     )
                 } else {
                     cli::cli_abort(msg)
@@ -265,7 +271,7 @@ Execute <- R6::R6Class(
         #' @return Exit status.
         help = function(verbose = TRUE) {
             assert_bool(verbose)
-            if (length(.subset2(self, "commands")) > 1L) {
+            if (length(.subset2(private, "commands")) > 1L) {
                 cli::cli_abort("Cannot get help document for multiple commands")
             }
             status <- private$exec_command(
@@ -365,10 +371,10 @@ Execute <- R6::R6Class(
             envpath <- rlang::dots_list(..., .ignore_empty = "all")
             envpath <- unlist(envpath, use.names = FALSE)
             if (anyNA(envpath)) {
-                if (length(envpath) > 1L) {
+                if (length(ignored <- envpath[!is.na(envpath)])) {
                     cli::cli_warn(paste(
                         "Found {.val NA}",
-                        "other {.field envpath} will be ignored",
+                        "{.field {ignored}} will be ignored",
                         sep = ", "
                     ))
                 }
@@ -386,13 +392,15 @@ Execute <- R6::R6Class(
         }
     ),
     private = list(
+
+        # @field A list of environment variables.
         envvar = list(),
 
         # @field A string of the working directory.
         wd = NULL,
 
         # @field commands A list of [Command] object.
-        .commands = list(),
+        commands = list(),
 
         # @description Used to prepare command environment including
         # working directory, and environment variables, then this method call
@@ -401,9 +409,10 @@ Execute <- R6::R6Class(
             # setting environment variables -------------
             if (length(.subset2(private, "envvar")) > 0L) {
                 if (verbose) {
-                    cli::cli_inform(
-                        "Setting environment variables: {names(private$envvar)}"
-                    )
+                    cli::cli_inform(paste(
+                        "Setting environment variables:",
+                        "{names(private$envvar)}"
+                    ))
                 }
                 old <- as.list(Sys.getenv(names(.subset2(private, "envvar")),
                     names = TRUE, unset = NA_character_
@@ -424,8 +433,8 @@ Execute <- R6::R6Class(
             # environment
             envir <- environment()
 
-            # use Command object to prepare commnad parameters -----
-            commands <- .subset2(self, "commands")
+            # use Command object to prepare command parameters -----
+            commands <- .subset2(private, "commands")
             params <- lapply(commands, function(command) {
                 command$build(help = help, envir = envir)
             })
@@ -438,17 +447,6 @@ Execute <- R6::R6Class(
                 command = params[1L], command_params = params[-1L],
                 wd = .subset2(private, "wd"), ...
             )
-        }
-    ),
-    active = list(
-
-        #' @field commands A list of [Command] object.
-        commands = function(value) {
-            if (missing(value)) {
-                .subset2(private, ".commands")
-            } else {
-                cli::cli_abort("Cannot modify {.field .commands}")
-            }
         }
     )
 )

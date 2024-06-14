@@ -49,10 +49,12 @@ Build parameters to run command.
 \item{\code{help}}{A bool, indicates whether to build parameters for help
 document a not.}
 
-\item{\code{envir}}{An environment used to Execute command.
-shouldn't collected from user input.}
+\item{\code{envir}}{An environment used to Execute command.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+An atomic character combine the command and parameters.
 }
 }
 \if{html}{\out{<hr>}}

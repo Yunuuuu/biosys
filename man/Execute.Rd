@@ -8,17 +8,11 @@ R6 Class to invoke a series of system command
 
 R6 Class to invoke a series of system command
 }
-\section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{commands}}{A list of \link{Command} object.}
-}
-\if{html}{\out{</div>}}
-}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Execute-new}{\code{Execute$new()}}
+\item \href{#method-Execute-get_commands}{\code{Execute$get_commands()}}
 \item \href{#method-Execute-pipe}{\code{Execute$pipe()}}
 \item \href{#method-Execute-help}{\code{Execute$help()}}
 \item \href{#method-Execute-run}{\code{Execute$run()}}
@@ -48,6 +42,19 @@ directly, just call other command function which should return a
 }
 \subsection{Returns}{
 A new \code{Execute} object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Execute-get_commands"></a>}}
+\if{latex}{\out{\hypertarget{method-Execute-get_commands}{}}}
+\subsection{Method \code{get_commands()}}{
+Get the list of \link{Command} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Execute$get_commands()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A list of \link{Command} object.
 }
 }
 \if{html}{\out{<hr>}}
