@@ -374,12 +374,12 @@ Execute <- R6::R6Class(
         },
 
         #' @description Method used to create PATH environment character
-        #' @param ... Unnamed character to define the `PATH-like` environment
+        #' @param ... Unnamed character to define the `PATH`-like environment
         #' variables `name`.
         #' @param action Should new values "replace", "prefix" or "suffix"
         #' existing variables with the same name?
-        #' @param name A string define the PATH environment variable name. YOu
-        #' can use this to define other `PATH-like` environment variable such as
+        #' @param name A string define the PATH environment variable name. You
+        #' can use this to define other `PATH`-like environment variable such as
         #' `PYTHONPATH`.
         #' @return The `Execute` object self, with running environment variable
         #' `name` updated.
