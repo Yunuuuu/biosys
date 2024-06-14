@@ -23,13 +23,15 @@ R6 Class to prepare command parameters
 Create a new \code{Command} object. User shouln't call this function
 directly.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Command$new(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Command$new(..., .subcmd = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{...}}{Additional argument passed into command.}
+
+\item{\code{.subcmd}}{Sub-command string.}
 }
 \if{html}{\out{</div>}}
 }

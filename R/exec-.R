@@ -19,7 +19,14 @@ Command <- R6::R6Class("Command",
         #' Create a new `Command` object. User shouln't call this function
         #' directly.
         #' @param ... Additional argument passed into command.
-        initialize = function(...) {
+        #' @param .subcmd Sub-command string.
+        initialize = function(..., .subcmd = NULL) {
+            # if provided subcmd, we assign it into our object
+            subcmd <- rlang::enquo(.subcmd)
+            if (!rlang::quo_is_null(subcmd) && !rlang::quo_is_missing(subcmd)) {
+                private$subcmd <- subcmd
+            }
+
             # collect all parameters, we cannot evaluate it since if we want to
             # print help document, it's much possible there were some missing
             # argument we only evaluate necessary parameters
@@ -29,7 +36,7 @@ Command <- R6::R6Class("Command",
             # `command_locate`: params used to locate command path.
             # `setup_command_params`: params used by regular command
             # `combine_params`: combine combine dots and params or other global
-            # params (both help and regular params)
+            #                   params (both optional and regular params)
             param_names <- private$parameters()
 
             # there were usually additional arguments passed into command by
@@ -112,7 +119,14 @@ Command <- R6::R6Class("Command",
                 necessary_params,
                 "combine_params"
             )
-            c(command, command_params)
+
+            # combine command, subcmd, and params -------
+            subcmd <- .subset2(private, "subcmd")
+            if (rlang::is_quosure(subcmd)) {
+                c(command, rlang::eval_tidy(subcmd), command_params)
+            } else {
+                c(command, command_params)
+            }
         }
     ),
     private = list(
@@ -133,6 +147,9 @@ Command <- R6::R6Class("Command",
         # These two fields carry state throughout rendering but will always be
         # calculated before use
         .dots = character(), .params = character(),
+
+        # @field subcmd A character string define the subcmd argument.
+        subcmd = NULL,
 
         # @description Used to attach an expression to be evaluated when
         # exiting `Execute$exec_command2`.
@@ -155,6 +172,7 @@ Command <- R6::R6Class("Command",
                     private, "setup_command_params"
                 )))
             }
+            # remove arguments used by internal only
             setdiff(argv, c(.subset2(private, "internal_params")))
         },
 
