@@ -70,9 +70,9 @@ SysPyscenic <- R6::R6Class(
 #' finding enriched features (default: `3.0`).
 #' @param weights Use weights associated with genes in recovery analysis. Is
 #' only relevant when `ctx_ofile` is supplied as json format.
-#' @param counts_ofile Output file of the counts matrix. If `NULL`, a temporary
-#' file will be used and removed when function exit. If you want to save this
-#' file, please specify this argument.
+#' @param counts_ofile Output file (must endsWith `.loom`) of the counts matrix.
+#' If `NULL`, a temporary file will be used and removed when function exit. If
+#' you want to save this file, just specify this argument. 
 #' @param grn_ofile Output file of the TF-target genes (CSV).
 #' @param ctx_ofile Output file of the enriched motifs and target genes (csv,
 #' tsv) or collection of regulons (yaml, gmt, dat, json).
@@ -134,7 +134,9 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
     )
     if (inherits(counts, what = c("matrix", "Matrix"))) {
         assert_pkg("loomR")
-        assert_string(counts_ofile, null_ok = TRUE)
+        assert_(counts_ofile, function(x) {
+            rlang::is_string(x) && endsWith(x, ".loom")
+        }, "a string ends with `.loom`", null_ok = TRUE)
         if (is.null(counts_ofile)) {
             counts_mat_file <- tempfile("pyscenic")
             on.exit(file.remove(counts_mat_file))
