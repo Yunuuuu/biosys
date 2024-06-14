@@ -14,6 +14,9 @@ Imports:
     R6,
     rlang (>= 1.1.0)
 Suggests: 
+    loomR (>= 0.2.0),
     testthat (>= 3.0.0)
+Remotes: 
+    mojaveazure/loomR
 SystemRequirements: Unix System
 Config/testthat/edition: 3

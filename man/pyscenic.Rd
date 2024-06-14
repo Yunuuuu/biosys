@@ -20,5 +20,8 @@ A \link{Execute} object.
 Run pyscenic
 }
 \seealso{
-\url{https://github.com/aertslab/pySCENIC}
+\itemize{
+\item \url{https://github.com/aertslab/pySCENIC}
+\item \code{\link[=run_pyscenic]{run_pyscenic()}}
+}
 }
