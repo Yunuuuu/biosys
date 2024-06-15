@@ -76,7 +76,7 @@ annotating enriched motifs (default: \code{0.0}).}
 annotating enriched motifs (default: \code{0.001}).}
 
 \item{thresholds}{The first method to create the TF-modules based on the best
-targets for each transcription factor (default: \verb{c(0.75 0.90)}).}
+targets for each transcription factor (default: \code{c(0.75, 0.90)}).}
 
 \item{top_n_targets}{The second method is to select the top targets for a
 given TF. (default: \code{50})}

@@ -38,7 +38,7 @@ SysPyscenic <- R6::R6Class(
 #' "custom_multiprocessing", "dask_multiprocessing", "dask_cluster". Default:
 #' `custom_multiprocessing`.
 #' @param pruning A boolean value indicates wether perform pruning when finding
-#' enriched motifs.
+#' enriched motifs. Default: `TRUE`.
 #' @param all_modules A boolean value indicates whether including both positive
 #' and negative regulons in the analysis.
 #' @param chunk_size The size of the module chunks assigned to a node in the
@@ -48,7 +48,7 @@ SysPyscenic <- R6::R6Class(
 #' @param max_similarity_fdr Maximum FDR in motif similarity to use when
 #' annotating enriched motifs (default: `0.001`).
 #' @param thresholds The first method to create the TF-modules based on the best
-#' targets for each transcription factor (default: `c(0.75 0.90)`).
+#' targets for each transcription factor (default: `c(0.75, 0.90)`).
 #' @param top_n_targets The second method is to select the top targets for a
 #' given TF. (default: `50`)
 #' @param top_n_regulators  The alternative way to create the TF-modules is to
