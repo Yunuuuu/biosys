@@ -32,8 +32,8 @@ SysPyscenic <- R6::R6Class(
 #' @param motif_ranks The regulatory feature databases file. Two file
 #' formats can be supported: feather or db (legacy). See
 #' <https://resources.aertslab.org/cistarget/databases/>.
-#' @param method The algorithm for gene regulatory network reconstruction
-#' (default: `grnboost2`).
+#' @param method The algorithm for gene regulatory network reconstruction, one
+#' of "genie3" or "grnboost2". Default: `grnboost2`.
 #' @param mode The mode to be used for computing. One of
 #' "custom_multiprocessing", "dask_multiprocessing", "dask_cluster". Default:
 #' `custom_multiprocessing`.
@@ -86,7 +86,9 @@ SysPyscenic <- R6::R6Class(
 #' symbols in the loom file.
 #' @param cell_atrr The name of the column attribute that specifies the
 #' identifiers of the cells in the loom file.
-#' @param threads The number of workers to use (default: `1`).
+#' @param threads The number of workers to use. Only valid if using
+#' dask_multiprocessing, custom_multiprocessing or local as mode. (default:
+#' `1`).
 #' @param seed Seed for the expression matrix ranking step. The default is to
 #' use a random seed.
 #' @param envpath A character to define the `PATH` environment variables.
@@ -127,7 +129,7 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
                          cell_atrr = "CellID",
                          threads = 1L, seed = NULL,
                          envpath = NULL) {
-    method <- match.arg(method, c("genie3", "grnboost2"))
+    method <- match.arg(method, c("grnboost2", "genie3"))
     mode <- match.arg(
         mode,
         c("custom_multiprocessing", "dask_multiprocessing", "dask_cluster")
@@ -215,12 +217,12 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
     if (is_scalar(seed)) {
         set_seed(seed, TRUE)
         seed <- random_seed(2L)
-    } else if (length(seed) > 2L) {
+    } else if (length(seed) >= 2L) {
         seed <- seed[seq_len(2L)]
     } else if (anyNA(seed)) {
         cli::cli_abort("{.arg seed} cannot be `NA`")
     } else if (length(seed) == 0L) {
-        set_seed(random_seed(1L), TRUE)
+        set_seed(add = TRUE)
         seed <- random_seed(2L)
     }
     # GRN inference using the GRNBoost2 algorithm -----------
@@ -239,7 +241,7 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
         "--cell_id_attribute", cell_atrr,
         "--sparse",
         counts_mat_file,
-        # Motif to TF annotations ---------------------------
+        # the list of transcription factors ------------------
         tf_list
     )$setup_envpath(envpath)$run()
 

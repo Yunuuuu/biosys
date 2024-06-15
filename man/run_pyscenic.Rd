@@ -53,8 +53,8 @@ specify the transpose argument.}
 formats can be supported: feather or db (legacy). See
 \url{https://resources.aertslab.org/cistarget/databases/}.}
 
-\item{method}{The algorithm for gene regulatory network reconstruction
-(default: \code{grnboost2}).}
+\item{method}{The algorithm for gene regulatory network reconstruction, one
+of "genie3" or "grnboost2". Default: \code{grnboost2}.}
 
 \item{mode}{The mode to be used for computing. One of
 "custom_multiprocessing", "dask_multiprocessing", "dask_cluster". Default:
@@ -130,7 +130,9 @@ symbols in the loom file.}
 \item{cell_atrr}{The name of the column attribute that specifies the
 identifiers of the cells in the loom file.}
 
-\item{threads}{The number of workers to use (default: \code{1}).}
+\item{threads}{The number of workers to use. Only valid if using
+dask_multiprocessing, custom_multiprocessing or local as mode. (default:
+\code{1}).}
 
 \item{seed}{Seed for the expression matrix ranking step. The default is to
 use a random seed.}
