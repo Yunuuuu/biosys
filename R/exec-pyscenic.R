@@ -4,7 +4,6 @@
 #' @param ... `r rd_dots("pyscenic subcmd")`.
 #' @param pyscenic `r rd_cmd("pyscenic")`.
 #' @inherit exec return
-#' @seealso [run_pyscenic()]
 #' @references <https://github.com/aertslab/pySCENIC>
 #' @export
 pyscenic <- function(subcmd = NULL, ..., pyscenic = NULL) {

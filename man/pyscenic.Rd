@@ -22,6 +22,3 @@ Run pyscenic
 \references{
 \url{https://github.com/aertslab/pySCENIC}
 }
-\seealso{
-\code{\link[=run_pyscenic]{run_pyscenic()}}
-}
