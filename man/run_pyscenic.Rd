@@ -27,13 +27,14 @@ run_pyscenic(
   nes_threshold = 3,
   counts_ofile = NULL,
   grn_ofile = "grn_adj.csv",
-  ctx_ofile = "cisTarget.json",
-  aucell_ofile = "pyscenic.csv",
+  regulon_ofile = "regulons.csv",
+  aucell_ofile = "aucell.loom",
   transpose = FALSE,
   gene_atrr = "GeneID",
   cell_atrr = "CellID",
   threads = 1L,
   seed = NULL,
+  override = FALSE,
   envpath = NULL
 )
 }
@@ -61,7 +62,7 @@ of "genie3" or "grnboost2". Default: \code{grnboost2}.}
 \code{custom_multiprocessing}.}
 
 \item{pruning}{A boolean value indicates wether perform pruning when finding
-enriched motifs.}
+enriched motifs. Default: \code{TRUE}.}
 
 \item{all_modules}{A boolean value indicates whether including both positive
 and negative regulons in the analysis.}
@@ -107,19 +108,18 @@ as fraction of ranked genes (default: \code{0.05}).}
 \item{nes_threshold}{The Normalized Enrichment Score (NES) threshold for
 finding enriched features (default: \code{3.0}).}
 
-\item{counts_ofile}{Output file (must endsWith \code{.loom}) of the counts matrix.
+\item{counts_ofile}{Output file (must end With \code{.loom}) of the counts matrix.
 If \code{NULL}, a temporary file will be used and removed when function exit. If
 you want to save this file, just specify this argument.}
 
 \item{grn_ofile}{Output file of the TF-target genes (CSV).}
 
-\item{ctx_ofile}{Output file of the enriched motifs and target genes (csv,
-tsv) or collection of regulons (yaml, gmt, dat, json).}
+\item{regulon_ofile}{Output file of the enriched motifs and target genes
+(csv, tsv).}
 
-\item{aucell_ofile}{Output file/stream, a matrix of AUC values. Two file
-formats are supported: csv or loom. If loom file is specified the loom file
-while contain the original expression matrix and the calculated AUC values as
-extra column attributes.}
+\item{aucell_ofile}{Output file/stream, a matrix of AUC values (must end with
+.loom). the loom file while contain the original expression matrix and the
+calculated AUC values as extra column attributes.}
 
 \item{transpose}{Transpose the expression matrix if counts is supplied as a
 csv (rows=genes x columns=cells).}
@@ -137,14 +137,18 @@ dask_multiprocessing, custom_multiprocessing or local as mode. (default:
 \item{seed}{Seed for the expression matrix ranking step. The default is to
 use a random seed.}
 
+\item{override}{A boolean value indicates whether overriding the
+\code{counts_ofile} or \code{grn_ofile} if they exist. Since both process are
+time-consuming.}
+
 \item{envpath}{A character to define the \code{PATH} environment variables.}
 }
 \description{
 Pyscenic workflow
 }
-\seealso{
-\itemize{
-\item \url{https://github.com/aertslab/pySCENIC}
-\item \code{\link[=pyscenic]{pyscenic()}}
+\references{
+\url{https://github.com/aertslab/pySCENIC}
 }
+\seealso{
+\code{\link[=pyscenic]{pyscenic()}}
 }

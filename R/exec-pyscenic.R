@@ -4,9 +4,8 @@
 #' @param ... `r rd_dots("pyscenic subcmd")`.
 #' @param pyscenic `r rd_cmd("pyscenic")`.
 #' @inherit exec return
-#' @seealso
-#' - <https://github.com/aertslab/pySCENIC>
-#' - [run_pyscenic()]
+#' @seealso [run_pyscenic()]
+#' @references <https://github.com/aertslab/pySCENIC>
 #' @export
 pyscenic <- function(subcmd = NULL, ..., pyscenic = NULL) {
     assert_string(subcmd, empty_ok = FALSE, null_ok = TRUE)
@@ -70,16 +69,15 @@ SysPyscenic <- R6::R6Class(
 #' finding enriched features (default: `3.0`).
 #' @param weights Use weights associated with genes in recovery analysis. Is
 #' only relevant when `ctx_ofile` is supplied as json format.
-#' @param counts_ofile Output file (must endsWith `.loom`) of the counts matrix.
+#' @param counts_ofile Output file (must end With `.loom`) of the counts matrix.
 #' If `NULL`, a temporary file will be used and removed when function exit. If
 #' you want to save this file, just specify this argument.
 #' @param grn_ofile Output file of the TF-target genes (CSV).
-#' @param ctx_ofile Output file of the enriched motifs and target genes (csv,
-#' tsv) or collection of regulons (yaml, gmt, dat, json).
-#' @param aucell_ofile Output file/stream, a matrix of AUC values. Two file
-#' formats are supported: csv or loom. If loom file is specified the loom file
-#' while contain the original expression matrix and the calculated AUC values as
-#' extra column attributes.
+#' @param regulon_ofile Output file of the enriched motifs and target genes
+#' (csv, tsv).
+#' @param aucell_ofile Output file/stream, a matrix of AUC values (must end with
+#' .loom). the loom file while contain the original expression matrix and the
+#' calculated AUC values as extra column attributes.
 #' @param transpose Transpose the expression matrix if counts is supplied as a
 #' csv (rows=genes x columns=cells).
 #' @param gene_atrr The name of the row attribute that specifies the gene
@@ -91,10 +89,12 @@ SysPyscenic <- R6::R6Class(
 #' `1`).
 #' @param seed Seed for the expression matrix ranking step. The default is to
 #' use a random seed.
+#' @param override A boolean value indicates whether overriding the
+#' `counts_ofile` or `grn_ofile` if they exist. Since both process are
+#' time-consuming.
 #' @param envpath A character to define the `PATH` environment variables.
-#' @seealso
-#' - <https://github.com/aertslab/pySCENIC>
-#' - [pyscenic()]
+#' @seealso [pyscenic()]
+#' @references <https://github.com/aertslab/pySCENIC>
 #' @export
 run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
                          # pyscenic grn ------------------------
@@ -114,21 +114,22 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
                          # pyscenic aucell ---------------------
                          weights = FALSE,
                          # motif enrichment arguments ----------
-                         # For both pyscenic ctx and aucell
+                         # For both pyscenic `ctx` and `aucell`
                          rank_threshold = 5000L,
                          auc_threshold = 0.05,
                          nes_threshold = 3.0,
                          # output arguments --------------------
                          counts_ofile = NULL,
                          grn_ofile = "grn_adj.csv",
-                         ctx_ofile = "cisTarget.json",
-                         aucell_ofile = "pyscenic.csv",
-                         # common arguments --------------------
+                         regulon_ofile = "regulons.csv",
+                         aucell_ofile = "aucell.loom",
+                         # common arguments for loom counts matrix ----
                          transpose = FALSE,
                          gene_atrr = "GeneID",
                          cell_atrr = "CellID",
+                         # common arguments --------------------
                          threads = 1L, seed = NULL,
-                         envpath = NULL) {
+                         override = FALSE, envpath = NULL) {
     method <- match.arg(method, c("grnboost2", "genie3"))
     mode <- match.arg(
         mode,
@@ -168,8 +169,12 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
         function(x) is_number(x) && x >= 0, "a number (>= 0)"
     )
     assert_string(grn_ofile, empty_ok = FALSE)
-    assert_string(ctx_ofile, empty_ok = FALSE)
-    assert_string(aucell_ofile, empty_ok = FALSE)
+    assert_(regulon_ofile, function(x) {
+        rlang::is_string(x) && (endsWith(x, ".csv") || endsWith(x, ".tsv"))
+    }, "a string ends with `.csv` or `.tsv`", empty_ok = FALSE)
+    assert_(aucell_ofile, function(x) {
+        rlang::is_string(x) && endsWith(x, ".loom")
+    }, "a string ends with `.loom`", empty_ok = FALSE)
     assert_bool(transpose)
     assert_string(gene_atrr, empty_ok = FALSE)
     assert_string(cell_atrr, empty_ok = FALSE)
@@ -179,7 +184,6 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
     )
     threads <- as.integer(threads)
     if (inherits(counts, what = c("matrix", "Matrix"))) {
-        assert_pkg("loomR")
         assert_(counts_ofile, function(x) {
             rlang::is_string(x) && endsWith(x, ".loom")
         }, "a string ends with `.loom`", null_ok = TRUE)
@@ -189,22 +193,31 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
         } else {
             counts_mat_file <- counts_ofile
         }
-        con <- loomR::create(
-            # the output file name, which is also the input of pyscenic
-            counts_mat_file,
-            # row are genes, column are cells
-            # the internal will transpose the matrix
-            data = counts,
-            gene.attrs = structure(
-                list(rownames(counts)),
-                names = gene_atrr
-            ), # -- gene_attribute
-            cell.attrs = structure(
-                list(colnames(counts)),
-                names = cell_atrr
-            ) # -- cell_id_attribute
-        )
-        con$close_all()
+        # re-using counts matrix file or not
+        if ((!is.null(counts_ofile) && !file.exists(counts_mat_file)) ||
+            override) {
+            assert_pkg("loomR")
+            con <- loomR::create(
+                # the output file name, which is also the input of pyscenic
+                counts_mat_file,
+                # row are genes, column are cells
+                # the internal will transpose the matrix
+                data = counts,
+                gene.attrs = structure(
+                    list(rownames(counts)),
+                    names = gene_atrr
+                ), # -- gene_attribute
+                cell.attrs = structure(
+                    list(colnames(counts)),
+                    names = cell_atrr
+                ) # -- cell_id_attribute
+            )
+            con$close_all()
+        } else {
+            cli::cli_alert_info(
+                "Re-using counts matrix file from: {.path {counts_mat_file}}"
+            )
+        }
     } else if (rlang::is_string(counts) && counts != "") {
         counts_mat_file <- counts
     } else {
@@ -225,31 +238,38 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
         set_seed(add = TRUE)
         seed <- random_seed(2L)
     }
+
     # GRN inference using the GRNBoost2 algorithm -----------
     # https://github.com/aertslab/pySCENIC/issues/525#issuecomment-2041298258
     # pip install dask-expr==0.5.3
-    pyscenic(
-        "grn",
-        "--seed", seed[1L],
-        "--num_workers", threads,
-        if (transpose) "--transpose",
-        "-m", method,
-        # output file ----------------------------------------
-        "--output", grn_ofile,
-        # expression matrix file -----------------------------
-        "--gene_attribute", gene_atrr,
-        "--cell_id_attribute", cell_atrr,
-        "--sparse",
-        counts_mat_file,
-        # the list of transcription factors ------------------
-        tf_list
-    )$setup_envpath(envpath)$run()
+    if (!file.exists(grn_ofile) || override) {
+        pyscenic(
+            "grn",
+            "--seed", seed[1L],
+            "--num_workers", threads,
+            if (transpose) "--transpose",
+            "-m", method,
+            # output file ----------------------------------------
+            "--output", grn_ofile,
+            # expression matrix file -----------------------------
+            "--gene_attribute", gene_atrr,
+            "--cell_id_attribute", cell_atrr,
+            "--sparse",
+            counts_mat_file,
+            # the list of transcription factors ------------------
+            tf_list
+        )$setup_envpath(envpath)$run()
+    } else {
+        cli::cli_alert_info(
+            "Re-using pyscenic grn output from: {.path {grn_ofile}}"
+        )
+    }
 
     # Regulon prediction aka cisTarget from CLI ------------
     pyscenic(
         "ctx",
         # output file ----------------------------------------
-        "--output", ctx_ofile,
+        "--output", regulon_ofile,
         "--num_workers", threads,
         if (!pruning) "--no_pruning",
         "--chunk_size", chunk_size,
@@ -306,6 +326,68 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
         "--sparse",
         counts_mat_file,
         # output from pyscenic ctx ---------------------------
-        ctx_ofile
+        regulon_ofile
     )$setup_envpath(envpath)$run()
+}
+
+pyscenic_to_r <- function(auc_scenic) {
+    # https://rawcdn.githack.com/aertslab/SCENIC/0a4c96ed8d930edd8868f07428090f9dae264705/inst/doc/importing_pySCENIC.html
+    loom <- loomR::connect("auc_scenic.loom")
+    gene_ids <- loom$row.attrs$gene_names[]
+    cell_ids <- loom$col.attrs$cell_names[]
+
+    # get_regulons_AUC --------------------
+    regulons_auc <- loom$col.attrs$RegulonsAUC[]
+    rownames(regulons_auc) <- cell_ids
+    regulons_auc <- t(regulons_auc)
+
+    # get_regulons ------------------------
+    regulons_incidence <- loom$row.attrs$Regulons[] # incid mat
+    rownames(regulons_incidence) <- gene_ids
+
+    # regulonsToGeneLists -----------------
+    # regulons <- apply(regulons_incidence, 2L,
+    #     function(x) names(x)[x > 0L],
+    #     simplify = FALSE
+    # )
+
+    # get_dgem ------------------------
+    # counts <- loom$matrix[, ]
+    # dimnames(counts) <- list(cell_ids, gene_ids)
+
+    # get_regulonThresholds ------------------------
+    md <- SCopeLoomR:::load_global_meta_data(hdf5r::h5attr(loom, "MetaData"))
+    regulonsAucThresholds <- vapply(
+        md$regulonThresholds, .subset2, numeric(1L), "defaultThresholdValue"
+    )
+    names(regulonsAucThresholds) <- vapply(
+        md$regulonThresholds, .subset2, character(1L), "regulon"
+    )
+
+    # get_cell_annotation -------------------------
+    exclude_columns <- c(
+        "CellID", "ClusterID", "Clusterings", "Embedding",
+        "Embeddings_X", "Embeddings_Y", "RegulonsAUC"
+    )
+    annotations_columns <- setdiff(names(loom$col.attrs), exclude_columns)
+    cell_annotations <- lapply(annotations_columns, function(attr) {
+        loom$col.attrs[[attr]][]
+    })
+    names(cell_annotations) <- annotations_columns
+    data.table::setDT(cell_annotations)
+    data.table::setDF(cell_annotations)
+    rownames(x = cell_annotations) <- cell_ids
+    cell_annotations
+
+    # get_clusterings_withName
+
+    #################################################
+    motifs <- data.table::fread(
+        "20240607-SCIENIC/cisTarget_databases/SCENIC/cisTarget.csv",
+        header = TRUE, skip = 1L
+    )
+    auc <- data.table::fread(
+        "20240607-SCIENIC/cisTarget_databases/SCENIC/pyscenic.csv"
+    )
+    auc
 }

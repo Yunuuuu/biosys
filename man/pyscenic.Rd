@@ -19,9 +19,9 @@ A \link{Execute} object.
 \description{
 Run pyscenic
 }
-\seealso{
-\itemize{
-\item \url{https://github.com/aertslab/pySCENIC}
-\item \code{\link[=run_pyscenic]{run_pyscenic()}}
+\references{
+\url{https://github.com/aertslab/pySCENIC}
 }
+\seealso{
+\code{\link[=run_pyscenic]{run_pyscenic()}}
 }
