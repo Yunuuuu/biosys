@@ -194,7 +194,7 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
             counts_mat_file <- counts_ofile
         }
         # re-using counts matrix file or not
-        if ((!is.null(counts_ofile) && !file.exists(counts_mat_file)) ||
+        if (is.null(counts_ofile) || !file.exists(counts_mat_file) ||
             override) {
             assert_pkg("loomR")
             con <- loomR::create(
@@ -330,9 +330,28 @@ run_pyscenic <- function(counts, tf_list, motif2tf, motif_ranks,
     )$setup_envpath(envpath)$run()
 }
 
-pyscenic_to_r <- function(auc_scenic) {
+#' Import pyscenic auc into R
+#'
+#' @param auc_scenic A loom file return by pyscenic aucell.
+#' @return
+#' A list of following elements:
+#'  - auc: AUC value matrix.
+#'  - regulons: A list of regulon signatures.
+#'  - incidence: binary AUC value matrix based on the thretholds (attached in
+#'               the attribute "threshold").
+#' @export
+import_pyscenic_auc <- function(auc_scenic) {
+    assert_pkg("loomR")
+    assert_pkg("hdf5r")
+    assert_pkg("rjson")
+    assert_pkg("base64enc")
+
+    assert_(auc_scenic, function(x) {
+        rlang::is_string(x) && endsWith(x, ".loom")
+    }, "a string ends with `.loom`", empty_ok = FALSE)
+
     # https://rawcdn.githack.com/aertslab/SCENIC/0a4c96ed8d930edd8868f07428090f9dae264705/inst/doc/importing_pySCENIC.html
-    loom <- loomR::connect("auc_scenic.loom")
+    loom <- loomR::connect(auc_scenic)
     gene_ids <- loom$row.attrs$gene_names[]
     cell_ids <- loom$col.attrs$cell_names[]
 
@@ -346,48 +365,64 @@ pyscenic_to_r <- function(auc_scenic) {
     rownames(regulons_incidence) <- gene_ids
 
     # regulonsToGeneLists -----------------
-    # regulons <- apply(regulons_incidence, 2L,
-    #     function(x) names(x)[x > 0L],
-    #     simplify = FALSE
-    # )
+    regulons <- apply(regulons_incidence, 2L,
+        function(x) names(x)[x > 0L],
+        simplify = FALSE
+    )
 
     # get_dgem ------------------------
     # counts <- loom$matrix[, ]
     # dimnames(counts) <- list(cell_ids, gene_ids)
 
     # get_regulonThresholds ------------------------
-    md <- SCopeLoomR:::load_global_meta_data(hdf5r::h5attr(loom, "MetaData"))
+    md <- pyscenic_load_meta_data(hdf5r::h5attr(loom, "MetaData"))
     regulonsAucThresholds <- vapply(
         md$regulonThresholds, .subset2, numeric(1L), "defaultThresholdValue"
     )
     names(regulonsAucThresholds) <- vapply(
         md$regulonThresholds, .subset2, character(1L), "regulon"
     )
-
-    # get_cell_annotation -------------------------
-    exclude_columns <- c(
-        "CellID", "ClusterID", "Clusterings", "Embedding",
-        "Embeddings_X", "Embeddings_Y", "RegulonsAUC"
+    attr(regulons_incidence, "threshold") <- regulonsAucThresholds
+    list(
+        auc = regulons_auc, regulons = regulons,
+        incidence = regulons_incidence
     )
-    annotations_columns <- setdiff(names(loom$col.attrs), exclude_columns)
-    cell_annotations <- lapply(annotations_columns, function(attr) {
-        loom$col.attrs[[attr]][]
-    })
-    names(cell_annotations) <- annotations_columns
-    data.table::setDT(cell_annotations)
-    data.table::setDF(cell_annotations)
-    rownames(x = cell_annotations) <- cell_ids
-    cell_annotations
+}
 
-    # get_clusterings_withName
+pyscenic_load_meta_data <- function(meta.data) {
+    if (!is_base64_encoded(value = meta.data)) {
+        if (!is_json(value = meta.data)) {
+            stop("The global MetaData attribute in the given loom is corrupted.")
+        }
+        meta_data <- meta.data
+    } else {
+        meta_data <- decompress_gzb64(gzb64c = meta.data)
+    }
+    return(rjson::fromJSON(json_str = meta_data))
+}
 
-    #################################################
-    motifs <- data.table::fread(
-        "20240607-SCIENIC/cisTarget_databases/SCENIC/cisTarget.csv",
-        header = TRUE, skip = 1L
+is_json <- function(value) {
+    tryCatch(
+        {
+            rjson::fromJSON(json_str = value)
+            TRUE
+        },
+        error = function(e) FALSE
     )
-    auc <- data.table::fread(
-        "20240607-SCIENIC/cisTarget_databases/SCENIC/pyscenic.csv"
+}
+
+is_base64_encoded <- function(value) {
+    grepl("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$",
+        x = value, perl = TRUE
     )
-    auc
+}
+
+decompress_gzb64 <- function(gzb64c) {
+    rawToChar(
+        memDecompress(
+            from = base64enc::base64decode(what = gzb64c),
+            type = "gzip", asChar = FALSE
+        ),
+        multiple = FALSE
+    )
 }
