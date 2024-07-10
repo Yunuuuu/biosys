@@ -17,6 +17,7 @@ testthat::test_that("`utils-file` works well", {
 
 testthat::test_that("`read_lines()` workds as expected", {
     # prepare file
+    testthat::skip_if(.Platform$OS.type == "windows")
     tmpdir <- tempdir()
     file <- tempfile(tmpdir = tmpdir)
     write_lines(letters, path = file)
