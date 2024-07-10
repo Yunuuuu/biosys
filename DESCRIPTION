@@ -1,6 +1,6 @@
 Package: biosys
 Title: System Command function for Bioinformatics
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: person("Yun", "Peng", email = "yunyunpp96@outlook.com",
                role = c("aut", "cre"))
 Description: System Command function for Bioinformatics.
