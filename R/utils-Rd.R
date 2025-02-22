@@ -15,7 +15,3 @@ rd_dots <- function(cmd, details = TRUE) {
     }
     doc
 }
-
-rd_verbose <- function() {
-    "A bool indicates whether to print running command message"
-}

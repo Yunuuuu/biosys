@@ -83,12 +83,12 @@ print.command <- function(x, ...) {
 #'
 #' @param cmd Command to be invoked, as a character string.
 #' @param ... `r rd_dots("cmd", FALSE)`.
-#' @examples 
+#' @examples
 #' exec("echo", "$PATH") |> cmd_run()
 #' @return A `command` object.
 #' @seealso
 #' - [`cmd_wd()`]/[`cmd_envvar()`]/[`cmd_envpath()`]
-#' - [`cmd_help()`]/[`cmd_run()`]
+#' - [`cmd_run()`]/[`cmd_help()`]
 #' @export
 exec <- make_command("exec", function(cmd, ...) {
     assert_string(cmd, allow_empty = FALSE)
@@ -118,34 +118,14 @@ Execute <- R6Class(
 
 #' Execute command
 #'
-#' - `cmd_help`: Print the help document for this command.
 #' - `cmd_run`: Run the command.
+#' - `cmd_help`: Print the help document for this command.
 #' @param command A `command` object.
-#' @param verbose `r rd_verbose()`.
-#' @return
-#' - `cmd_help`: the input `command`.
-#' @seealso [`cmd_wd()`]/[`cmd_envvar()`]/[`cmd_envpath()`]
-#' @export
-cmd_help <- function(command, verbose = TRUE) {
-    assert_s3_class(command, "command")
-    assert_bool(verbose)
-    exec_command(
-        command,
-        help = TRUE,
-        stdout = TRUE,
-        stderr = TRUE,
-        stdin = "",
-        timeout = 0L,
-        verbose = verbose
-    )
-    # always return the `command` for help = TRUE
-    invisible(command)
-}
-
 #' @param stdout,stderr Where output to 'stdout' or 'stderr' should be
 #' sent. Possible values are:
 #'
-#'  - `TRUE`: print child output in R console
+#'  - `NULL`: print child output in R console
+#'  - `TRUE`: capture the output in a character vector
 #'  - `FALSE`: suppress output stream
 #'  - **string**: name or path of file to redirect output
 #'
@@ -155,11 +135,13 @@ cmd_help <- function(command, verbose = TRUE) {
 #' @param timeout Timeout in seconds, ignored if `NULL`. This is a limit for
 #' the elapsed time running command in a separate process. Fractions of
 #' seconds are ignored.
+#' @param verbose A single boolean value indicates whether to print running
+#' command message.
 #' @return
-#' - `cmd_run`: Exit status.
+#' - `cmd_run`: Exit status or the captured output when `stdout`/`stderr` is
+#'   `TRUE`.
 #' @export
-#' @rdname cmd_help
-cmd_run <- function(command, stdout = TRUE, stderr = TRUE, stdin = NULL,
+cmd_run <- function(command, stdout = NULL, stderr = NULL, stdin = NULL,
                     timeout = NULL, verbose = TRUE) {
     assert_s3_class(command, "command")
     assert_io(stdout)
@@ -167,7 +149,7 @@ cmd_run <- function(command, stdout = TRUE, stderr = TRUE, stdin = NULL,
     assert_bool(verbose)
     assert_string(stdin, allow_empty = FALSE, allow_null = TRUE)
     assert_number_whole(timeout, allow_null = TRUE)
-    status <- exec_command(
+    exec_command(
         command,
         help = FALSE,
         stdout = stdout,
@@ -176,8 +158,30 @@ cmd_run <- function(command, stdout = TRUE, stderr = TRUE, stdin = NULL,
         timeout = timeout,
         verbose = verbose
     )
-    # let last `Command` object to define the output
-    invisible(status)
+}
+
+#' @return
+#' - `cmd_help`: the input `command` or the captured output when
+#'   `stdout`/`stderr` is `TRUE`.
+#' @seealso [`cmd_wd()`]/[`cmd_envvar()`]/[`cmd_envpath()`]
+#' @export
+#' @rdname cmd_run
+cmd_help <- function(command, stdout = NULL, stderr = NULL, verbose = TRUE) {
+    assert_s3_class(command, "command")
+    assert_io(stdout)
+    assert_io(stderr)
+    assert_bool(verbose)
+    out <- exec_command(
+        command,
+        help = TRUE,
+        stdout = stdout,
+        stderr = stderr,
+        stdin = "",
+        timeout = 0L,
+        verbose = verbose
+    )
+    if (isTRUE(stdout) || isTRUE(stderr)) return(out) # styler: off
+    invisible(command)
 }
 
 #' Define the environment when running the command
@@ -187,13 +191,13 @@ cmd_run <- function(command, stdout = TRUE, stderr = TRUE, stdin = NULL,
 #' - `cmd_envpath`: define the `PATH`-like environment variables.
 #' @inheritParams cmd_help
 #' @param wd A string or `NULL` define the working directory of the command.
-#' @return 
+#' @return
 #' - `cmd_wd`: The `command` object itself, with working directory updated.
 #' - `cmd_envvar`: The `command` object itself, with running environment
 #' variable updated.
 #' - `cmd_envpath`: The `command` object self, with running environment variable
 #' `name` updated.
-#' @seealso [`cmd_help()`]/[`cmd_run()`]
+#' @seealso [`cmd_run()`]/[`cmd_help()`]
 #' @export
 cmd_wd <- function(command, wd = NULL) {
     assert_s3_class(command, "command")
@@ -621,13 +625,11 @@ exec_command3 <- function(command, command_params, wd = NULL,
         ))
         cli::cat_line()
     }
-    stdout <- standardize_io(stdout)
-    stderr <- standardize_io(stderr)
     system2(
         command = command,
         args = command_params,
-        stdout = stdout,
-        stderr = stderr,
+        stdout = stdout %||% "",
+        stderr = stderr %||% "",
         stdin = stdin %||% "",
         wait = wait,
         timeout = timeout %||% 0L
@@ -658,15 +660,12 @@ parse_envvar <- function(name, new, old, action, sep) {
     new
 }
 
-standardize_io <- function(io) {
-    if (rlang::is_string(io)) return(io) # styler: off
-    if (io) return("") else return(FALSE) # styler: off
-}
-
 # For `stdout` and `stderr`
 assert_io <- function(x, arg = rlang::caller_arg(x),
                       call = rlang::caller_call()) {
-    if (rlang::is_string(x)) {
+    if (is.null(x)) {
+
+    } else if (rlang::is_string(x)) {
         if (!nzchar(x)) {
             cli::cli_abort(
                 "{.arg {arg}} cannot be an empty string",
