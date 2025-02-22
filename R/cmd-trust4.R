@@ -109,16 +109,16 @@ Trust4ImgtAnnot <- R6Class(
     "Trust4ImgtAnnot",
     inherit = Perl,
     private = list(
-        internal_params = "script", help = NULL,
+        help = NULL,
         setup_command_params = function(species, ofile, odir) {
             assert_string(species, allow_empty = FALSE)
             opath <- build_opath(odir, ofile, abs = TRUE)
             c(shQuote(species), ">", opath)
         },
         combine_params = function() {
-            build_imgt_annot <- internal_file("TRUST4", "BuildImgtAnnot.pl")
-            if (file.access(build_imgt_annot, mode = 1L) != 0L) {
-                Sys.chmod(build_imgt_annot, "555")
+            script <- internal_file("TRUST4", "BuildImgtAnnot.pl")
+            if (file.access(script, mode = 1L) != 0L) {
+                Sys.chmod(script, "555")
             }
             c(script, super$combine_params())
         },
