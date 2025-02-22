@@ -45,9 +45,11 @@ To run the command, just pass the `command` object to the `cmd_run()`
 ``` r
 Sys.setenv(TEST = "biosys is awesome")
 exec("echo", "$TEST") |> cmd_run()
-#> Running command /usr/bin/echo $TEST
 Sys.unsetenv("TEST")
 ```
+
+    Running command /usr/bin/echo $TEST
+    biosys is awesome
 
 Several functions allow you to control the environment when running the
 command:
@@ -60,9 +62,11 @@ command:
 exec("echo", "$TEST") |>
     cmd_envvar(TEST = "biosys is very awesome") |>
     cmd_run()
-#> Setting environment variables: TEST
-#> Running command /usr/bin/echo $TEST
 ```
+
+    Setting environment variables: TEST
+    Running command /usr/bin/echo $TEST
+    biosys is very awesome
 
 `biosys` provides several built-in functions for directly executing
 specific commands., these include:
@@ -82,7 +86,7 @@ For these commands, you can also use `cmd_help()` to print the help
 document.
 
 ``` r
-python() |> cmd_help(stdout = TRUE)
+python() |> cmd_help()
 ```
 
     Running command /usr/bin/python3 --help
@@ -131,7 +135,7 @@ python() |> cmd_help(stdout = TRUE)
     arg ...: arguments passed to program in sys.argv[1:]
 
 ``` r
-perl() |> cmd_help(stdout = TRUE)
+perl() |> cmd_help()
 ```
 
     Running command /usr/bin/perl --help
@@ -196,8 +200,8 @@ file2 <- tempfile()
 exec("gzip", "-c", file) |>
     exec("gzip", "-d", ">", file2) |>
     cmd_run()
-#> Running command /usr/bin/gzip -c /tmp/RtmpifFyOh/filec826c34f33fd9 |
-#> /usr/bin/gzip -d > /tmp/RtmpifFyOh/filec826c74447a52
+#> Running command /usr/bin/gzip -c /tmp/RtmpA1xIbL/filec94297ae2898a |
+#> /usr/bin/gzip -d > /tmp/RtmpA1xIbL/filec9429695c2902
 identical(readLines(file), readLines(file2))
 #> [1] TRUE
 ```

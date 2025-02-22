@@ -48,10 +48,17 @@ exec("echo", "$PATH")
 ```
 
 To run the command, just pass the `command` object to the `cmd_run()`
-```{r}
+```{r, eval=FALSE}
 Sys.setenv(TEST = "biosys is awesome")
 exec("echo", "$TEST") |> cmd_run()
 Sys.unsetenv("TEST")
+```
+
+```{r, echo=FALSE, comment=""}
+Sys.setenv(TEST = "biosys is awesome")
+x <- exec("echo", "$TEST") |> cmd_run(stdout = TRUE)
+Sys.unsetenv("TEST")
+cat(x, sep = "\n")
 ```
 
 Several functions allow you to control the environment when running the command:
@@ -60,10 +67,17 @@ Several functions allow you to control the environment when running the command:
   - `cmd_envvar`: define the environment variables.
   - `cmd_envpath`: define the `PATH`-like environment variables.
 
-```{r}
+```{r, eval=FALSE}
 exec("echo", "$TEST") |>
     cmd_envvar(TEST = "biosys is very awesome") |>
     cmd_run()
+```
+
+```{r, echo=FALSE, comment=""}
+x <- exec("echo", "$TEST") |>
+    cmd_envvar(TEST = "biosys is very awesome") |>
+    cmd_run(stdout = TRUE)
+cat(x, sep = "\n")
 ```
 
 `biosys` provides several built-in functions for directly executing specific
@@ -80,7 +94,7 @@ commands., these include:
 
 For these commands, you can also use `cmd_help()` to print the help document.
 ```{r, eval=FALSE}
-python() |> cmd_help(stdout = TRUE)
+python() |> cmd_help()
 ```
 
 ```{r, echo=FALSE, comment=""}
@@ -89,7 +103,7 @@ cat(x, sep = "\n")
 ```
 
 ```{r, eval=FALSE}
-perl() |> cmd_help(stdout = TRUE)
+perl() |> cmd_help()
 ```
 
 ```{r, echo=FALSE, comment=""}
