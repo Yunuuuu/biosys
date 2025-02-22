@@ -60,7 +60,7 @@ Several functions allow you to control the environment when running the command:
   - `cmd_envvar`: define the environment variables.
   - `cmd_envpath`: define the `PATH`-like environment variables.
 
-```{r, results="asis"}
+```{r}
 exec("echo", "$TEST") |>
     cmd_envvar(TEST = "biosys is very awesome") |>
     cmd_run()
@@ -79,13 +79,17 @@ commands., these include:
 [trust4](https://github.com/liulab-dfci/TRUST4).
 
 For these commands, you can also use `cmd_help()` to print the help document.
+```{r, eval=FALSE}
+python() |> cmd_help(stdout = TRUE)
+```
+
 ```{r, echo=FALSE, comment=""}
 x <- python() |> cmd_help(stdout = TRUE)
 cat(x, sep = "\n")
 ```
 
 ```{r, eval=FALSE}
-python() |> cmd_help(stdout = TRUE)
+perl() |> cmd_help(stdout = TRUE)
 ```
 
 ```{r, echo=FALSE, comment=""}
@@ -93,9 +97,6 @@ x <- perl() |> cmd_help(stdout = TRUE)
 cat(x, sep = "\n")
 ```
 
-```{r, eval=FALSE}
-perl() |> cmd_help(stdout = TRUE)
-```
 And it is very easily to extend for other commands.
 
 One of the great features of `biosys` is its ability to translate the R pipe

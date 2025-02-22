@@ -81,6 +81,10 @@ specific commands., these include:
 For these commands, you can also use `cmd_help()` to print the help
 document.
 
+``` r
+python() |> cmd_help(stdout = TRUE)
+```
+
     Running command /usr/bin/python3 --help
     usage: /usr/bin/python3 [option] ... [-c cmd | -m mod | file | -] [arg] ...
     Options (and corresponding environment variables):
@@ -127,7 +131,7 @@ document.
     arg ...: arguments passed to program in sys.argv[1:]
 
 ``` r
-python() |> cmd_help(stdout = TRUE)
+perl() |> cmd_help(stdout = TRUE)
 ```
 
     Running command /usr/bin/perl --help
@@ -165,10 +169,6 @@ python() |> cmd_help(stdout = TRUE)
       
     Run 'perldoc perl' for more help with Perl.
 
-``` r
-perl() |> cmd_help(stdout = TRUE)
-```
-
 And it is very easily to extend for other commands.
 
 One of the great features of `biosys` is its ability to translate the R
@@ -196,8 +196,8 @@ file2 <- tempfile()
 exec("gzip", "-c", file) |>
     exec("gzip", "-d", ">", file2) |>
     cmd_run()
-#> Running command /usr/bin/gzip -c /tmp/Rtmpr5G2zm/filec7e193836aba9 |
-#> /usr/bin/gzip -d > /tmp/Rtmpr5G2zm/filec7e191031f1c1
+#> Running command /usr/bin/gzip -c /tmp/RtmpifFyOh/filec826c34f33fd9 |
+#> /usr/bin/gzip -d > /tmp/RtmpifFyOh/filec826c74447a52
 identical(readLines(file), readLines(file2))
 #> [1] TRUE
 ```
