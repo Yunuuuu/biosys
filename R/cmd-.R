@@ -187,7 +187,12 @@ cmd_run <- function(command, stdout = TRUE, stderr = TRUE, stdin = NULL,
 #' - `cmd_envpath`: define the `PATH`-like environment variables.
 #' @inheritParams cmd_help
 #' @param wd A string or `NULL` define the working directory of the command.
-#' @return The `command` object itself, with working directory updated.
+#' @return 
+#' - `cmd_wd`: The `command` object itself, with working directory updated.
+#' - `cmd_envvar`: The `command` object itself, with running environment
+#' variable updated.
+#' - `cmd_envpath`: The `command` object self, with running environment variable
+#' `name` updated.
 #' @seealso [`cmd_help()`]/[`cmd_run()`]
 #' @export
 cmd_wd <- function(command, wd = NULL) {
@@ -205,8 +210,6 @@ cmd_wd <- function(command, wd = NULL) {
 #' @param action Should the new values `"replace"`, `"prefix"` or `"suffix"`
 #' existing environment variables?
 #' @param sep A string to separate new and old value.
-#' @return The `command` object itself, with running environment variable
-#' updated.
 #' @export
 #' @rdname cmd_wd
 cmd_envvar <- function(command, ..., action = "replace", sep = " ") {
@@ -238,8 +241,6 @@ cmd_envvar <- function(command, ..., action = "replace", sep = " ") {
 #' @param name A string define the PATH environment variable name. You
 #' can use this to define other `PATH`-like environment variable such as
 #' `PYTHONPATH`.
-#' @return The `command` object self, with running environment variable
-#' `name` updated.
 #' @importFrom rlang :=
 #' @export
 #' @rdname cmd_wd

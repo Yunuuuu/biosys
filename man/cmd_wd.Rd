@@ -33,13 +33,13 @@ can use this to define other \code{PATH}-like environment variable such as
 \code{PYTHONPATH}.}
 }
 \value{
-The \code{command} object itself, with working directory updated.
-
-The \code{command} object itself, with running environment variable
-updated.
-
-The \code{command} object self, with running environment variable
+\itemize{
+\item \code{cmd_wd}: The \code{command} object itself, with working directory updated.
+\item \code{cmd_envvar}: The \code{command} object itself, with running environment
+variable updated.
+\item \code{cmd_envpath}: The \code{command} object self, with running environment variable
 \code{name} updated.
+}
 }
 \description{
 \itemize{
