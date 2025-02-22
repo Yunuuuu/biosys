@@ -1,0 +1,131 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>",
+    fig.path = "man/figures/README-",
+    out.width = "100%"
+)
+```
+
+# biosys
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/WangLabCSU/biosys/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/WangLabCSU/biosys/actions/workflows/R-CMD-check.yaml)
+[![CRAN status](https://www.r-pkg.org/badges/version/biosys)](https://CRAN.R-project.org/package=biosys)
+[![](https://cranlogs.r-pkg.org/badges/biosys)](https://cran.r-project.org/package=biosys)
+<!-- badges: end -->
+
+The goal of biosys is to make it easy to run system command from R.
+
+## Installation
+
+You can install the development version of biosys from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("WangLabCSU/biosys")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r}
+library(biosys)
+```
+
+To build a `command`, simply use `exec`. The first argument is the command name,
+and you can also provide the full path. After that, pass the command parameters.
+This will create a `command` object:
+```{r}
+exec("echo", "$PATH")
+```
+
+To run the command, just pass the `command` object to the `cmd_run()`
+```{r}
+Sys.setenv(TEST = "biosys is awesome")
+exec("echo", "$TEST") |> cmd_run()
+Sys.unsetenv("TEST")
+```
+
+Several functions allow you to control the environment when running the command:
+
+  - `cmd_wd`: define the working directory.
+  - `cmd_envvar`: define the environment variables.
+  - `cmd_envpath`: define the `PATH`-like environment variables.
+
+```{r, results="asis"}
+exec("echo", "$TEST") |>
+    cmd_envvar(TEST = "biosys is very awesome") |>
+    cmd_run()
+```
+
+`biosys` provides several built-in functions for directly executing specific
+commands., these include:
+[alleleCounter](https://github.com/cancerit/alleleCount),
+[cellranger](https://www.10xgenomics.com/cn/support/software/cell-ranger/latest),
+[fastq_pair](https://github.com/linsalrob/fastq-pair),
+[gistic2](https://broadinstitute.github.io/gistic2/),
+[KrakenTools](https://github.com/jenniferlu717/KrakenTools),
+[kraken2](https://github.com/DerrickWood/kraken2/wiki/Manual),
+[perl](https://www.perl.org/), [pySCENIC](https://github.com/aertslab/pySCENIC),
+[python](https://www.python.org/), [seqkit](https://bioinf.shenwei.me/seqkit/),
+[trust4](https://github.com/liulab-dfci/TRUST4).
+
+For these commands, you can also use `cmd_help()` to print the help document.
+```{r, echo=FALSE, comment=""}
+x <- python() |> cmd_help(stdout = TRUE)
+cat(x, sep = "\n")
+```
+
+```{r, eval=FALSE}
+python() |> cmd_help(stdout = TRUE)
+```
+
+```{r, echo=FALSE, comment=""}
+x <- perl() |> cmd_help(stdout = TRUE)
+cat(x, sep = "\n")
+```
+
+```{r, eval=FALSE}
+perl() |> cmd_help(stdout = TRUE)
+```
+And it is very easily to extend for other commands.
+
+One of the great features of `biosys` is its ability to translate the R pipe
+(`%>%` or `|>`) into the Linux pipe (`|`). All functions used to create a
+`command` object can accept another `command` object. The internal will capture
+the first unnamed input value. If it is a `command` object, it will be removed
+from the call and saved. When the `command` object is run, the saved command
+will be passed through the pipe (`|`) to the command.
+
+```{r}
+tmpdir <- tempdir()
+file <- tempfile(tmpdir = tmpdir)
+data.table::fwrite(
+    x = list(letters),
+    file = file,
+    quote = FALSE,
+    na = "NA",
+    col.names = FALSE,
+    logical01 = FALSE,
+    showProgress = FALSE,
+    verbose = FALSE
+)
+file2 <- tempfile()
+exec("gzip", "-c", file) |>
+    exec("gzip", "-d", ">", file2) |>
+    cmd_run()
+identical(readLines(file), readLines(file2))
+```
+
+## Session Informations
+```{r}
+sessionInfo()
+```
