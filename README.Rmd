@@ -14,6 +14,7 @@ knitr::opts_chunk$set(
 ```
 
 # biosys
+⚠️ ⚠️ ⚠️ ⚠️ **This repository is deprecated, use the [blit](https://github.com/WangLabCSU/blit) package instead.** ⚠️ ⚠️ ⚠️ ⚠️
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/WangLabCSU/biosys/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/WangLabCSU/biosys/actions/workflows/R-CMD-check.yaml)
